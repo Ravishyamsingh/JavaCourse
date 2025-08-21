@@ -162,7 +162,7 @@ export const lesson_1_1: LessonContent = {
  * Every Java application must have at least one class with a main method
  * to serve as the entry point for program execution.
  */
-
+ 
 public class JavaIntroduction {
     
     /**
@@ -246,44 +246,35 @@ public class JavaIntroduction {
  * =================================
  */`,
     exercise: `
-      **🎯 Research and Discovery Exercise**
-      
-      Complete the following comprehensive research tasks to deepen your understanding of Java:
-      
-      **Part 1: Real-World Java Applications (30 minutes)**
-      1. Research and identify 5 major companies/applications that use Java as their primary technology:
-         - For each company, write 2-3 sentences explaining why they chose Java
-         - Include the specific Java technologies they use (e.g., Spring Framework, Android SDK)
-         - Examples to get you started: Netflix (microservices), LinkedIn (backend systems), Spotify (Android app)
-      
-      **Part 2: Java Version Timeline (20 minutes)**
-      1. Create a timeline of major Java versions from Java 1.0 to the latest version
-      2. For each major version (8, 11, 17, 21), list 2 key features introduced
-      3. Research which version is most commonly used in enterprise environments today
-      
-      **Part 3: Java vs Other Languages (25 minutes)**
-      1. Compare Java with 3 other programming languages (e.g., Python, C#, C++)
-      2. Create a simple table showing:
-         - Performance characteristics
-         - Learning curve
-         - Primary use cases
-         - Community size
-      
-      **Part 4: Java Career Research (15 minutes)**
-      1. Browse job sites (LinkedIn, Indeed, etc.) and find 3 Java developer job postings
-      2. List the common skills and technologies mentioned (Spring, Hibernate, etc.)
-      3. Note the average salary ranges in your area or desired location
-      
-      **Part 5: Hands-On Exploration (30 minutes)**
-      1. Visit the official Oracle Java documentation (docs.oracle.com/javase/)
-      2. Browse the Java API documentation and identify 5 interesting classes/packages
-      3. Look at some open-source Java projects on GitHub and note what they do
-      
-      **📝 Deliverable:**
-      Create a well-organized document (digital or handwritten) with your findings from all parts. This will serve as your Java reference guide throughout the course.
-      
-      **💡 Bonus Challenge:**
-      Install Java on your computer and run the example program from this lesson. Take a screenshot of the output and include it in your research document.
+      **🎯 Introduction to Java Exercises**
+
+      **Exercise 1: Real-World Java Applications**
+      Research and identify 5 major companies/applications that use Java:
+      - For each company, write 2-3 sentences explaining why they chose Java
+      - Include specific Java technologies they use
+      - Examples: Netflix (microservices), LinkedIn (backend systems)
+
+      **Exercise 2: Java Version Timeline**
+      Create a timeline of major Java versions from Java 1.0 to latest:
+      - For each major version (8, 11, 17, 21), list 2 key features
+      - Research which version is most commonly used in enterprise
+
+      **Exercise 3: Java vs Other Languages**
+      Compare Java with 3 other programming languages (e.g., Python, C#, C++):
+      - Create a table showing performance, learning curve, use cases, community size
+
+      **Exercise 4: Java Career Research**
+      Browse job sites and find 3 Java developer job postings:
+      - List common skills and technologies mentioned
+      - Note average salary ranges in your area
+
+      **Exercise 5: Hands-On Exploration**
+      Visit official Oracle Java documentation:
+      - Browse API documentation and identify 5 interesting classes/packages
+      - Look at open-source Java projects on GitHub
+
+      **Deliverable:**
+      Create a well-organized document with your findings from all exercises.
     `
   }
 };

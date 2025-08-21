@@ -578,96 +578,47 @@ public class OperatorsComprehensive {
     exercise: `
       **🔬 Operators Comprehensive Exercise**
 
-      This exercise will solidify your understanding of Java operators through hands-on practice. You'll create programs that demonstrate real-world usage of different operators, precedence rules, and best practices.
-
-      **Part 1: Calculator Application (30 minutes)**
-
+      **Part 1: Calculator Application**
       Create a program called \`CalculatorApp.java\` that implements a basic calculator:
-
-      **Requirements:**
       - Implement methods for all arithmetic operations (+, -, *, /, %)
       - Handle division by zero errors gracefully
       - Support both integer and floating-point calculations
       - Include exponentiation and square root operations
       - Display results with appropriate formatting
 
-      **Features to implement:**
-      - Menu-driven interface for operation selection
-      - Input validation for numeric values
-      - Error handling for invalid operations
-      - History of calculations with timestamps
-      - Use proper naming conventions and comments
-
-      **Part 2: Logical Expression Evaluator (25 minutes)**
-
+      **Part 2: Logical Expression Evaluator**
       Create a program called \`LogicEvaluator.java\` that evaluates complex logical expressions:
-
-      **Requirements:**
       - Accept boolean inputs from the user
       - Evaluate expressions with multiple logical operators
       - Demonstrate short-circuit evaluation behavior
       - Show step-by-step evaluation process
       - Handle nested parentheses in expressions
 
-      **Advanced Features:**
-      - Implement a simple expression parser
-      - Add support for logical equivalence and implication
-      - Display truth tables for complex expressions
-      - Include examples of De Morgan's laws
-
-      **Part 3: Bit Manipulation Toolkit (35 minutes)**
-
+      **Part 3: Bit Manipulation Toolkit**
       Create a program called \`BitToolkit.java\` that performs bit manipulation operations:
-
-      **Requirements:**
       - Implement methods for setting, clearing, and toggling individual bits
       - Support bit shifting operations (left, right, unsigned right)
       - Include bit masking and extraction operations
       - Demonstrate bit counting and parity checking
       - Show examples of bit flags usage
 
-      **Features to implement:**
-      - Convert between decimal, binary, and hexadecimal representations
-      - Implement common bit manipulation algorithms
-      - Handle signed vs unsigned bit operations
-      - Include performance comparisons between bit operations and arithmetic
-
-      **Part 4: Operator Precedence Challenge (30 minutes)**
-
+      **Part 4: Operator Precedence Challenge**
       Create a program called \`PrecedenceChallenge.java\` that tests understanding of operator precedence:
-
-      **Requirements:**
       - Generate random expressions with multiple operators
       - Ask user to predict the result
       - Show step-by-step evaluation with parentheses
       - Include expressions that demonstrate common precedence mistakes
       - Track user's accuracy and provide feedback
 
-      **Advanced Features:**
-      - Implement a scoring system based on difficulty
-      - Add time pressure for advanced challenges
-      - Include expressions with assignment operators
-      - Provide explanations for each precedence rule
-
-      **Part 5: Real-World Application (40 minutes)**
-
+      **Part 5: Real-World Application**
       Create a program called \`RealWorldOperators.java\` that demonstrates operators in practical scenarios:
-
-      **Requirements:**
       - Implement a simple encryption algorithm using XOR
       - Create a checksum calculator using bitwise operations
       - Develop a date calculator using arithmetic operations
       - Build a simple voting system with boolean logic
       - Design a permissions system using bit flags
 
-      **Features to implement:**
-      - Combine multiple operator types in each application
-      - Handle edge cases and error conditions
-      - Optimize for performance where appropriate
-      - Include comprehensive testing for each feature
-
-      **📋 Deliverables:**
-
+      **Deliverables:**
       Submit the following files:
       1. \`CalculatorApp.java\` - Basic calculator implementation
       2. \`LogicEvaluator.java\` - Logical expression evaluator
@@ -676,37 +627,6 @@ public class OperatorsComprehensive {
       5. \`RealWorldOperators.java\` - Practical applications
       6. \`README.md\` - Documentation explaining each program
       7. Screenshots of all programs running successfully
-
-      **🎯 Success Criteria:**
-
-      Your programs should demonstrate:
-      - ✅ Correct usage of all operator types
-      - ✅ Proper handling of operator precedence
-      - ✅ Appropriate error handling and validation
-      - ✅ Clear naming conventions and comments
-      - ✅ Real-world application of operators
-      - ✅ Professional formatting and output
-      - ✅ Understanding of edge cases and limitations
-
-      **💡 Bonus Challenges:**
-
-      1. **Performance Optimization:** Compare performance of different operator implementations
-      2. **Expression Parser:** Create a full expression parser for mathematical expressions
-      3. **Advanced Bit Operations:** Implement CRC calculations or other advanced bit algorithms
-      4. **Interactive GUI:** Create a graphical interface for the calculator application
-      5. **Custom Operators:** Implement custom operator-like methods for domain-specific operations
-
-      **📚 Learning Outcomes:**
-
-      By completing this exercise, you will:
-      - Master all Java operators and their appropriate usage
-      - Understand operator precedence and associativity rules
-      - Practice bitwise operations for system programming
-      - Learn to handle edge cases and error conditions
-      - Develop skills in creating real-world applications
-      - Build confidence in using operators effectively in Java
-
-      This comprehensive exercise provides hands-on experience with one of Java's most fundamental features!
     `
   }
 };

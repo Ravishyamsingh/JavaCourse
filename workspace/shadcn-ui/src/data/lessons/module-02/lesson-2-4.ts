@@ -554,128 +554,128 @@ public class WhileDoWhileLoopsDemo {
  */`,
     exercise: `
       **🎯 While and Do-While Loops Practice Exercise**
-      
-      This exercise will help you master while and do-while loops through practical application. Complete all parts to solidify your understanding of conditional iteration in Java.
-      
-      **Part 1: Menu System (25 minutes)**
+
+      Create programs to practice working with while and do-while loops in Java.
+
+      **Part 1: Menu System**
       
       Create a program called \`MenuSystem.java\` that implements an interactive menu system:
       
-      **Requirements:**
+      Requirements:
       - Display a main menu with at least 5 options
       - Use do-while loop to ensure menu appears at least once
       - Implement input validation for menu choices
       - Allow users to exit the program gracefully
       - Include sub-menus for complex options
       
-      **Features to implement:**
+      Features to implement:
       - Clear menu formatting with numbered options
       - Error handling for invalid menu choices
       - Loop control to return to main menu
       - Exit confirmation to prevent accidental termination
-      
-      **Part 2: Number Guessing Game (20 minutes)**
+
+      **Part 2: Number Guessing Game**
       
       Create a program called \`NumberGuessingGame.java\` that implements a number guessing game:
       
-      **Requirements:**
+      Requirements:
       - Generate random numbers within specified ranges
       - Use while loops to continue game until correct guess
       - Provide hints (too high, too low) after each guess
       - Track number of attempts
       - Implement difficulty levels (easy, medium, hard)
       
-      **Advanced Features:**
+      Advanced Features:
       - Add scoring system based on attempts and difficulty
       - Implement best score tracking
       - Add time limits for guesses
       - Include statistics tracking (games played, win/loss ratio)
-      
-      **Part 3: User Input Validator (20 minutes)**
+
+      **Part 3: User Input Validator**
       
       Create a program called \`InputValidator.java\` that validates different types of user input:
       
-      **Requirements:**
+      Requirements:
       - Validate integer input within specified ranges
       - Validate floating-point numbers with precision limits
       - Validate string input for specific formats (email, phone numbers)
       - Implement retry mechanisms for invalid input
       - Provide clear error messages for different validation failures
       
-      **Features to implement:**
+      Features to implement:
       - Custom validation rules for different data types
       - Maximum retry attempts before program termination
       - Input masking for sensitive data (passwords)
       - Regular expression validation for complex patterns
-      
-      **Part 4: Data Processor (25 minutes)**
+
+      **Part 4: Data Processor**
       
       Create a program called \`DataProcessor.java\` that processes data from various sources:
       
-      **Requirements:**
+      Requirements:
       - Read data from arrays or simulated input streams
       - Process data until sentinel value is encountered
       - Calculate statistics (sum, average, min, max)
       - Handle empty or invalid data gracefully
       - Implement batch processing for large datasets
       
-      **Features to implement:**
+      Features to implement:
       - Progress indicators for long-running operations
       - Memory usage optimization for large datasets
       - Error recovery for corrupted data entries
       - Output formatting for processed results
-      
-      **Part 5: Password Validator (15 minutes)**
+
+      **Part 5: Password Validator**
       
       Create a program called \`PasswordValidator.java\` that validates user passwords:
       
-      **Requirements:**
+      Requirements:
       - Check password length requirements
       - Verify character type requirements (uppercase, lowercase, digits, symbols)
       - Implement strength scoring algorithm
       - Provide feedback for password improvement
       - Allow multiple password attempts
       
-      **Advanced Features:**
+      Advanced Features:
       - Check against common password dictionaries
       - Implement password entropy calculation
       - Add password confirmation with re-typing
       - Include password strength visualization
-      
-      **Part 6: File Reader Simulator (25 minutes)**
+
+      **Part 6: File Reader Simulator**
       
       Create a program called \`FileReaderSimulator.java\` that simulates reading data from a file:
       
-      **Requirements:**
+      Requirements:
       - Simulate file reading with arrays or collections
       - Process data line by line until end of file
       - Handle different data formats (CSV, JSON-like structures)
       - Implement error handling for malformed data
       - Track reading progress and performance
       
-      **Features to implement:**
+      Features to implement:
       - Buffer management for efficient reading
       - Line counting and data statistics
       - Error logging for processing failures
       - Memory usage monitoring for large files
-      
-      **Part 7: Infinite Loop Prevention (10 minutes)**
+
+      **Part 7: Infinite Loop Prevention**
       
       Create a program called \`LoopSafetyDemo.java\` that demonstrates safe loop implementation:
       
-      **Requirements:**
+      Requirements:
       - Implement safety counters for all loops
       - Add timeout mechanisms for long-running loops
       - Include debugging output for loop tracing
       - Handle unexpected loop termination gracefully
       - Demonstrate recovery from potential infinite loops
       
-      **Features to implement:**
+      Features to implement:
       - Performance monitoring for loop execution
       - Automatic loop termination for safety
       - Logging for debugging and analysis
       - User notification for forced terminations
-      
+
       **📋 Deliverables:**
       
       Submit the following files:
@@ -688,7 +688,7 @@ public class WhileDoWhileLoopsDemo {
       7. \`LoopSafetyDemo.java\` - Safe loop implementation demonstration
       8. \`README.md\` - Documentation explaining each program
       9. Screenshots of all programs running successfully
-      
+
       **🎯 Success Criteria:**
       
       Your programs should demonstrate:
@@ -699,26 +699,14 @@ public class WhileDoWhileLoopsDemo {
       - ✅ Clean, readable code with appropriate comments
       - ✅ Understanding of when to use while vs do-while loops
       - ✅ Application of loops to solve real-world problems
-      
+
       **💡 Bonus Challenges:**
       
-      1. **Performance Optimization:** Find ways to optimize loop-based algorithms
-      2. **Memory Management:** Implement memory-efficient loop patterns
-      3. **Error Recovery:** Add robust error handling to all programs
-      4. **User Experience:** Create interactive interfaces with better feedback
-      5. **Extensibility:** Design programs to easily add new features
-      
-      **📚 Learning Outcomes:**
-      
-      By completing this exercise, you will:
-      - Master while and do-while loop syntax and usage
-      - Understand the difference between pre and post-condition loops
-      - Learn to implement safe, controlled iteration constructs
-      - Practice input validation and user interaction with loops
-      - Develop skills in preventing and handling infinite loops
-      - Build confidence in using loops for interactive applications
-      
-      This comprehensive exercise provides hands-on experience with essential looping constructs in Java!
+      1. Performance Optimization: Find ways to optimize loop-based algorithms
+      2. Memory Management: Implement memory-efficient loop patterns
+      3. Error Recovery: Add robust error handling to all programs
+      4. User Experience: Create interactive interfaces with better feedback
+      5. Extensibility: Design programs to easily add new features
     `
   }
 };

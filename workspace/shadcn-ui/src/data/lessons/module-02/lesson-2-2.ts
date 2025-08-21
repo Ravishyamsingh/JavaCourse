@@ -559,124 +559,124 @@ public class SwitchStatementsDemo {
  */`,
     exercise: `
       **🎯 Switch Statements Practice Exercise**
-      
-      This exercise will help you master switch statements through practical application. Complete all parts to solidify your understanding of multi-way branching in Java.
-      
-      **Part 1: Calculator with Switch (20 minutes)**
+
+      Create programs to practice working with switch statements in Java.
+
+      **Part 1: Calculator with Switch**
       
       Create a program called \`CalculatorSwitch.java\` that implements a basic calculator using switch statements:
       
-      **Requirements:**
+      Requirements:
       - Accept two numbers and an operator (+, -, *, /, %)
       - Use switch statement to perform the appropriate operation
       - Handle division by zero error
       - Include a default case for invalid operators
       - Display the result with proper formatting
       
-      **Advanced Features:**
+      Advanced Features:
       - Add exponentiation (^) and square root (sqrt) operations
       - Implement memory functions (store, recall, clear)
       - Add input validation for numbers and operators
-      
-      **Part 2: Menu System (25 minutes)**
+
+      **Part 2: Menu System**
       
       Create a program called \`MenuSystem.java\` that simulates a restaurant ordering system:
       
-      **Requirements:**
+      Requirements:
       - Display a menu with at least 10 items categorized by type (appetizers, mains, desserts)
       - Use switch statements to process user selections
       - Calculate total order cost with tax
       - Allow users to add multiple items to their order
       - Implement an exit option
       
-      **Features to implement:**
+      Features to implement:
       - Menu categories with sub-switches
       - Order summary with itemized list
       - Special offers based on order combinations
       - Input validation for menu choices
-      
-      **Part 3: Grade Converter (15 minutes)**
+
+      **Part 3: Grade Converter**
       
       Create a program called \`GradeConverter.java\` that converts between different grading systems:
       
-      **Requirements:**
+      Requirements:
       - Convert letter grades (A-F) to GPA values (4.0 scale)
       - Convert numerical scores to letter grades
       - Convert between different grading scales (percentage, letter, GPA)
       - Use switch statements for the conversion logic
       - Handle invalid input gracefully
       
-      **Advanced Features:**
+      Advanced Features:
       - Add support for + and - grade modifiers
       - Implement conversion between international grading systems
       - Calculate cumulative GPA for multiple courses
-      
-      **Part 4: Traffic Light Simulator (20 minutes)**
+
+      **Part 4: Traffic Light Simulator**
       
       Create a program called \`TrafficLightSimulator.java\` that simulates traffic light behavior:
       
-      **Requirements:**
+      Requirements:
       - Implement a traffic light with states: RED, YELLOW, GREEN
       - Use switch statements to determine behavior for each state
       - Include timing for each light state
       - Add pedestrian crossing functionality
       - Handle emergency vehicle priority
       
-      **Features to implement:**
+      Features to implement:
       - State transitions with switch logic
       - Timing controls for each state
       - Special modes (night mode, emergency override)
       - Visual representation of current state
-      
-      **Part 5: Game State Manager (30 minutes)**
+
+      **Part 5: Game State Manager**
       
       Create a program called \`GameStateManager.java\` that manages different states in a game:
       
-      **Requirements:**
+      Requirements:
       - Implement game states: MENU, PLAYING, PAUSED, GAME_OVER, SETTINGS
       - Use switch statements to handle transitions between states
       - Implement state-specific behaviors and actions
       - Add input handling for state changes
       - Include save/load functionality for game progress
       
-      **Choose ONE of these implementations:**
+      Choose ONE of these implementations:
       
-      **Option A: Text-based Adventure Game**
+      Option A: Text-based Adventure Game
       - Different game states affect player options
       - State transitions based on player choices
       - Save game state to file
       
-      **Option B: Simple Puzzle Game**
+      Option B: Simple Puzzle Game
       - States for different puzzle screens
       - Timer functionality in PLAYING state
       - Score tracking across states
       
-      **Option C: Quiz Application**
+      Option C: Quiz Application
       - States for different quiz phases (start, question, result)
       - Score calculation in GAME_OVER state
       - Category selection in MENU state
       
-      **Technical Requirements:**
+      Technical Requirements:
       - Use enums for game states
       - Implement proper state transition logic with switch
       - Handle invalid state transitions gracefully
       - Include user feedback for state changes
-      
-      **Part 6: Modern Switch Challenge (20 minutes)**
+
+      **Part 6: Modern Switch Challenge**
       
       Create a program called \`ModernSwitchDemo.java\` that demonstrates modern switch features:
       
-      **Requirements:**
+      Requirements:
       - Use switch expressions with arrow syntax
       - Implement switch with code blocks and yield statements
       - Compare traditional switch with modern switch expressions
       - Demonstrate switch with pattern matching (if using Java 17+)
       
-      **Features to implement:**
+      Features to implement:
       - Performance comparison between switch styles
       - Code readability improvements
       - Error handling in modern switch expressions
-      
+
       **📋 Deliverables:**
       
       Submit the following files:
@@ -688,7 +688,7 @@ public class SwitchStatementsDemo {
       6. \`ModernSwitchDemo.java\` - Modern switch features demonstration
       7. \`README.md\` - Documentation explaining each program
       8. Screenshots of all programs running successfully
-      
+
       **🎯 Success Criteria:**
       
       Your programs should demonstrate:
@@ -699,26 +699,14 @@ public class SwitchStatementsDemo {
       - ✅ Input validation and error handling
       - ✅ Clean, readable code with appropriate comments
       - ✅ Understanding of when to use switch vs if-else
-      
+
       **💡 Bonus Challenges:**
       
-      1. **Performance Testing:** Compare performance of switch vs if-else for large numbers of cases
-      2. **Code Optimization:** Find ways to minimize code duplication in switch cases
-      3. **Error Recovery:** Implement graceful recovery from invalid inputs
-      4. **User Experience:** Add interactive menus and better user feedback
-      5. **Extensibility:** Design your programs to easily add new cases
-      
-      **📚 Learning Outcomes:**
-      
-      By completing this exercise, you will:
-      - Master traditional and modern switch statement syntax
-      - Understand fall-through behavior and when it's useful
-      - Learn to work with switch statements and different data types
-      - Practice implementing clean, maintainable branching logic
-      - Develop skills in state management with switch statements
-      - Build confidence in choosing between switch and if-else
-      
-      This comprehensive exercise provides hands-on experience with one of Java's most powerful branching constructs!
+      1. Performance Testing: Compare performance of switch vs if-else for large numbers of cases
+      2. Code Optimization: Find ways to minimize code duplication in switch cases
+      3. Error Recovery: Implement graceful recovery from invalid inputs
+      4. User Experience: Add interactive menus and better user feedback
+      5. Extensibility: Design your programs to easily add new cases
     `
   }
 };

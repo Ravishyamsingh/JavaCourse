@@ -185,7 +185,7 @@ export const lesson_1_2: LessonContent = {
  * 
  * Run this program to ensure your Java setup is working correctly!
  */
-
+ 
 import java.io.File;
 import java.util.Properties;
 
@@ -376,121 +376,45 @@ public class EnvironmentTest {
  * ... (additional output sections) ...
  */`,
     exercise: `
-      **🛠️ Complete Development Environment Setup Challenge**
-      
-      This comprehensive exercise will guide you through setting up a complete, professional Java development environment. Complete all parts to ensure you're ready for serious Java development.
-      
-      **Part 1: JDK Installation and Verification (45 minutes)**
-      
-      1. **Download and Install JDK:**
-         - Visit Oracle's official Java download page
-         - Choose the appropriate JDK version for your OS (recommend JDK 17 or 21 LTS)
-         - Download and install following the platform-specific instructions above
-         - Document any issues you encounter and how you resolved them
-      
-      2. **Configure Environment Variables:**
-         - Set JAVA_HOME to your JDK installation directory
-         - Add JDK's bin directory to your PATH variable
-         - Verify by opening terminal/command prompt and running:
-           * java -version
-           * javac -version
-         - Take screenshots of successful output
-      
-      3. **Run the Environment Test Program:**
-         - Copy the EnvironmentTest.java code provided above
-         - Save it as EnvironmentTest.java
-         - Compile it: javac EnvironmentTest.java
-         - Run it: java EnvironmentTest
-         - Save the complete output to a text file
-      
-      **Part 2: IDE Installation and Configuration (30 minutes)**
-      
-      1. **Choose Your IDE:**
-         - Research and choose between IntelliJ IDEA, VS Code, or Eclipse
-         - List 3 reasons why you chose your specific IDE
-         - Download and install your chosen IDE
-      
-      2. **IDE Configuration:**
-         - Configure the IDE to use your installed JDK
-         - Set up code formatting preferences (indentation, line length, etc.)
-         - Install any recommended Java extensions/plugins
-         - Create a new Java project called "JavaLearning"
-      
-      3. **Create Your First Project:**
-         - Create a new Java class called "MyFirstProgram"
-         - Write a program that prints your name, favorite programming language, and today's date
-         - Add proper comments and documentation
-         - Compile and run the program successfully
-      
-      **Part 3: Command Line Mastery (20 minutes)**
-      
-      1. **Practice Command Line Compilation:**
-         - Create a simple Java program using only a text editor (Notepad, nano, etc.)
-         - Compile it using javac from the command line
-         - Run it using java from the command line
-         - Practice navigating directories and managing Java files
-      
-      2. **Explore JDK Tools:**
-         - Try using 'javadoc' to generate documentation for a simple class
-         - Use 'jar' command to create a JAR file from your compiled classes
-         - Explore other JDK tools: jdb (debugger), jmap, jstat
-      
-      **Part 4: Advanced Configuration (25 minutes)**
-      
-      1. **Version Control Setup:**
-         - Install Git if not already installed
-         - Initialize a Git repository in your Java project folder
-         - Create a .gitignore file appropriate for Java projects
-         - Make your first commit with your test programs
-      
-      2. **Build Tool Exploration:**
-         - Research Maven and Gradle build tools
-         - Choose one and install it
-         - Create a simple Maven or Gradle project
-         - Add a dependency (like JUnit for testing) to your project
-      
-      **Part 5: Troubleshooting and Documentation (20 minutes)**
-      
-      1. **Create a Setup Guide:**
-         - Document your complete setup process step-by-step
-         - Include screenshots of key configuration screens
-         - Note any problems encountered and their solutions
-         - Create a "quick start" checklist for future reference
-      
-      2. **Test Different Scenarios:**
-         - Try running Java programs from different directories
-         - Test your setup with programs that have multiple classes
-         - Verify that your IDE can debug Java programs (set breakpoints, inspect variables)
-      
-      **📋 Deliverables:**
-      
-      Create a comprehensive report including:
-      1. Screenshots of successful java -version and javac -version commands
-      2. Complete output from the EnvironmentTest program
-      3. Screenshots of your IDE with a working Java project
-      4. Your setup documentation/guide
-      5. Evidence of version control setup (Git repository screenshot)
-      6. At least 3 working Java programs (including the ones you wrote)
-      
-      **🎯 Success Criteria:**
-      
-      You've successfully completed this exercise when:
-      - ✅ You can compile and run Java programs from command line
-      - ✅ Your IDE can create, edit, compile, and debug Java programs
-      - ✅ Environment variables are properly configured
-      - ✅ You have a version-controlled Java project
-      - ✅ You can create and manage Java projects efficiently
-      - ✅ You understand the Java development workflow
-      
-      **💡 Bonus Challenges:**
-      
-      1. Set up multiple JDK versions and learn to switch between them
-      2. Configure your IDE with useful plugins (code analysis, formatting, Git integration)
-      3. Create a simple build script using your chosen build tool
-      4. Set up automated code formatting and linting
-      5. Explore IDE shortcuts and productivity features
-      
-      This comprehensive setup will serve as your foundation for the entire Java course and your future development career!
+      **🎯 Development Environment Setup Exercises**
+
+      **Exercise 1: JDK Installation and Verification**
+      - Download and install JDK (recommend JDK 17 or 21 LTS)
+      - Set JAVA_HOME and add JDK's bin to PATH
+      - Verify with java -version and javac -version
+      - Run the EnvironmentTest.java program
+
+      **Exercise 2: IDE Installation and Configuration**
+      - Choose between IntelliJ IDEA, VS Code, or Eclipse
+      - List 3 reasons for your choice
+      - Install and configure IDE with your JDK
+      - Create a new Java project called "JavaLearning"
+      - Create a class that prints your name and today's date
+
+      **Exercise 3: Command Line Mastery**
+      - Create a simple Java program using only a text editor
+      - Compile and run it from command line
+      - Try using 'javadoc' to generate documentation
+      - Use 'jar' command to create a JAR file
+
+      **Exercise 4: Advanced Configuration**
+      - Install Git if not already installed
+      - Initialize a Git repository in your project folder
+      - Create a .gitignore file for Java projects
+      - Research Maven/Gradle and set up a simple project
+
+      **Exercise 5: Troubleshooting and Documentation**
+      - Document your complete setup process
+      - Include screenshots of key configuration screens
+      - Test running Java programs from different directories
+      - Verify IDE debugging capabilities
+
+      **Deliverables:**
+      - Screenshots of successful java/javac commands
+      - Complete output from EnvironmentTest program
+      - Screenshots of IDE with working Java project
+      - Setup documentation/guide
+      - Evidence of version control setup
     `
   }
 };
