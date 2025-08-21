@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getTotalLessonsCount, getModuleProgress } from '@/data/courseStructure';
 
 interface ProgressContextType {
   completedLessons: string[];
@@ -207,17 +208,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const getTotalLessons = (): number => {
-    return TOTAL_LESSONS;
+    return getTotalLessonsCount();
   };
 
-  const getModuleProgress = (moduleId: string): number => {
-    const moduleLessons = allLessonsData.filter(lesson => lesson.module === moduleId);
-    const completedModuleLessons = moduleLessons.filter(lesson => 
-      completedLessons.includes(lesson.id)
-    );
-    
-    if (moduleLessons.length === 0) return 0;
-    return Math.round((completedModuleLessons.length / moduleLessons.length) * 100);
+  const getModuleProgressValue = (moduleId: string): number => {
+    return getModuleProgress(moduleId, completedLessons);
   };
 
   const updateStudyTime = (minutes: number) => {
@@ -231,7 +226,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     getProgressPercentage,
     getCompletedCount,
     getTotalLessons,
-    getModuleProgress,
+    getModuleProgress: getModuleProgressValue,
     studyStreak,
     totalStudyTime,
     updateStudyTime
