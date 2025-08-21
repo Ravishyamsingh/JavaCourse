@@ -439,28 +439,21 @@ class PersonalizedGreeting {
     exercise: `
       **🏗️ First Java Program Development Challenge**
       
-      This hands-on exercise will solidify your understanding of Java program structure and give you practical experience creating professional-quality Java applications.
+      **Part 1: Hello World Recreation**
+      - Create a new file called \`HelloWorld.java\`
+      - Type the basic Hello World program from memory
+      - Compile it using: \`javac HelloWorld.java\`
+      - Run it using: \`java HelloWorld\`
+      - Take a screenshot of the successful output
       
-      **Part 1: Recreation and Understanding (25 minutes)**
+      **Part 2: Program Structure Analysis**
+      - Identify each component: class declaration, main method, statements
+      - Explain in your own words what each part does
+      - List what happens if you change the class name without changing the filename
+      - Document what each keyword means: \`public\`, \`static\`, \`void\`
       
-      1. **Recreate the Hello World Program (10 minutes):**
-         - Create a new file called \`HelloWorld.java\`
-         - Type the basic Hello World program from memory
-         - Compile it using: \`javac HelloWorld.java\`
-         - Run it using: \`java HelloWorld\`
-         - Take a screenshot of the successful output
-      
-      2. **Program Structure Analysis (15 minutes):**
-         - Identify each component: class declaration, main method, statements
-         - Explain in your own words what each part does
-         - List what happens if you change the class name without changing the filename
-         - Document what each keyword means: \`public\`, \`static\`, \`void\`
-      
-      **Part 2: Personal Information Program (30 minutes)**
-      
+      **Part 3: Personal Information Program**
       Create a program called \`AboutMe.java\` that displays comprehensive information about you:
-      
-      **Requirements:**
       - Your full name and preferred nickname
       - Your age and location (city/state)
       - Your educational background
@@ -477,11 +470,8 @@ class PersonalizedGreeting {
       - Use attractive ASCII art or formatting
       - Include proper spacing and visual organization
       
-      **Part 3: Interactive Learning Tracker (35 minutes)**
-      
+      **Part 4: Learning Tracker Program**
       Create a program called \`LearningTracker.java\` that simulates a learning dashboard:
-      
-      **Features to implement:**
       - Display current date and time information
       - Show your learning progress (lessons completed, current module)
       - List your learning goals for this week
@@ -489,15 +479,7 @@ class PersonalizedGreeting {
       - Show programming languages you want to learn
       - Include motivational messages and progress indicators
       
-      **Advanced Features:**
-      - Create methods for different sections of information
-      - Use string concatenation to create dynamic content
-      - Include system information (like the examples)
-      - Add visual elements using ASCII characters
-      - Create a professional-looking output format
-      
-      **Part 4: Creative Programming Challenge (30 minutes)**
-      
+      **Part 5: Creative Programming Challenge**
       Choose ONE of the following creative challenges:
       
       **Option A: ASCII Art Gallery**
@@ -518,8 +500,7 @@ class PersonalizedGreeting {
       - Include milestones, achievements, and future goals
       - Use creative formatting and visual indicators
       
-      **Part 5: Code Review and Documentation (20 minutes)**
-      
+      **Part 6: Code Review and Documentation**
       1. **Self-Review Process:**
          - Check all programs compile and run without errors
          - Verify proper naming conventions are followed
@@ -532,8 +513,7 @@ class PersonalizedGreeting {
          - Document any challenges you faced and how you solved them
          - List what you learned from each exercise
       
-      **📋 Deliverables:**
-      
+      **Deliverables:**
       Submit the following files:
       1. \`HelloWorld.java\` - Basic recreation
       2. \`AboutMe.java\` - Personal information program
@@ -541,47 +521,6 @@ class PersonalizedGreeting {
       4. One creative challenge program
       5. \`README.md\` - Documentation and reflection
       6. Screenshots of all programs running successfully
-      
-      **🎯 Success Criteria:**
-      
-      Your programs should demonstrate:
-      - ✅ Correct Java syntax and program structure
-      - ✅ Proper naming conventions and code formatting
-      - ✅ Multiple methods with clear purposes
-      - ✅ Professional documentation and comments
-      - ✅ Creative problem-solving and personal expression
-      - ✅ Successful compilation and execution
-      - ✅ Clean, readable, and well-organized code
-      
-      **💡 Bonus Challenges:**
-      
-      1. **Error Handling Exploration:** Intentionally make syntax errors and document the error messages you receive
-      2. **Method Variations:** Create methods that take parameters (we'll learn this formally later)
-      3. **Code Optimization:** Find ways to make your code more concise while maintaining readability
-      4. **Version Control:** Initialize a Git repository and commit your programs
-      5. **IDE Integration:** Try running your programs in different IDEs and compare the experience
-      
-      **📚 Learning Outcomes:**
-      
-      By completing this exercise, you will:
-      - Master the fundamental structure of Java programs
-      - Gain confidence in writing, compiling, and running Java code
-      - Understand the importance of naming conventions and code organization
-      - Practice professional documentation and commenting
-      - Develop problem-solving skills through hands-on programming
-      - Build a portfolio of your first Java programs
-      - Establish good programming habits from the beginning
-      
-      **🚀 Next Steps:**
-      
-      After completing this exercise:
-      - Keep your programs as reference for future lessons
-      - Experiment with modifying the code to see different outputs
-      - Share your creative programs with fellow students
-      - Prepare for the next lesson on Variables and Data Types
-      - Continue practicing with additional small programs on your own
-      
-      Remember: Every expert programmer started with "Hello, World!" - you're now officially on your way to Java mastery!
     `
   }
 };

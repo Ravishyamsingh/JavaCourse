@@ -52,9 +52,9 @@ export const lesson_2_1: LessonContent = {
             <div class="bg-gray-50 p-4 rounded-lg">
               <h4 class="font-bold text-gray-800 mb-2">Syntax:</h4>
               <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm">
-                if (condition) &#123;<br/>
+                if (condition) {<br/>
                 &nbsp;&nbsp;// code to execute if condition is true<br/>
-                &#125;
+                }
               </div>
             </div>
             
@@ -62,9 +62,9 @@ export const lesson_2_1: LessonContent = {
               <h4 class="font-bold text-green-800 mb-2">Example:</h4>
               <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm">
                 int age = 18;<br/>
-                if (age >= 18) &#123;<br/>
+                if (age >= 18) {<br/>
                 &nbsp;&nbsp;System.out.println("You are eligible to vote!");<br/>
-                &#125;
+                }
               </div>
             </div>
           </div>
@@ -81,11 +81,11 @@ export const lesson_2_1: LessonContent = {
             <div class="bg-gray-50 p-4 rounded-lg">
               <h4 class="font-bold text-gray-800 mb-2">Syntax:</h4>
               <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm">
-                if (condition) &#123;<br/>
+                if (condition) {<br/>
                 &nbsp;&nbsp;// code if true<br/>
-                &#125; else &#123;<br/>
+                } else {<br/>
                 &nbsp;&nbsp;// code if false<br/>
-                &#125;
+                }
               </div>
             </div>
             
@@ -93,11 +93,11 @@ export const lesson_2_1: LessonContent = {
               <h4 class="font-bold text-purple-800 mb-2">Example:</h4>
               <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm">
                 int score = 75;<br/>
-                if (score >= 60) &#123;<br/>
+                if (score >= 60) {<br/>
                 &nbsp;&nbsp;System.out.println("You passed the exam!");<br/>
-                &#125; else &#123;<br/>
+                } else {<br/>
                 &nbsp;&nbsp;System.out.println("You need to study more.");<br/>
-                &#125;
+                }
               </div>
             </div>
           </div>
@@ -114,15 +114,15 @@ export const lesson_2_1: LessonContent = {
             <div class="bg-gray-50 p-4 rounded-lg">
               <h4 class="font-bold text-gray-800 mb-2">Syntax:</h4>
               <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm">
-                if (condition1) &#123;<br/>
+                if (condition1) {<br/>
                 &nbsp;&nbsp;// code if condition1 is true<br/>
-                &#125; else if (condition2) &#123;<br/>
+                } else if (condition2) {<br/>
                 &nbsp;&nbsp;// code if condition2 is true<br/>
-                &#125; else if (condition3) &#123;<br/>
+                } else if (condition3) {<br/>
                 &nbsp;&nbsp;// code if condition3 is true<br/>
-                &#125; else &#123;<br/>
+                } else {<br/>
                 &nbsp;&nbsp;// code if none of the above<br/>
-                &#125;
+                }
               </div>
             </div>
             
@@ -130,15 +130,15 @@ export const lesson_2_1: LessonContent = {
               <h4 class="font-bold text-orange-800 mb-2">Example:</h4>
               <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm">
                 int grade = 85;<br/>
-                if (grade >= 90) &#123;<br/>
+                if (grade >= 90) {<br/>
                 &nbsp;&nbsp;System.out.println("Grade: A");<br/>
-                &#125; else if (grade >= 80) &#123;<br/>
+                } else if (grade >= 80) {<br/>
                 &nbsp;&nbsp;System.out.println("Grade: B");<br/>
-                &#125; else if (grade >= 70) &#123;<br/>
+                } else if (grade >= 70) {<br/>
                 &nbsp;&nbsp;System.out.println("Grade: C");<br/>
-                &#125; else &#123;<br/>
+                } else {<br/>
                 &nbsp;&nbsp;System.out.println("Grade: D");<br/>
-                &#125;
+                }
               </div>
             </div>
           </div>
@@ -158,15 +158,15 @@ export const lesson_2_1: LessonContent = {
                 int age = 25;<br/>
                 boolean hasLicense = true;<br/>
                 <br/>
-                if (age >= 18) &#123;<br/>
-                &nbsp;&nbsp;if (hasLicense) &#123;<br/>
+                if (age >= 18) {<br/>
+                &nbsp;&nbsp;if (hasLicense) {<br/>
                 &nbsp;&nbsp;&nbsp;&nbsp;System.out.println("You can drive legally.");<br/>
-                &nbsp;&nbsp;&#125; else &#123;<br/>
+                &nbsp;&nbsp;} else {<br/>
                 &nbsp;&nbsp;&nbsp;&nbsp;System.out.println("You need to get a license.");<br/>
-                &nbsp;&nbsp;&#125;<br/>
-                &#125; else &#123;<br/>
+                &nbsp;&nbsp;}<br/>
+                } else {<br/>
                 &nbsp;&nbsp;System.out.println("You are not old enough to drive.");<br/>
-                &#125;
+                }
               </div>
             </div>
           </div>
@@ -509,14 +509,9 @@ public class ConditionalStatementsDemo {
  */`,
     exercise: `
       **🎯 Conditional Statements Practice Exercise**
-      
-      This exercise will help you master conditional statements through practical application. Complete all parts to solidify your understanding of decision-making in Java.
-      
-      **Part 1: Grade Calculator (25 minutes)**
-      
+
+      **Part 1: Grade Calculator**
       Create a program called \`GradeCalculator.java\` that determines letter grades based on numerical scores:
-      
-      **Requirements:**
       - Accept a numerical score between 0 and 100
       - Use if-else-if statements to determine the letter grade:
         * 90-100: A
@@ -526,51 +521,26 @@ public class ConditionalStatementsDemo {
         * 0-59: F
       - Handle invalid input (scores outside 0-100 range)
       - Display both the numerical score and letter grade
-      
-      **Advanced Features:**
-      - Add + and - modifiers (e.g., B+, C-)
-      - Include personalized feedback messages for each grade range
-      - Validate that input is a valid number
-      
-      **Part 2: Weather Advisor (20 minutes)**
-      
+
+      **Part 2: Weather Advisor**
       Create a program called \`WeatherAdvisor.java\` that gives clothing recommendations based on weather conditions:
-      
-      **Requirements:**
       - Accept temperature (in Celsius) and weather condition (sunny, rainy, cloudy, snowy)
       - Provide clothing recommendations based on:
         * Temperature ranges (hot, warm, cool, cold, freezing)
         * Weather conditions (rain protection, sun protection, etc.)
       - Use nested conditionals for complex recommendations
       - Include special recommendations for extreme conditions
-      
-      **Features to implement:**
-      - Multiple input validation checks
-      - Combination of temperature and weather condition logic
-      - User-friendly output with emojis or symbols
-      
-      **Part 3: Authentication System (30 minutes)**
-      
+
+      **Part 3: Authentication System**
       Create a program called \`AuthenticationSystem.java\` that simulates a simple login system:
-      
-      **Requirements:**
       - Store valid username and password combinations
       - Implement login validation with appropriate error messages
       - Include account lockout after multiple failed attempts
       - Add password strength validation (length, character types)
       - Implement role-based access control (admin, user)
-      
-      **Advanced Features:**
-      - Password encryption simulation (just add a prefix/suffix)
-      - Session timeout simulation
-      - Password recovery option
-      - Logging of login attempts
-      
-      **Part 4: Discount Calculator (25 minutes)**
-      
+
+      **Part 4: Discount Calculator**
       Create a program called \`DiscountCalculator.java\` that calculates discounts for an online store:
-      
-      **Requirements:**
       - Apply different discount rules based on:
         * Customer membership status (regular, premium, VIP)
         * Purchase amount thresholds
@@ -578,41 +548,28 @@ public class ConditionalStatementsDemo {
         * Seasonal discounts
       - Use complex boolean expressions to determine final discount
       - Display original price, discount amount, and final price
-      
-      **Features to implement:**
-      - Multiple discount combinations (stackable vs non-stackable)
-      - Priority-based discount application
-      - Special case handling (first-time customers, birthdays, etc.)
-      
-      **Part 5: Decision Tree Challenge (30 minutes)**
-      
+
+      **Part 5: Decision Tree Challenge**
       Create a program called \`DecisionTree.java\` that implements a simple decision tree for a real-world scenario:
       
-      **Choose ONE of these scenarios:**
+      Choose ONE of these scenarios:
       
-      **Option A: Medical Symptom Checker**
+      Option A: Medical Symptom Checker
       - Ask user about symptoms (fever, cough, headache, etc.)
       - Provide possible conditions based on symptom combinations
       - Recommend actions (rest, see doctor, emergency care)
       
-      **Option B: Car Diagnostic System**
+      Option B: Car Diagnostic System
       - Ask about car problems (won't start, strange noise, warning lights)
       - Diagnose potential issues based on user responses
       - Recommend solutions or professional help
       
-      **Option C: Fitness Program Selector**
+      Option C: Fitness Program Selector
       - Ask about fitness goals, experience level, available equipment
       - Recommend workout programs based on user profile
       - Provide customized weekly plans
-      
-      **Technical Requirements:**
-      - Use at least 3 levels of nested conditionals
-      - Implement proper input validation
-      - Provide clear, helpful output for each decision path
-      - Handle edge cases and invalid inputs gracefully
-      
-      **📋 Deliverables:**
-      
+
+      **Deliverables:**
       Submit the following files:
       1. \`GradeCalculator.java\` - Grade determination program
       2. \`WeatherAdvisor.java\` - Weather-based recommendations
@@ -621,37 +578,6 @@ public class ConditionalStatementsDemo {
       5. \`DecisionTree.java\` - Your chosen decision tree implementation
       6. \`README.md\` - Documentation explaining each program
       7. Screenshots of all programs running successfully
-      
-      **🎯 Success Criteria:**
-      
-      Your programs should demonstrate:
-      - ✅ Correct implementation of if, if-else, and if-else-if statements
-      - ✅ Proper use of boolean expressions and logical operators
-      - ✅ Nested conditional statements for complex logic
-      - ✅ Input validation and error handling
-      - ✅ Clean, readable code with appropriate comments
-      - ✅ User-friendly output and error messages
-      - ✅ Understanding of conditional statement best practices
-      
-      **💡 Bonus Challenges:**
-      
-      1. **Performance Optimization:** Find ways to minimize condition checks in your programs
-      2. **Code Refactoring:** Extract complex conditions into separate boolean methods
-      3. **Error Recovery:** Implement graceful recovery from invalid inputs
-      4. **User Experience:** Add interactive menus and input validation
-      5. **Extensibility:** Design your programs to easily add new conditions
-      
-      **📚 Learning Outcomes:**
-      
-      By completing this exercise, you will:
-      - Master all forms of conditional statements in Java
-      - Understand how to structure complex decision-making logic
-      - Practice input validation and error handling
-      - Learn to write clean, maintainable conditional code
-      - Develop problem-solving skills with branching logic
-      - Build confidence in implementing business rules with code
-      
-      This comprehensive exercise provides hands-on experience with one of Java's most essential programming constructs!
     `
   }
 };

@@ -483,128 +483,128 @@ public class BreakContinueDemo {
  */`,
     exercise: `
       **🎯 Break and Continue Statements Practice Exercise**
-      
-      This exercise will help you master break and continue statements through practical application. Complete all parts to solidify your understanding of advanced loop control in Java.
-      
-      **Part 1: Search Algorithms (20 minutes)**
+
+      Create programs to practice working with break and continue statements in Java.
+
+      **Part 1: Search Algorithms**
       
       Create a program called \`SearchAlgorithms.java\` that implements various search techniques:
       
-      **Requirements:**
+      Requirements:
       - Implement linear search with break statement
       - Create search with multiple criteria using continue
       - Add labeled break for multi-dimensional array search
       - Implement early termination for sorted arrays
       - Handle cases where elements are not found
       
-      **Advanced Features:**
+      Advanced Features:
       - Add performance timing for searches
       - Implement binary search with break/continue
       - Create search with custom comparison logic
       - Add search result statistics
-      
-      **Part 2: Data Filter (15 minutes)**
+
+      **Part 2: Data Filter**
       
       Create a program called \`DataFilter.java\` that filters datasets using continue statements:
       
-      **Requirements:**
+      Requirements:
       - Filter numeric data based on range criteria
       - Filter string data based on length or content
       - Implement multiple filter conditions
       - Process only valid data entries
       - Generate filtered output reports
       
-      **Features to implement:**
+      Features to implement:
       - Custom filter rules for different data types
       - Filter chaining with continue statements
       - Performance optimization for large datasets
       - Memory-efficient filtering techniques
-      
-      **Part 3: Menu Controller (20 minutes)**
+
+      **Part 3: Menu Controller**
       
       Create a program called \`MenuController.java\` that implements complex menu navigation:
       
-      **Requirements:**
+      Requirements:
       - Use break statements for menu exit options
       - Implement continue for invalid menu choices
       - Create nested menus with labeled break control
       - Add user confirmation for critical operations
       - Handle menu state transitions cleanly
       
-      **Advanced Features:**
+      Advanced Features:
       - Implement menu history tracking
       - Add keyboard shortcuts for navigation
       - Create dynamic menu generation
       - Include menu animation or visual effects
-      
-      **Part 4: Validation System (25 minutes)**
+
+      **Part 4: Validation System**
       
       Create a program called \`ValidationSystem.java\` that validates complex data structures:
       
-      **Requirements:**
+      Requirements:
       - Validate arrays with break on first error
       - Validate collections with continue on warnings
       - Implement nested validation with labeled breaks
       - Create validation rule engines
       - Generate detailed validation reports
       
-      **Features to implement:**
+      Features to implement:
       - Custom validation annotations or markers
       - Validation level settings (strict, lenient)
       - Error recovery mechanisms
       - Validation performance optimization
-      
-      **Part 5: Game Loop Controller (20 minutes)**
+
+      **Part 5: Game Loop Controller**
       
       Create a program called \`GameLoopController.java\` that demonstrates game loop management:
       
-      **Requirements:**
+      Requirements:
       - Implement main game loop with break for exit
       - Use continue for frame skipping or special conditions
       - Add pause/resume functionality with loop control
       - Handle game state transitions with break/continue
       - Include performance monitoring
       
-      **Advanced Features:**
+      Advanced Features:
       - Implement variable frame rate control
       - Add input processing with continue patterns
       - Create level loading with break conditions
       - Include game event handling
-      
-      **Part 6: Pattern Matching (15 minutes)**
+
+      **Part 6: Pattern Matching**
       
       Create a program called \`PatternMatcher.java\` that implements pattern matching algorithms:
       
-      **Requirements:**
+      Requirements:
       - Match patterns in text with break on find
       - Skip non-matching sections with continue
       - Implement wildcard or regex matching
       - Handle case sensitivity options
       - Generate match location reports
       
-      **Features to implement:**
+      Features to implement:
       - Multiple pattern matching in single pass
       - Pattern matching optimization
       - Match grouping and categorization
       - Performance comparison of matching algorithms
-      
-      **Part 7: Loop Control Best Practices (5 minutes)**
+
+      **Part 7: Loop Control Best Practices**
       
       Create a program called \`LoopControlDemo.java\` that demonstrates clean loop control:
       
-      **Requirements:**
+      Requirements:
       - Implement loops with clear break conditions
       - Use continue statements with meaningful comments
       - Label nested loops appropriately
       - Follow best practices for readable control flow
       - Include error handling with loop control
       
-      **Features to implement:**
+      Features to implement:
       - Loop tracing for debugging
       - Safety counters to prevent infinite execution
       - Performance monitoring for loop operations
       - Documentation of control logic
-      
+
       **📋 Deliverables:**
       
       Submit the following files:
@@ -617,7 +617,7 @@ public class BreakContinueDemo {
       7. \`LoopControlDemo.java\` - Best practices demonstration
       8. \`README.md\` - Documentation explaining each program
       9. Screenshots of all programs running successfully
-      
+
       **🎯 Success Criteria:**
       
       Your programs should demonstrate:
@@ -628,26 +628,14 @@ public class BreakContinueDemo {
       - ✅ Clean, readable code with appropriate comments
       - ✅ Understanding of when to use break vs continue
       - ✅ Application of loop control to solve real-world problems
-      
+
       **💡 Bonus Challenges:**
       
-      1. **Performance Optimization:** Find ways to optimize search and filter algorithms
-      2. **Memory Management:** Implement memory-efficient loop control patterns
-      3. **Error Recovery:** Add robust error handling to all programs
-      4. **User Experience:** Create interactive interfaces with better feedback
-      5. **Extensibility:** Design programs to easily add new control features
-      
-      **📚 Learning Outcomes:**
-      
-      By completing this exercise, you will:
-      - Master break and continue statement syntax and usage
-      - Understand labeled break and continue for nested loops
-      - Learn to implement clean, controlled iteration constructs
-      - Practice search and filtering algorithms with loop control
-      - Develop skills in complex menu and game loop management
-      - Build confidence in using advanced loop control techniques
-      
-      This comprehensive exercise provides hands-on experience with essential loop control mechanisms in Java!
+      1. Performance Optimization: Find ways to optimize search and filter algorithms
+      2. Memory Management: Implement memory-efficient loop control patterns
+      3. Error Recovery: Add robust error handling to all programs
+      4. User Experience: Create interactive interfaces with better feedback
+      5. Extensibility: Design programs to easily add new control features
     `
   }
 };

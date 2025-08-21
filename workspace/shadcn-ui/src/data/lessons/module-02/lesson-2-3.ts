@@ -592,37 +592,37 @@ public class ForLoopsDemo {
  */`,
     exercise: `
       **🎯 For Loops Practice Exercise**
-      
-      This exercise will help you master for loops through practical application. Complete all parts to solidify your understanding of iteration in Java.
-      
-      **Part 1: Number Patterns (20 minutes)**
+
+      Create programs to practice working with for loops in Java.
+
+      **Part 1: Number Patterns**
       
       Create a program called \`NumberPatterns.java\` that generates various number patterns:
       
-      **Requirements:**
+      Requirements:
       - Generate at least 5 different number patterns (pyramid, diamond, Floyd's triangle, etc.)
       - Use nested for loops for pattern generation
       - Allow user to choose which pattern to display
       - Implement input validation for pattern size
       - Display patterns with proper formatting and alignment
       
-      **Patterns to implement:**
+      Patterns to implement:
       1. Right-angled triangle of numbers
       2. Pyramid of numbers
       3. Diamond pattern
       4. Floyd's triangle
       5. Pascal's triangle (simplified version)
       
-      **Advanced Features:**
+      Advanced Features:
       - Add color coding to patterns using ANSI escape codes
       - Implement animation for pattern drawing
       - Allow customization of pattern characters
-      
-      **Part 2: Array Processing (25 minutes)**
+
+      **Part 2: Array Processing**
       
       Create a program called \`ArrayProcessor.java\` that performs various operations on arrays:
       
-      **Requirements:**
+      Requirements:
       - Create arrays of different data types (int, double, String)
       - Implement methods to find min, max, sum, average
       - Sort arrays using bubble sort or selection sort
@@ -630,80 +630,80 @@ public class ForLoopsDemo {
       - Reverse array elements
       - Remove duplicates from arrays
       
-      **Features to implement:**
+      Features to implement:
       - Use enhanced for-each loops where appropriate
       - Implement error handling for empty arrays
       - Add performance timing for operations
       - Include memory usage optimization techniques
-      
-      **Part 3: Matrix Operations (30 minutes)**
+
+      **Part 3: Matrix Operations**
       
       Create a program called \`MatrixOperations.java\` that performs matrix calculations:
       
-      **Requirements:**
+      Requirements:
       - Implement 2D arrays for matrix representation
       - Perform matrix addition, subtraction, and multiplication
       - Calculate matrix transpose and determinant (2x2 and 3x3)
       - Find row and column sums
       - Implement matrix rotation (90, 180, 270 degrees)
       
-      **Advanced Features:**
+      Advanced Features:
       - Validate matrix dimensions for operations
       - Handle special matrices (identity, zero, diagonal)
       - Implement sparse matrix representation
       - Add matrix input from user or file
-      
-      **Part 4: Statistical Analysis (25 minutes)**
+
+      **Part 4: Statistical Analysis**
       
       Create a program called \`StatisticalAnalyzer.java\` that performs statistical calculations:
       
-      **Requirements:**
+      Requirements:
       - Accept a dataset of numbers (array or list)
       - Calculate mean, median, mode, range, and standard deviation
       - Generate frequency distribution tables
       - Identify outliers in the dataset
       - Create simple histograms using text-based representation
       
-      **Features to implement:**
+      Features to implement:
       - Handle different data types (int, double)
       - Implement data validation and cleaning
       - Add support for weighted averages
       - Include correlation calculation for 2D datasets
-      
-      **Part 5: Prime Number Generator (20 minutes)**
+
+      **Part 5: Prime Number Generator**
       
       Create a program called \`PrimeGenerator.java\` that finds and displays prime numbers:
       
-      **Requirements:**
+      Requirements:
       - Generate prime numbers up to a specified limit
       - Implement the Sieve of Eratosthenes algorithm
       - Check if a specific number is prime
       - Find prime factors of a number
       - Display twin primes within a range
       
-      **Advanced Features:**
+      Advanced Features:
       - Optimize prime checking algorithms
       - Implement segmented sieve for large ranges
       - Add prime counting functions
       - Include primality testing for large numbers
-      
-      **Part 6: Performance Comparison (20 minutes)**
+
+      **Part 6: Performance Comparison**
       
       Create a program called \`LoopPerformanceTest.java\` that compares different loop implementations:
       
-      **Requirements:**
+      Requirements:
       - Compare traditional for loops with enhanced for-each loops
       - Test performance with different data sizes
       - Measure execution time for various operations
       - Analyze memory usage patterns
       - Document findings with charts or tables
       
-      **Features to implement:**
+      Features to implement:
       - Use System.nanoTime() for precise timing
       - Implement multiple test scenarios
       - Add warm-up runs for accurate measurements
       - Generate performance reports
-      
+
       **📋 Deliverables:**
       
       Submit the following files:
@@ -715,7 +715,7 @@ public class ForLoopsDemo {
       6. \`LoopPerformanceTest.java\` - Loop performance comparison
       7. \`README.md\` - Documentation explaining each program
       8. Screenshots of all programs running successfully
-      
+
       **🎯 Success Criteria:**
       
       Your programs should demonstrate:
@@ -726,26 +726,14 @@ public class ForLoopsDemo {
       - ✅ Clean, readable code with appropriate comments
       - ✅ Understanding of loop performance considerations
       - ✅ Application of loops to solve real-world problems
-      
+
       **💡 Bonus Challenges:**
       
-      1. **Algorithm Optimization:** Find ways to optimize loop-based algorithms
-      2. **Memory Management:** Implement memory-efficient loop patterns
-      3. **Error Recovery:** Add robust error handling to all programs
-      4. **User Experience:** Create interactive menus and better user feedback
-      5. **Extensibility:** Design programs to easily add new features
-      
-      **📚 Learning Outcomes:**
-      
-      By completing this exercise, you will:
-      - Master traditional and enhanced for loop syntax
-      - Understand nested loops and their applications
-      - Learn loop control techniques with break and continue
-      - Practice implementing algorithms with loops
-      - Develop skills in performance analysis and optimization
-      - Build confidence in using loops for complex data processing
-      
-      This comprehensive exercise provides hands-on experience with one of Java's most essential programming constructs!
+      1. Algorithm Optimization: Find ways to optimize loop-based algorithms
+      2. Memory Management: Implement memory-efficient loop patterns
+      3. Error Recovery: Add robust error handling to all programs
+      4. User Experience: Create interactive menus and better user feedback
+      5. Extensibility: Design programs to easily add new features
     `
   }
 };
