@@ -335,3 +335,27 @@ export const getModuleProgress = (moduleId: string, completedLessons: string[]):
   
   return Math.round((completedCount / module.lessons.length) * 100);
 };
+
+export const getNextLessonId = (currentLessonId: string): string | null => {
+  // Find current lesson in course structure
+  for (let moduleIndex = 0; moduleIndex < courseModules.length; moduleIndex++) {
+    const module = courseModules[moduleIndex];
+    const lessonIndex = module.lessons.findIndex(lesson => lesson.id === currentLessonId);
+    
+    if (lessonIndex !== -1) {
+      // If there's another lesson in the same module
+      if (lessonIndex < module.lessons.length - 1) {
+        return module.lessons[lessonIndex + 1].id;
+      }
+      // If this is the last lesson in the module, go to first lesson of next module
+      else if (moduleIndex < courseModules.length - 1) {
+        const nextModule = courseModules[moduleIndex + 1];
+        return nextModule.lessons.length > 0 ? nextModule.lessons[0].id : null;
+      }
+      // This is the last lesson in the entire course
+      return null;
+    }
+  }
+  
+  return null;
+};

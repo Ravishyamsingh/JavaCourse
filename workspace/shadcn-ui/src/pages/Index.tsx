@@ -37,6 +37,17 @@ export default function Index() {
     { number: "24/7", label: "Access Available" }
   ];
 
+  const quizTopics = [
+    "Java Fundamentals",
+    "Object-Oriented Programming",
+    "Collections Framework",
+    "Exception Handling",
+    "Multithreading",
+    "Database Connectivity",
+    "Web Development",
+    "Spring Framework"
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -54,6 +65,9 @@ export default function Index() {
             </Button>
             <Button onClick={() => navigate('/dashboard')} variant="outline">
               Dashboard
+            </Button>
+            <Button onClick={() => navigate('/quiz-modules')} variant="outline">
+              Quiz
             </Button>
             <Button onClick={() => navigate('/course')} className="bg-blue-600 hover:bg-blue-700">
               Start Learning
@@ -116,6 +130,122 @@ export default function Index() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Quiz Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Test Your Knowledge
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Challenge yourself with our interactive quizzes and track your progress
+          </p>
+        </div>
+        
+        <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-r from-blue-50 to-purple-50">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="flex items-center justify-center space-x-3">
+              <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                <Star className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">Java Mastery Quiz</div>
+                <div className="text-sm text-gray-600">Test your Java knowledge with interactive quizzes</div>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Quiz Topics</h3>
+                <div className="space-y-3">
+                  {quizTopics.map((topic, index) => (
+                    <div key={index} className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-700">{topic}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col justify-center space-y-6">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">20+</div>
+                  <div className="text-gray-600">Quiz Questions</div>
+                </div>
+                <Button
+                  onClick={() => navigate('/quiz-modules')}
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 py-3"
+                >
+                  <Star className="mr-2 h-5 w-5" />
+                  Start Quiz Now
+                </Button>
+                <p className="text-sm text-gray-500 text-center">
+                  Track your progress and earn achievements
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Features Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Test Your Knowledge
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Challenge yourself with our interactive quizzes and track your progress
+          </p>
+        </div>
+        
+        <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-r from-blue-50 to-purple-50">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="flex items-center justify-center space-x-3">
+              <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                <Star className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">Java Mastery Quiz</div>
+                <div className="text-sm text-gray-600">Test your Java knowledge with interactive quizzes</div>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Quiz Topics</h3>
+                <div className="space-y-3">
+                  {quizTopics.map((topic, index) => (
+                    <div key={index} className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-700">{topic}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col justify-center space-y-6">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">20+</div>
+                  <div className="text-gray-600">Quiz Questions</div>
+                </div>
+                <Button
+                  onClick={() => navigate('/quiz-modules')}
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 py-3"
+                >
+                  <Star className="mr-2 h-5 w-5" />
+                  Start Quiz Now
+                </Button>
+                <p className="text-sm text-gray-500 text-center">
+                  Track your progress and earn achievements
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Features Section */}

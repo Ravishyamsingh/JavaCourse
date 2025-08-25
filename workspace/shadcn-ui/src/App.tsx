@@ -3,12 +3,17 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProgressProvider } from './contexts/ProgressContext';
+import { QuizProvider } from './contexts/QuizContext';
+import { AchievementProvider } from './contexts/AchievementContext';
 import Index from './pages/Index';
 import CourseContent from './pages/CourseContent';
 import LessonDetail from './pages/LessonDetail';
 import Dashboard from './pages/Dashboard';
 import Certificate from './pages/Certificate';
 import ContentTable from './pages/ContentTable';
+import Quiz from './pages/Quiz';
+import QuizModuleSelection from './pages/QuizModuleSelection';
+import QuizResults from './pages/QuizResults';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -16,20 +21,27 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ProgressProvider>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/course" element={<CourseContent />} />
-            <Route path="/lesson/:lessonId" element={<LessonDetail />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/certificate" element={<Certificate />} />
-            <Route path="/content-table" element={<ContentTable />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <QuizProvider>
+        <AchievementProvider>
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/course" element={<CourseContent />} />
+                <Route path="/lesson/:lessonId" element={<LessonDetail />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/certificate" element={<Certificate />} />
+                <Route path="/content-table" element={<ContentTable />} />
+                <Route path="/quiz" element={<Quiz />} />
+                <Route path="/quiz-modules" element={<QuizModuleSelection />} />
+                <Route path="/quiz-results" element={<QuizResults />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AchievementProvider>
+      </QuizProvider>
     </ProgressProvider>
   </QueryClientProvider>
 );
