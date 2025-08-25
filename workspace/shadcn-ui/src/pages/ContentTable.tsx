@@ -164,56 +164,58 @@ export default function ContentTable() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
+                className="text-sm sm:text-base"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
+                <span className="hidden sm:inline">Back to Home</span>
+                <span className="sm:hidden">Back</span>
               </Button>
-              <h1 className="text-2xl font-bold text-gray-900">Course Content Table</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Course Content Table</h1>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-xs sm:text-sm text-gray-600">
               {filteredLessons.length} of {allLessons.length} lessons
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
         {/* Search and Filter */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Search className="h-5 w-5" />
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Search & Filter</span>
             </CardTitle>
-            <CardDescription>Find specific lessons or filter by type</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Find specific lessons or filter by type</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div>
                 <Input
                   placeholder="Search lessons or modules..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
+                  className="w-full text-sm sm:text-base"
                 />
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex flex-wrap gap-2">
                 {lessonTypes.map((type) => (
                   <Button
                     key={type}
                     variant={filterType === type ? "default" : "outline"}
                     size="sm"
                     onClick={() => setFilterType(type)}
-                    className="capitalize"
+                    className="text-xs sm:text-sm capitalize px-2 py-1 sm:px-3 sm:py-1.5"
                   >
-                    <Filter className="h-3 w-3 mr-1" />
+                    <Filter className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                     {type}
                   </Button>
                 ))}
@@ -224,22 +226,22 @@ export default function ContentTable() {
 
         {/* Lessons Table */}
         <Card>
-          <CardHeader>
-            <CardTitle>All Course Lessons</CardTitle>
-            <CardDescription>Complete list of all lessons in the Java Mastery Course</CardDescription>
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg">All Course Lessons</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Complete list of all lessons in the Java Mastery Course</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Lesson</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Module</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Type</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Duration</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Difficulty</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Action</th>
+                    <th className="text-left py-2 px-3 sm:py-3 sm:px-4 font-medium text-gray-700 text-xs sm:text-sm">Status</th>
+                    <th className="text-left py-2 px-3 sm:py-3 sm:px-4 font-medium text-gray-700 text-xs sm:text-sm">Lesson</th>
+                    <th className="text-left py-2 px-3 sm:py-3 sm:px-4 font-medium text-gray-700 text-xs sm:text-sm hidden md:table-cell">Module</th>
+                    <th className="text-left py-2 px-3 sm:py-3 sm:px-4 font-medium text-gray-700 text-xs sm:text-sm">Type</th>
+                    <th className="text-left py-2 px-3 sm:py-3 sm:px-4 font-medium text-gray-700 text-xs sm:text-sm">Duration</th>
+                    <th className="text-left py-2 px-3 sm:py-3 sm:px-4 font-medium text-gray-700 text-xs sm:text-sm hidden sm:table-cell">Difficulty</th>
+                    <th className="text-left py-2 px-3 sm:py-3 sm:px-4 font-medium text-gray-700 text-xs sm:text-sm">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -247,42 +249,43 @@ export default function ContentTable() {
                     const isCompleted = completedLessons.includes(lesson.id);
                     return (
                       <tr key={lesson.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3 sm:py-3 sm:px-4">
                           {isCompleted ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                            <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                           ) : (
-                            <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-gray-300"></div>
                           )}
                         </td>
-                        <td className="py-3 px-4">
-                          <div className="font-medium text-gray-900">{lesson.title}</div>
+                        <td className="py-2 px-3 sm:py-3 sm:px-4">
+                          <div className="font-medium text-gray-900 text-xs sm:text-sm">{lesson.title}</div>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="text-sm text-gray-600">{lesson.module}</span>
+                        <td className="py-2 px-3 sm:py-3 sm:px-4 hidden md:table-cell">
+                          <span className="text-xs text-gray-600">{lesson.module}</span>
                         </td>
-                        <td className="py-3 px-4">
-                          <Badge className={`text-xs ${getBadgeColor(lesson.type)}`}>
+                        <td className="py-2 px-3 sm:py-3 sm:px-4">
+                          <Badge className={`text-[0.6rem] sm:text-xs ${getBadgeColor(lesson.type)}`}>
                             {getIconForType(lesson.type)}
-                            <span className="ml-1 capitalize">{lesson.type}</span>
+                            <span className="ml-1 capitalize hidden sm:inline">{lesson.type}</span>
+                            <span className="ml-1 capitalize sm:hidden">{lesson.type.charAt(0)}</span>
                           </Badge>
                         </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Clock className="h-3 w-3 mr-1" />
+                        <td className="py-2 px-3 sm:py-3 sm:px-4">
+                          <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                             {lesson.duration}
                           </div>
                         </td>
-                        <td className="py-3 px-4">
-                          <Badge className={`text-xs ${getDifficultyColor(lesson.difficulty)}`}>
+                        <td className="py-2 px-3 sm:py-3 sm:px-4 hidden sm:table-cell">
+                          <Badge className={`text-[0.6rem] sm:text-xs ${getDifficultyColor(lesson.difficulty)}`}>
                             {lesson.difficulty}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3 sm:py-3 sm:px-4">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/lesson/${lesson.id}`)}
-                            className="text-blue-600 hover:text-blue-700"
+                            className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm px-2 py-1"
                           >
                             {isCompleted ? 'Review' : 'Start'}
                           </Button>
@@ -297,38 +300,38 @@ export default function ContentTable() {
         </Card>
 
         {/* Summary Stats */}
-        <div className="grid md:grid-cols-4 gap-4 mt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-4 sm:mt-6">
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{allLessons.length}</div>
-              <div className="text-sm text-gray-600">Total Lessons</div>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl font-bold text-blue-600">{allLessons.length}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total Lessons</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl font-bold text-green-600">
                 {allLessons.filter(l => l.type === 'coding').length}
               </div>
-              <div className="text-sm text-gray-600">Coding Exercises</div>
+              <div className="text-xs sm:text-sm text-gray-600">Coding Exercises</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl font-bold text-purple-600">
                 {allLessons.filter(l => l.type === 'project').length}
               </div>
-              <div className="text-sm text-gray-600">Projects</div>
+              <div className="text-xs sm:text-sm text-gray-600">Projects</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl font-bold text-orange-600">
                 {Math.round(allLessons.reduce((total, lesson) => {
                   const minutes = parseInt(lesson.duration);
                   return total + minutes;
                 }, 0) / 60)}h
               </div>
-              <div className="text-sm text-gray-600">Total Duration</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total Duration</div>
             </CardContent>
           </Card>
         </div>

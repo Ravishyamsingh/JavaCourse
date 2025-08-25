@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  Play, 
-  FileText, 
-  Code, 
+import {
+  ArrowLeft,
+  ArrowRight,
+  Play,
+  FileText,
+  Code,
   CheckCircle2,
   BookOpen,
   Lightbulb,
@@ -25,6 +25,7 @@ import {
 import { useProgress } from '@/contexts/ProgressContext';
 import CodeEditor from '@/components/CodeEditor';
 import { lessonsDatabase } from '@/data/lessonsData';
+import { courseModules, getNextLessonId } from '@/data/courseStructure';
 
 export default function LessonDetail() {
   const { lessonId } = useParams();
@@ -57,6 +58,7 @@ public class ComingSoon {
   };
 
   const lesson = getLessonData(lessonId || '');
+  const nextLessonId = getNextLessonId(lessonId || '');
 
   const getIconForType = (type: string) => {
     switch (type) {
@@ -82,58 +84,99 @@ public class ComingSoon {
     }
   };
 
+  const goToNextLesson = () => {
+    if (nextLessonId) {
+      navigate(`/lesson/${nextLessonId}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
       {/* Beautiful Header with Glass Effect */}
       <header className="bg-white/80 backdrop-blur-lg border-b border-white/20 sticky top-0 z-50 shadow-lg">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/course')}
-                className="hover:bg-blue-50/80 transition-all duration-300"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Course
-              </Button>
+        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/course')}
+                  className="hover:bg-blue-50/80 transition-all duration-300"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Back to Course</span>
+                </Button>
+                <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/')}
+                  className="hover:bg-purple-50/80 transition-all duration-300 text-purple-600 hover:text-purple-700"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Java Mastery Course</span>
+                </Button>
+              </div>
               <div>
                 <div className="flex items-center space-x-3 mb-1">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                     {lesson.title}
                   </h1>
                   {isCompleted && (
-                    <div className="flex items-center space-x-1 bg-gradient-to-r from-green-100 to-emerald-100 px-3 py-1 rounded-full">
-                      <Trophy className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-700">Completed</span>
+                    <div className="flex items-center space-x-1 bg-gradient-to-r from-green-100 to-emerald-100 px-2 py-1 rounded-full">
+                      <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+                      <span className="text-xs sm:text-sm font-medium text-green-700">Completed</span>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center space-x-3 text-sm text-gray-600">
+                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600">
                   <span className="flex items-center space-x-1">
-                    <ChevronRight className="h-3 w-3" />
+                    <ChevronRight className="h-2 w-2 sm:h-3 sm:w-3" />
                     <span>{lesson.module}</span>
                   </span>
                   <span className="flex items-center space-x-1">
-                    <Clock className="h-3 w-3" />
+                    <Clock className="h-2 w-2 sm:h-3 sm:w-3" />
                     <span>{lesson.duration}</span>
                   </span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge className={`${getBadgeColor(lesson.type)} border-0 text-sm px-3 py-2 shadow-lg`}>
+            <div className="flex items-center">
+              <Badge className={`${getBadgeColor(lesson.type)} border-0 text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 shadow-lg`}>
                 {getIconForType(lesson.type)}
-                <span className="ml-2 capitalize font-medium">{lesson.type}</span>
+                <span className="ml-1 sm:ml-2 capitalize font-medium">{lesson.type}</span>
               </Badge>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-10">
-        <div className="max-w-5xl mx-auto space-y-8">
+      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-10">
+        <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
+          {/* Navigation Breadcrumb */}
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="hover:bg-blue-50/80 transition-all duration-300 p-1 sm:p-2 h-auto"
+            >
+              Home
+            </Button>
+            <ChevronRight className="h-2 w-2 sm:h-3 sm:w-3" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/course')}
+              className="hover:bg-blue-50/80 transition-all duration-300 p-1 sm:p-2 h-auto"
+            >
+              Course
+            </Button>
+            <ChevronRight className="h-2 w-2 sm:h-3 sm:w-3" />
+            <span className="text-gray-800 font-medium truncate max-w-[150px] sm:max-w-none">{lesson.title}</span>
+          </div>
+
           {/* Beautiful Lesson Overview */}
           <Card className="overflow-hidden border-0 bg-white/70 backdrop-blur-lg shadow-2xl">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/50">
@@ -300,49 +343,55 @@ public class Exercise {
 
           {/* Beautiful Completion Section */}
           <Card className="overflow-hidden border-0 bg-white/70 backdrop-blur-lg shadow-2xl">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between">
+            <CardContent className="p-4 sm:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   {isCompleted ? (
-                    <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                    <div className="flex items-center space-x-3 p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
                       <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
-                        <Trophy className="h-5 w-5 text-white" />
+                        <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                       </div>
                       <div>
-                        <div className="font-bold text-green-800">Congratulations!</div>
-                        <div className="text-sm text-green-600">You've completed this lesson</div>
+                        <div className="font-bold text-green-800 text-sm sm:text-base">Congratulations!</div>
+                        <div className="text-xs sm:text-sm text-green-600">You've completed this lesson</div>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center space-x-3 p-4">
+                    <div className="flex items-center space-x-3 p-3 sm:p-4">
                       <div className="p-2 bg-gradient-to-r from-gray-400 to-gray-500 rounded-lg">
-                        <CheckCircle2 className="h-5 w-5 text-white" />
+                        <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-800">Ready to finish?</div>
-                        <div className="text-sm text-gray-600">Mark this lesson as complete when you're done</div>
+                        <div className="font-medium text-gray-800 text-sm sm:text-base">Ready to finish?</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Mark this lesson as complete when you're done</div>
                       </div>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   {!isCompleted && (
-                    <Button 
-                      onClick={markAsCompleted} 
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-3"
-                      size="lg"
+                    <Button
+                      onClick={markAsCompleted}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
+                      size="sm"
                     >
-                      <Trophy className="h-5 w-5 mr-2" />
+                      <Trophy className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
                       Mark as Complete
                     </Button>
                   )}
-                  <Button 
-                    variant="outline" 
-                    className="border-2 border-blue-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300 transition-all duration-300 px-6 py-3"
-                    size="lg"
+                  <Button
+                    onClick={goToNextLesson}
+                    disabled={!nextLessonId}
+                    variant="outline"
+                    className={`border-2 transition-all duration-300 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base ${
+                      nextLessonId
+                        ? 'border-blue-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300'
+                        : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                    size="sm"
                   >
                     Next Lesson
-                    <ChevronRight className="h-5 w-5 ml-2" />
+                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2" />
                   </Button>
                 </div>
               </div>

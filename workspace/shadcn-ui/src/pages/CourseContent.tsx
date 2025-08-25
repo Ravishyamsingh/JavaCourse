@@ -49,10 +49,15 @@ export default function CourseContent() {
                 Back to Home
               </Button>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  Java Mastery Course
-                </h1>
-                <p className="text-sm text-gray-600 mt-1">Complete Java programming course from basics to advanced</p>
+                <button
+                  onClick={() => navigate('/')}
+                  className="text-left hover:opacity-80 transition-opacity duration-300 group"
+                >
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:via-blue-600 group-hover:to-indigo-600 transition-all duration-300">
+                    Java Mastery Course
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">Complete Java programming course from basics to advanced</p>
+                </button>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -67,6 +72,15 @@ export default function CourseContent() {
                   {Math.round(progressPercentage)}%
                 </div>
               </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                onClick={() => navigate('/quiz-modules')}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                <Star className="mr-2 h-4 w-4" />
+                Take Quiz
+              </Button>
             </div>
           </div>
         </div>
