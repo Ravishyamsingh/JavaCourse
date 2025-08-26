@@ -1,14 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  BookOpen, 
-  Star, 
+import {
+  BookOpen,
+  Star,
   ChevronRight,
   Clock,
   Trophy
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { quizQuestions } from '@/data/quizData';
+import UserProfile from '@/components/UserProfile';
 
 export default function QuizModuleSelection() {
   const navigate = useNavigate();
@@ -36,9 +37,12 @@ export default function QuizModuleSelection() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Java Mastery Quiz</h1>
           </div>
-          <Button onClick={() => navigate('/')} variant="outline">
-            Back to Home
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button onClick={() => navigate('/')} variant="outline">
+              Back to Home
+            </Button>
+            <UserProfile />
+          </div>
         </div>
       </header>
 

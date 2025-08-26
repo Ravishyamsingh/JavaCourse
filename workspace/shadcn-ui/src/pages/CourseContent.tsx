@@ -2,10 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BookOpen, 
-  Code, 
-  Clock, 
+import {
+  BookOpen,
+  Code,
+  Clock,
   ArrowLeft,
   Users,
   Award,
@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProgress } from '@/contexts/ProgressContext';
 import { courseModules, getTotalLessonsCount } from '@/data/courseStructure';
 import ModuleCard from '@/components/common/ModuleCard';
+import UserProfile from '@/components/UserProfile';
 
 export default function CourseContent() {
   const navigate = useNavigate();
@@ -81,6 +82,7 @@ export default function CourseContent() {
                 <Star className="mr-2 h-4 w-4" />
                 Take Quiz
               </Button>
+              <UserProfile />
             </div>
           </div>
         </div>

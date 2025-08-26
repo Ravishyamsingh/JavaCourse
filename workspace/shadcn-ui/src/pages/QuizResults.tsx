@@ -2,16 +2,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Star, 
-  Trophy, 
-  RotateCcw, 
-  BookOpen, 
+import {
+  Star,
+  Trophy,
+  RotateCcw,
+  BookOpen,
   Clock,
   Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/contexts/QuizContext';
+import UserProfile from '@/components/UserProfile';
 
 export default function QuizResults() {
   const navigate = useNavigate();
@@ -46,9 +47,12 @@ export default function QuizResults() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Quiz Results</h1>
           </div>
-          <Button onClick={() => navigate('/')} variant="outline">
-            Back to Home
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button onClick={() => navigate('/')} variant="outline">
+              Back to Home
+            </Button>
+            <UserProfile />
+          </div>
         </div>
       </header>
 

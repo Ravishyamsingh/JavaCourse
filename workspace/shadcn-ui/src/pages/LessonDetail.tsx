@@ -26,6 +26,7 @@ import { useProgress } from '@/contexts/ProgressContext';
 import CodeEditor from '@/components/CodeEditor';
 import { lessonsDatabase } from '@/data/lessonsData';
 import { courseModules, getNextLessonId } from '@/data/courseStructure';
+import UserProfile from '@/components/UserProfile';
 
 export default function LessonDetail() {
   const { lessonId } = useParams();
@@ -142,11 +143,12 @@ public class ComingSoon {
                 </div>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
               <Badge className={`${getBadgeColor(lesson.type)} border-0 text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 shadow-lg`}>
                 {getIconForType(lesson.type)}
                 <span className="ml-1 sm:ml-2 capitalize font-medium">{lesson.type}</span>
               </Badge>
+              <UserProfile />
             </div>
           </div>
         </div>
