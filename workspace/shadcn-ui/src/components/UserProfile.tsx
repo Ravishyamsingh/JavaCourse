@@ -9,15 +9,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Settings, LogOut, Trophy, BookOpen, Edit } from 'lucide-react';
+import { User, Settings, LogOut, Trophy, BookOpen, Edit, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ProfileEditDialog from './ProfileEditDialog';
+import ProgressResetDialog from './ProgressResetDialog';
 
 const UserProfile: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -96,6 +98,10 @@ const UserProfile: React.FC = () => {
           <Edit className="mr-2 h-4 w-4" />
           <span>Edit Profile</span>
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsResetDialogOpen(true)}>
+          <RotateCcw className="mr-2 h-4 w-4" />
+          <span>Reset Progress</span>
+        </DropdownMenuItem>
         <DropdownMenuItem>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
@@ -110,6 +116,10 @@ const UserProfile: React.FC = () => {
       <ProfileEditDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
+      />
+      <ProgressResetDialog
+        open={isResetDialogOpen}
+        onOpenChange={setIsResetDialogOpen}
       />
     </DropdownMenu>
   );
