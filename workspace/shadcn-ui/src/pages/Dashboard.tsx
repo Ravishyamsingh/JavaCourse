@@ -26,6 +26,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useProgress } from '@/contexts/ProgressContext';
 import { useAchievements } from '@/contexts/AchievementContext';
+import UserProfile from '@/components/UserProfile';
 
 // Import new dashboard components
 import StatsCards from '@/components/dashboard/StatsCards';
@@ -191,12 +192,7 @@ export default function Dashboard() {
                 </button>
               </div>
             </div>
-            <div className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 sm:px-4 sm:py-2 rounded-full">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-              </div>
-              <span className="text-xs sm:text-sm font-medium text-gray-700">Welcome back, Student!</span>
-            </div>
+            <UserProfile />
           </div>
         </div>
       </header>

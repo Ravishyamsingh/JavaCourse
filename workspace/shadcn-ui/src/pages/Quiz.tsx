@@ -18,6 +18,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { quizQuestions } from '@/data/quizData';
 import { useQuiz } from '@/contexts/QuizContext';
+import UserProfile from '@/components/UserProfile';
 
 export default function Quiz() {
   const navigate = useNavigate();
@@ -91,9 +92,12 @@ export default function Quiz() {
               </div>
               <h1 className="text-2xl font-bold text-gray-900">Java Mastery Quiz</h1>
             </div>
-            <Button onClick={() => navigate('/')} variant="outline">
-              Back to Home
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button onClick={() => navigate('/')} variant="outline">
+                Back to Home
+              </Button>
+              <UserProfile />
+            </div>
           </div>
         </header>
 
@@ -189,9 +193,12 @@ export default function Quiz() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Java Mastery Quiz</h1>
           </div>
-          <Button onClick={() => navigate('/')} variant="outline">
-            Back to Home
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button onClick={() => navigate('/')} variant="outline">
+              Back to Home
+            </Button>
+            <UserProfile />
+          </div>
         </div>
       </header>
 

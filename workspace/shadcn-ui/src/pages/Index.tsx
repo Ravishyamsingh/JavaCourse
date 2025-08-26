@@ -1,11 +1,22 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Code, Users, Award, Clock, Star } from 'lucide-react';
+import { BookOpen, Code, Users, Award, Clock, Star, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Index() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const features = [
     {
@@ -60,18 +71,35 @@ export default function Index() {
             <h1 className="text-2xl font-bold text-gray-900">Java Mastery</h1>
           </div>
           <div className="flex items-center space-x-2">
-            <Button onClick={() => navigate('/content-table')} variant="outline">
-              Content Table
-            </Button>
-            <Button onClick={() => navigate('/dashboard')} variant="outline">
-              Dashboard
-            </Button>
-            <Button onClick={() => navigate('/quiz-modules')} variant="outline">
-              Quiz
-            </Button>
-            <Button onClick={() => navigate('/course')} className="bg-blue-600 hover:bg-blue-700">
-              Start Learning
-            </Button>
+            {user ? (
+              <>
+                <Button onClick={() => navigate('/content-table')} variant="outline">
+                  Content Table
+                </Button>
+                <Button onClick={() => navigate('/dashboard')} variant="outline">
+                  Dashboard
+                </Button>
+                <Button onClick={() => navigate('/quiz-modules')} variant="outline">
+                  Quiz
+                </Button>
+                <Button onClick={() => navigate('/course')} className="bg-blue-600 hover:bg-blue-700">
+                  Start Learning
+                </Button>
+                <Button onClick={handleLogout} variant="outline">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={() => navigate('/login')} variant="outline">
+                  Login
+                </Button>
+                <Button onClick={() => navigate('/signup')} className="bg-blue-600 hover:bg-blue-700">
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -94,22 +122,45 @@ export default function Index() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-            <Button 
-              onClick={() => navigate('/course')} 
-              size="lg" 
-              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3"
-            >
-              <BookOpen className="mr-2 h-5 w-5" />
-              Start Course Now
-            </Button>
-            <Button 
-              onClick={() => navigate('/dashboard')} 
-              size="lg" 
-              variant="outline"
-              className="text-lg px-8 py-3"
-            >
-              Dashboard
-            </Button>
+            {user ? (
+              <>
+                <Button
+                  onClick={() => navigate('/course')}
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3"
+                >
+                  <BookOpen className="mr-2 h-5 w-5" />
+                  Start Course Now
+                </Button>
+                <Button
+                  onClick={() => navigate('/dashboard')}
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 py-3"
+                >
+                  Dashboard
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => navigate('/login')}
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3"
+                >
+                  <BookOpen className="mr-2 h-5 w-5" />
+                  Login to Start
+                </Button>
+                <Button
+                  onClick={() => navigate('/signup')}
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 py-3"
+                >
+                  Create Account
+                </Button>
+              </>
+            )}
             <div className="flex items-center text-sm text-gray-500">
               <Clock className="h-4 w-4 mr-1" />
               Self-paced learning
@@ -323,13 +374,13 @@ export default function Index() {
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Join thousands of students who have successfully learned Java programming with our course
           </p>
-          <Button 
-            onClick={() => navigate('/course')}
+          <Button
+            onClick={() => user ? navigate('/course') : navigate('/login')}
             size="lg"
             variant="secondary"
             className="text-lg px-8 py-3"
           >
-            Begin Learning Today
+            {user ? 'Begin Learning Today' : 'Login to Start Learning'}
           </Button>
         </div>
       </section>

@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProgressProvider } from './contexts/ProgressContext';
 import { QuizProvider } from './contexts/QuizContext';
 import { AchievementProvider } from './contexts/AchievementContext';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Index from './pages/Index';
 import CourseContent from './pages/CourseContent';
 import LessonDetail from './pages/LessonDetail';
@@ -15,34 +17,40 @@ import Quiz from './pages/Quiz';
 import QuizModuleSelection from './pages/QuizModuleSelection';
 import QuizResults from './pages/QuizResults';
 import NotFound from './pages/NotFound';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ProgressProvider>
-      <QuizProvider>
-        <AchievementProvider>
-          <TooltipProvider>
-            <Toaster />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/course" element={<CourseContent />} />
-                <Route path="/lesson/:lessonId" element={<LessonDetail />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/certificate" element={<Certificate />} />
-                <Route path="/content-table" element={<ContentTable />} />
-                <Route path="/quiz" element={<Quiz />} />
-                <Route path="/quiz-modules" element={<QuizModuleSelection />} />
-                <Route path="/quiz-results" element={<QuizResults />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AchievementProvider>
-      </QuizProvider>
-    </ProgressProvider>
+    <AuthProvider>
+      <ProgressProvider>
+        <QuizProvider>
+          <AchievementProvider>
+            <TooltipProvider>
+              <Toaster />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/course" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
+                  <Route path="/lesson/:lessonId" element={<ProtectedRoute><LessonDetail /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/certificate" element={<ProtectedRoute><Certificate /></ProtectedRoute>} />
+                  <Route path="/content-table" element={<ProtectedRoute><ContentTable /></ProtectedRoute>} />
+                  <Route path="/quiz" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
+                  <Route path="/quiz-modules" element={<ProtectedRoute><QuizModuleSelection /></ProtectedRoute>} />
+                  <Route path="/quiz-results" element={<ProtectedRoute><QuizResults /></ProtectedRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </AchievementProvider>
+        </QuizProvider>
+      </ProgressProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
