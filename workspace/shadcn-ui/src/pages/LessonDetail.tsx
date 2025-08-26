@@ -27,12 +27,16 @@ import CodeEditor from '@/components/CodeEditor';
 import { lessonsDatabase } from '@/data/lessonsData';
 import { courseModules, getNextLessonId } from '@/data/courseStructure';
 import UserProfile from '@/components/UserProfile';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
 export default function LessonDetail() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const { markLessonComplete, isLessonCompleted } = useProgress();
+  
+  // Scroll to top when component mounts or lesson changes
+  useScrollToTop();
   
   const isCompleted = isLessonCompleted(lessonId || '');
 
@@ -116,7 +120,7 @@ public class ComingSoon {
                   className="hover:bg-purple-50/80 transition-all duration-300 text-purple-600 hover:text-purple-700"
                 >
                   <BookOpen className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Java Mastery Course</span>
+                  <span className="hidden sm:inline">Home</span>
                 </Button>
               </div>
               <div>
@@ -173,7 +177,7 @@ public class ComingSoon {
               onClick={() => navigate('/course')}
               className="hover:bg-blue-50/80 transition-all duration-300 p-1 sm:p-2 h-auto"
             >
-              Course
+              Course Modules
             </Button>
             <ChevronRight className="h-2 w-2 sm:h-3 sm:w-3" />
             <span className="text-gray-800 font-medium truncate max-w-[150px] sm:max-w-none">{lesson.title}</span>

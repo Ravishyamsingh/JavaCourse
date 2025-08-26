@@ -18,6 +18,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/contexts/QuizContext';
 import UserProfile from '@/components/UserProfile';
+import BackButton from '@/components/BackButton';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
 export default function QuizResults() {
   const navigate = useNavigate();
@@ -29,6 +31,9 @@ export default function QuizResults() {
     clearQuizHistory,
     getModulePerformance
   } = useQuiz();
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
   
   const score = getQuizScore();
   const totalQuestions = quizResults.length;
@@ -101,6 +106,9 @@ export default function QuizResults() {
 
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <BackButton to="/quiz-modules" label="Back to Quiz Selection" />
+          </div>
           {/* Current Session Results */}
           {totalQuestions > 0 && (
             <Card className="mb-8 border-0 shadow-xl bg-white/80 backdrop-blur-lg">

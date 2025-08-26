@@ -22,6 +22,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuiz } from '@/contexts/QuizContext';
 import { DynamicQuizQuestion } from '@/data/dynamicQuizGenerator';
 import UserProfile from '@/components/UserProfile';
+import BackButton from '@/components/BackButton';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
 export default function Quiz() {
   const navigate = useNavigate();
@@ -37,6 +39,9 @@ export default function Quiz() {
     currentQuestions,
     getRecommendedDifficulty
   } = useQuiz();
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
   
   // Get URL parameters
   const urlParams = new URLSearchParams(location.search);
@@ -261,6 +266,9 @@ export default function Quiz() {
       </header>
 
       <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto mb-6">
+          <BackButton to="/quiz-modules" label="Back to Quiz Selection" />
+        </div>
         <Card className="max-w-2xl mx-auto border-0 shadow-xl bg-white/80 backdrop-blur-lg">
           <CardHeader className="pb-6">
             <div className="flex justify-between items-center mb-4">

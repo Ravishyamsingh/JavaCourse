@@ -17,10 +17,15 @@ import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/contexts/QuizContext';
 import { dynamicQuizGenerator } from '@/data/dynamicQuizGenerator';
 import UserProfile from '@/components/UserProfile';
+import BackButton from '@/components/BackButton';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
 export default function QuizModuleSelection() {
   const navigate = useNavigate();
   const { getQuizStats, getModulePerformance, getRecommendedDifficulty } = useQuiz();
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
   
   // Get available modules from dynamic quiz generator
   const availableModules = dynamicQuizGenerator.getAvailableModules();
@@ -61,6 +66,9 @@ export default function QuizModuleSelection() {
 
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <BackButton to="/course" label="Back to Course" />
+          </div>
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Dynamic Quiz System
