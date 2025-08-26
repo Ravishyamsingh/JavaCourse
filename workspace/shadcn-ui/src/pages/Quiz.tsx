@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -13,43 +13,86 @@ import {
   CheckCircle2,
   XCircle,
   ChevronRight,
-  RotateCcw
+  RotateCcw,
+  Brain,
+  Target,
+  Zap
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { quizQuestions } from '@/data/quizData';
 import { useQuiz } from '@/contexts/QuizContext';
+import { DynamicQuizQuestion } from '@/data/dynamicQuizGenerator';
 import UserProfile from '@/components/UserProfile';
 
 export default function Quiz() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addQuizResult, resetQuiz, quizResults, getQuizScore } = useQuiz();
+  const {
+    addQuizResult,
+    resetQuiz,
+    quizResults,
+    getQuizScore,
+    generateQuiz,
+    startQuizSession,
+    endQuizSession,
+    currentQuestions,
+    getRecommendedDifficulty
+  } = useQuiz();
   
-  // Get module params
+  // Get URL parameters
   const urlParams = new URLSearchParams(location.search);
   const moduleParam = urlParams.get('module');
+  const difficultyParam = urlParams.get('difficulty') as 'easy' | 'medium' | 'hard' | null;
+  const countParam = parseInt(urlParams.get('count') || '10');
+  const adaptiveParam = urlParams.get('adaptive') === 'true';
   
-  // Filter questions by module if specified
-  const quizData = moduleParam
-    ? quizQuestions.filter(q => q.module === decodeURIComponent(moduleParam))
-    : quizQuestions;
-  
+  const [quizData, setQuizData] = useState<DynamicQuizQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [quizStartTime, setQuizStartTime] = useState<Date | null>(null);
+
+  // Initialize quiz on component mount
+  useEffect(() => {
+    initializeQuiz();
+  }, [moduleParam, difficultyParam, countParam, adaptiveParam]);
+
+  const initializeQuiz = () => {
+    const questions = generateQuiz({
+      module: moduleParam ? decodeURIComponent(moduleParam) : undefined,
+      difficulty: difficultyParam || undefined,
+      count: countParam,
+      adaptive: adaptiveParam
+    });
+
+    setQuizData(questions);
+    startQuizSession(questions, {
+      module: moduleParam ? decodeURIComponent(moduleParam) : undefined,
+      difficulty: difficultyParam || undefined
+    });
+    setQuizStartTime(new Date());
+    setCurrentQuestion(0);
+    setSelectedOption(null);
+    setShowResult(false);
+  };
 
   const handleSelectOption = (optionIndex: number) => {
     setSelectedOption(optionIndex);
   };
 
   const handleNextQuestion = () => {
-    if (selectedOption === null) return;
+    if (selectedOption === null || !quizData.length) return;
 
-    const isCorrect = selectedOption === quizData[currentQuestion].correctAnswer;
+    const currentQ = quizData[currentQuestion];
+    const isCorrect = selectedOption === currentQ.correctAnswer;
+    const timeSpent = quizStartTime ? (Date.now() - quizStartTime.getTime()) / 1000 : 0;
+    
     const newAnswer = {
-      questionId: quizData[currentQuestion].id,
+      questionId: currentQ.id,
       selected: selectedOption,
-      isCorrect
+      isCorrect,
+      difficulty: currentQ.difficulty,
+      module: currentQ.module,
+      timeSpent
     };
 
     addQuizResult(newAnswer);
@@ -57,7 +100,9 @@ export default function Quiz() {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedOption(null);
+      setQuizStartTime(new Date()); // Reset timer for next question
     } else {
+      endQuizSession();
       setShowResult(true);
       // Navigate to results page after a short delay
       setTimeout(() => {
@@ -68,13 +113,26 @@ export default function Quiz() {
 
   const handleRestartQuiz = () => {
     resetQuiz();
-    setCurrentQuestion(0);
-    setSelectedOption(null);
-    setShowResult(false);
+    initializeQuiz();
   };
 
   const score = getQuizScore();
-  const progress = ((currentQuestion) / quizData.length) * 100;
+  const progress = quizData.length > 0 ? ((currentQuestion) / quizData.length) * 100 : 0;
+
+  // Show loading state if quiz data is not ready
+  if (quizData.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <Card className="max-w-md mx-auto border-0 shadow-xl bg-white/80 backdrop-blur-lg">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Generating Quiz Questions</h3>
+            <p className="text-gray-600">Please wait while we prepare your personalized quiz...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (showResult) {
     const percentage = (score / quizData.length) * 100;
@@ -206,9 +264,20 @@ export default function Quiz() {
         <Card className="max-w-2xl mx-auto border-0 shadow-xl bg-white/80 backdrop-blur-lg">
           <CardHeader className="pb-6">
             <div className="flex justify-between items-center mb-4">
-              <Badge className="bg-blue-100 text-blue-800">
-                Question {currentQuestion + 1} of {quizData.length}
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge className="bg-blue-100 text-blue-800">
+                  Question {currentQuestion + 1} of {quizData.length}
+                </Badge>
+                <Badge
+                  className={`${
+                    quizData[currentQuestion]?.difficulty === 'easy' ? 'bg-green-100 text-green-800' :
+                    quizData[currentQuestion]?.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {quizData[currentQuestion]?.difficulty?.toUpperCase()}
+                </Badge>
+              </div>
               <div className="text-sm font-medium text-gray-600">
                 Score: {score}/{quizData.length}
               </div>
@@ -219,15 +288,21 @@ export default function Quiz() {
             <div>
               <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                 <BookOpen className="h-4 w-4" />
-                <span>{quizData[currentQuestion].module}</span>
+                <span>{quizData[currentQuestion]?.module}</span>
+                {quizData[currentQuestion]?.lesson && (
+                  <>
+                    <span>•</span>
+                    <span>{quizData[currentQuestion].lesson}</span>
+                  </>
+                )}
               </div>
               <h3 className="text-xl font-bold text-gray-900">
-                {quizData[currentQuestion].question}
+                {quizData[currentQuestion]?.question}
               </h3>
             </div>
 
             <div className="space-y-3">
-              {quizData[currentQuestion].options.map((option, index) => (
+              {quizData[currentQuestion]?.options.map((option, index) => (
                 <button
                   key={index}
                   onClick={() => handleSelectOption(index)}
