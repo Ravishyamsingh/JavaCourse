@@ -21,10 +21,14 @@ import { useProgress } from '@/contexts/ProgressContext';
 import { courseModules, getTotalLessonsCount } from '@/data/courseStructure';
 import ModuleCard from '@/components/common/ModuleCard';
 import UserProfile from '@/components/UserProfile';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
 export default function CourseContent() {
   const navigate = useNavigate();
   const { completedLessons, getProgressPercentage } = useProgress();
+
+  // Scroll to top when component mounts
+  useScrollToTop();
 
   const totalLessons = getTotalLessonsCount();
   const progressPercentage = getProgressPercentage();
