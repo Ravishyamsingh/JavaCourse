@@ -12,6 +12,7 @@ interface ProgressContextType {
   studyStreak: number;
   totalStudyTime: number;
   updateStudyTime: (minutes: number) => void;
+  resetProgress: () => void;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -219,6 +220,19 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setTotalStudyTime(prev => prev + (minutes / 60));
   };
 
+  const resetProgress = () => {
+    // Reset all progress data
+    setCompletedLessons([]);
+    setStudyStreak(1);
+    setTotalStudyTime(0);
+    
+    // Clear localStorage
+    localStorage.removeItem('course-progress');
+    localStorage.removeItem('study-time');
+    localStorage.removeItem('study-streak');
+    localStorage.removeItem('last-completion-date');
+  };
+
   const value: ProgressContextType = {
     completedLessons,
     markLessonComplete,
@@ -229,7 +243,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     getModuleProgress: getModuleProgressValue,
     studyStreak,
     totalStudyTime,
-    updateStudyTime
+    updateStudyTime,
+    resetProgress
   };
 
   return (
