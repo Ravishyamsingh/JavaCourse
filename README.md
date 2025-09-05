@@ -1,21 +1,23 @@
 # Java Course Website
 
-A comprehensive Java learning platform with course content, quizzes, and CMS functionality.
+A comprehensive Java learning platform with modern full-stack architecture, user authentication, and course management system.
 
-## Project Structure
+## 🚀 **Features**
 
-- `backend/` - Node.js backend API with MongoDB
-- `workspace/shadcn-ui/` - React frontend with TypeScript and shadcn/ui components
-- `build/` - Compiled frontend assets
+- **Full-Stack Application:** React + TypeScript frontend, Node.js + Express backend
+- **User Authentication:** Google OAuth + JWT with role-based access control
+- **Course Management:** Interactive lessons, quizzes, and progress tracking
+- **Modern UI:** shadcn/ui components with Tailwind CSS
+- **Database:** MongoDB with cloud deployment ready
+- **Security:** CORS, rate limiting, input validation, RBAC
 
-## Technology Stack
+## 🛠️ **Technology Stack**
 
 ### Frontend
 - React 18 with TypeScript
 - Vite build tool
-- shadcn/ui components with Tailwind CSS
+- shadcn/ui + Tailwind CSS
 - React Router for navigation
-- Axios for API requests
 
 ### Backend
 - Node.js with Express
@@ -24,62 +26,90 @@ A comprehensive Java learning platform with course content, quizzes, and CMS fun
 - Google OAuth 2.0 integration
 - JWT for session management
 
-## Setup Instructions
+## 📋 **Quick Setup**
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB database
-- Google OAuth credentials (for Google Sign-in)
+- Node.js (v18+)
+- MongoDB Atlas account (free)
+- Google OAuth credentials
 
-### Backend Setup
-1. Navigate to the `backend/` directory
-2. Run `npm install` to install dependencies
-3. Create a `.env` file based on `.env.sample`
-4. Run `npm start` to start the development server
+### Installation
 
-### Frontend Setup
-1. Navigate to the `workspace/shadcn-ui/` directory
-2. Run `pnpm install` to install dependencies
-3. Create a `.env` file based on `.env.example`
-4. Run `pnpm dev` to start the development server
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Ravishyamsingh/JavaCourse.git
+   cd JavaCourse
+   ```
 
-## Deployment
+2. **Backend Setup**
+   ```bash
+   cd backend
+   npm install
+   cp .env.example .env
+   # Configure your environment variables in .env
+   npm start
+   ```
 
-### Backend Deployment
-- Use PM2 for process management
-- Configure environment variables for production
-- Set up MongoDB connection for production
+3. **Frontend Setup**
+   ```bash
+   cd workspace/shadcn-ui
+   npm install
+   cp .env.example .env
+   # Configure your environment variables in .env
+   npm run dev
+   ```
 
-### Frontend Deployment
-- Build the project with `pnpm build`
-- Serve the `dist/` folder using a web server like Nginx
+## 🌐 **Deployment**
 
-## Environment Variables
+### Database Setup
+- Follow `MONGODB_DEPLOYMENT_GUIDE.md` for MongoDB Atlas setup
+
+### Production Deployment
+- See `PRODUCTION_DEPLOYMENT_GUIDE.md` for complete deployment instructions
+- Supports Vercel, Netlify, Railway, Render, and other platforms
+
+## 🔐 **Environment Variables**
 
 ### Backend (.env)
-- PORT - Server port (default: 3000)
-- MONGODB_URI - MongoDB connection string
-- JWT_SECRET - Secret for JWT token signing
-- GOOGLE_CLIENT_ID - Google OAuth client ID
-- GOOGLE_CLIENT_SECRET - Google OAuth client secret
-- GOOGLE_CALLBACK_URL - Google OAuth callback URL
-- FRONTEND_URL - URL of the frontend application
+```bash
+NODE_ENV=production
+MONGO_URL=your_mongodb_atlas_connection_string
+JWT_ACCESS_SECRET=your_jwt_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
 
 ### Frontend (.env)
-- VITE_API_URL - Backend API URL
-- VITE_GOOGLE_CLIENT_ID - Google OAuth client ID
+```bash
+VITE_API_URL=your_backend_api_url
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
 
-## Scripts
+## 📚 **Course Features**
 
-### Backend
-- `npm start` - Start development server with nodemon
-- `npm run prod` - Start production server
-- `npm run pm2:start` - Start with PM2
-- `npm run pm2:stop` - Stop PM2 process
-- `npm run pm2:restart` - Restart PM2 process
-- `npm run create-admin` - Create admin user
+- **Interactive Lessons:** Step-by-step Java programming tutorials
+- **Code Examples:** Practical coding exercises and examples
+- **Quizzes:** Knowledge assessment with instant feedback
+- **Progress Tracking:** Monitor learning progress and achievements
+- **User Roles:** Student, instructor, and admin access levels
 
-### Frontend
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm preview` - Preview production build
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👤 **Author**
+
+**Ravi Shyam Singh**
+- GitHub: [@Ravishyamsingh](https://github.com/Ravishyamsingh)
+
+---
+
+⭐ **Star this repository if it helped you!**
