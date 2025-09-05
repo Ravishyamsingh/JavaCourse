@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background-color: #f8fff8; }
+        .error { border-color: #f44336; background-color: #fff8f8; }
+        .warning { border-color: #ff9800; background-color: #fffaf0; }
+        .info { border-color: #2196F3; background-color: #f0f8ff; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        button:disabled { background: #cccccc; cursor: not-allowed; }
+        .log {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.pass { background: #4CAF50; color: white; }
+        .status.fail { background: #f44336; color: white; }
+        .status.pending { background: #ff9800; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Google OAuth Connection Test</h1>
+        <p>This tool helps diagnose Google OAuth authentication issues between frontend and backend.</p>
+
+        <!-- Environment Check -->
+        <div class="test-section info">
+            <h3>📋 Environment Configuration</h3>
+            <div id="env-check">
+                <p>🔄 Checking environment variables...</p>
+            </div>
+        </div>
+
+        <!-- Backend Connectivity -->
+        <div class="test-section info">
+            <h3>🌐 Backend Connectivity</h3>
+            <button onclick="testBackendHealth()">Test Backend Connection</button>
+            <div id="backend-status">
+                <span class="status pending">PENDING</span> Backend connection not tested
+            </div>
+            <div id="backend-log" class="log" style="display: none;"></div>
+        </div>
+
+        <!-- Google OAuth Endpoint -->
+        <div class="test-section info">
+            <h3>🔐 Google OAuth Endpoint</h3>
+            <button onclick="testOAuthEndpoint()">Test OAuth Endpoint</button>
+            <div id="oauth-status">
+                <span class="status pending">PENDING</span> OAuth endpoint not tested
+            </div>
+            <div id="oauth-log" class="log" style="display: none;"></div>
+        </div>
+
+        <!-- Google Identity Services -->
+        <div class="test-section info">
+            <h3>🎫 Google Identity Services</h3>
+            <button onclick="testGoogleServices()">Test Google Services</button>
+            <div id="google-status">
+                <span class="status pending">PENDING</span> Google services not tested
+            </div>
+            <div id="google-log" class="log" style="display: none;"></div>
+        </div>
+
+        <!-- Full OAuth Flow Test -->
+        <div class="test-section warning">
+            <h3>🚀 Full OAuth Flow Test</h3>
+            <p><strong>Note:</strong> This will attempt a real Google OAuth login.</p>
+            <button onclick="testFullOAuthFlow()" id="oauth-test-btn">Test Complete Flow</button>
+            <div id="flow-status">
+                <span class="status pending">PENDING</span> Full flow not tested
+            </div>
+            <div id="flow-log" class="log" style="display: none;"></div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="test-section" id="results-summary" style="display: none;">
+            <h3>📊 Test Results Summary</h3>
+            <div id="summary-content"></div>
+        </div>
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8000';
+        const GOOGLE_CLIENT_ID = '21858022853-hn264ot2amaurp9ms4hof7kutgsr2ru0.apps.googleusercontent.com';
+        
+        let testResults = {
+            environment: false,
+            backend: false,
+            oauth: false,
+            google: false,
+            fullFlow: false
+        };
+
+        // Initialize environment check
+        document.addEventListener('DOMContentLoaded', function() {
+            checkEnvironment();
+        });
+
+        function checkEnvironment() {
+            const envDiv = document.getElementById('env-check');
+            let envHtml = '';
+            
+            envHtml += `<p>🔧 API Base URL: <code>${API_BASE_URL}</code></p>`;
+            envHtml += `<p>🔑 Google Client ID: <code>${GOOGLE_CLIENT_ID}</code></p>`;
+            
+            if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_ID !== 'your-google-client-id.apps.googleusercontent.com') {
+                envHtml += `<p><span class="status pass">PASS</span> Google Client ID configured</p>`;
+                testResults.environment = true;
+            } else {
+                envHtml += `<p><span class="status fail">FAIL</span> Google Client ID not configured</p>`;
+            }
+            
+            envDiv.innerHTML = envHtml;
+        }
+
+        async function testBackendHealth() {
+            const statusDiv = document.getElementById('backend-status');
+            const logDiv = document.getElementById('backend-log');
+            
+            statusDiv.innerHTML = '<span class="status pending">TESTING</span> Checking backend connection...';
+            logDiv.style.display = 'block';
+            logDiv.textContent = 'Connecting to backend...\n';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                logDiv.textContent += `✅ Response Status: ${response.status}\n`;
+                logDiv.textContent += `📊 Response Data: ${JSON.stringify(data, null, 2)}\n`;
+                
+                if (response.ok && data.status === 'OK') {
+                    statusDiv.innerHTML = '<span class="status pass">PASS</span> Backend is running and accessible';
+                    testResults.backend = true;
+                } else {
+                    statusDiv.innerHTML = '<span class="status fail">FAIL</span> Backend responded but with errors';
+                }
+            } catch (error) {
+                logDiv.textContent += `❌ Connection Error: ${error.message}\n`;
+                statusDiv.innerHTML = '<span class="status fail">FAIL</span> Cannot connect to backend';
+                testResults.backend = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function testOAuthEndpoint() {
+            const statusDiv = document.getElementById('oauth-status');
+            const logDiv = document.getElementById('oauth-log');
+            
+            statusDiv.innerHTML = '<span class="status pending">TESTING</span> Testing OAuth endpoint...';
+            logDiv.style.display = 'block';
+            logDiv.textContent = 'Testing OAuth endpoint with dummy token...\n';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: 'dummy-token-for-testing' })
+                });
+                
+                const data = await response.json();
+                
+                logDiv.textContent += `📍 Request URL: ${API_BASE_URL}/api/auth/google\n`;
+                logDiv.textContent += `📊 Response Status: ${response.status}\n`;
+                logDiv.textContent += `📊 Response Data: ${JSON.stringify(data, null, 2)}\n`;
+                
+                if (response.status === 401 && data.message && data.message.includes('Invalid Google token')) {
+                    statusDiv.innerHTML = '<span class="status pass">PASS</span> OAuth endpoint exists and responds correctly';
+                    testResults.oauth = true;
+                } else if (response.status === 404) {
+                    statusDiv.innerHTML = '<span class="status fail">FAIL</span> OAuth endpoint not found (404)';
+                    testResults.oauth = false;
+                } else {
+                    statusDiv.innerHTML = '<span class="status fail">FAIL</span> Unexpected response from OAuth endpoint';
+                    testResults.oauth = false;
+                }
+            } catch (error) {
+                logDiv.textContent += `❌ Request Error: ${error.message}\n`;
+                statusDiv.innerHTML = '<span class="status fail">FAIL</span> Cannot reach OAuth endpoint';
+                testResults.oauth = false;
+            }
+            
+            updateSummary();
+        }
+
+        function testGoogleServices() {
+            const statusDiv = document.getElementById('google-status');
+            const logDiv = document.getElementById('google-log');
+            
+            statusDiv.innerHTML = '<span class="status pending">TESTING</span> Checking Google services...';
+            logDiv.style.display = 'block';
+            logDiv.textContent = 'Checking Google Identity Services...\n';
+            
+            // Check if Google script is loaded
+            if (typeof window.google === 'undefined') {
+                logDiv.textContent += '❌ Google Identity Services script not loaded\n';
+                statusDiv.innerHTML = '<span class="status fail">FAIL</span> Google services not available';
+                testResults.google = false;
+                updateSummary();
+                return;
+            }
+            
+            logDiv.textContent += '✅ Google Identity Services script loaded\n';
+            
+            // Check if Google accounts API is available
+            if (!window.google.accounts || !window.google.accounts.id) {
+                logDiv.textContent += '❌ Google accounts API not available\n';
+                statusDiv.innerHTML = '<span class="status fail">FAIL</span> Google accounts API not available';
+                testResults.google = false;
+                updateSummary();
+                return;
+            }
+            
+            logDiv.textContent += '✅ Google accounts API available\n';
+            
+            // Try to initialize Google OAuth
+            try {
+                window.google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: () => {}, // Dummy callback
+                });
+                logDiv.textContent += '✅ Google OAuth initialized successfully\n';
+                statusDiv.innerHTML = '<span class="status pass">PASS</span> Google services ready';
+                testResults.google = true;
+            } catch (error) {
+                logDiv.textContent += `❌ Google OAuth initialization failed: ${error.message}\n`;
+                statusDiv.innerHTML = '<span class="status fail">FAIL</span> Google OAuth initialization failed';
+                testResults.google = false;
+            }
+            
+            updateSummary();
+        }
+
+        function testFullOAuthFlow() {
+            const statusDiv = document.getElementById('flow-status');
+            const logDiv = document.getElementById('flow-log');
+            const testBtn = document.getElementById('oauth-test-btn');
+            
+            if (!testResults.backend || !testResults.oauth || !testResults.google) {
+                alert('Please run and pass the previous tests first!');
+                return;
+            }
+            
+            statusDiv.innerHTML = '<span class="status pending">TESTING</span> Starting OAuth flow...';
+            logDiv.style.display = 'block';
+            logDiv.textContent = 'Initializing Google OAuth flow...\n';
+            testBtn.disabled = true;
+            
+            try {
+                window.google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleResponse,
+                });
+                
+                logDiv.textContent += '✅ Google OAuth initialized\n';
+                logDiv.textContent += '🔄 Prompting for Google sign-in...\n';
+                
+                window.google.accounts.id.prompt((notification) => {
+                    logDiv.textContent += `📋 Prompt notification: ${notification.getNotDisplayedReason()}\n`;
+                    if (notification.isNotDisplayed()) {
+                        // Fallback to button-based sign-in
+                        logDiv.textContent += '🔄 Falling back to button-based sign-in...\n';
+                        createGoogleSignInButton();
+                    }
+                });
+                
+            } catch (error) {
+                logDiv.textContent += `❌ OAuth flow error: ${error.message}\n`;
+                statusDiv.innerHTML = '<span class="status fail">FAIL</span> OAuth flow failed to start';
+                testResults.fullFlow = false;
+                testBtn.disabled = false;
+                updateSummary();
+            }
+        }
+
+        function createGoogleSignInButton() {
+            const logDiv = document.getElementById('flow-log');
+            const buttonContainer = document.createElement('div');
+            buttonContainer.id = 'google-signin-button';
+            buttonContainer.style.margin = '10px 0';
+            
+            logDiv.parentNode.insertBefore(buttonContainer, logDiv);
+            
+            window.google.accounts.id.renderButton(buttonContainer, {
+                theme: 'outline',
+                size: 'large',
+                text: 'signin_with',
+            });
+            
+            logDiv.textContent += '🎯 Google sign-in button created\n';
+        }
+
+        async function handleGoogleResponse(credentialResponse) {
+            const statusDiv = document.getElementById('flow-status');
+            const logDiv = document.getElementById('flow-log');
+            const testBtn = document.getElementById('oauth-test-btn');
+            
+            logDiv.textContent += '🎫 Google credential received\n';
+            logDiv.textContent += `📏 Token length: ${credentialResponse.credential.length}\n`;
+            
+            try {
+                logDiv.textContent += '📤 Sending token to backend...\n';
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: credentialResponse.credential })
+                });
+                
+                const data = await response.json();
+                
+                logDiv.textContent += `📊 Backend response status: ${response.status}\n`;
+                logDiv.textContent += `📊 Backend response: ${JSON.stringify(data, null, 2)}\n`;
+                
+                if (response.ok && data.success) {
+                    statusDiv.innerHTML = '<span class="status pass">PASS</span> Complete OAuth flow successful!';
+                    logDiv.textContent += '🎉 OAuth flow completed successfully!\n';
+                    logDiv.textContent += `👤 User: ${data.user.firstName} ${data.user.lastName} (${data.user.email})\n`;
+                    testResults.fullFlow = true;
+                } else {
+                    statusDiv.innerHTML = '<span class="status fail">FAIL</span> Backend rejected the token';
+                    logDiv.textContent += '❌ Backend rejected the Google token\n';
+                    testResults.fullFlow = false;
+                }
+            } catch (error) {
+                logDiv.textContent += `❌ Backend communication error: ${error.message}\n`;
+                statusDiv.innerHTML = '<span class="status fail">FAIL</span> Failed to communicate with backend';
+                testResults.fullFlow = false;
+            }
+            
+            testBtn.disabled = false;
+            
+            // Remove the Google sign-in button if it exists
+            const buttonContainer = document.getElementById('google-signin-button');
+            if (buttonContainer) {
+                buttonContainer.remove();
+            }
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('results-summary');
+            const summaryContent = document.getElementById('summary-content');
+            
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result === true).length;
+            
+            let summaryHtml = `<p><strong>Tests Passed: ${passedTests}/${totalTests}</strong></p>`;
+            summaryHtml += '<ul>';
+            
+            for (const [test, result] of Object.entries(testResults)) {
+                const status = result ? 'pass' : 'fail';
+                const icon = result ? '✅' : '❌';
+                summaryHtml += `<li>${icon} <span class="status ${status}">${result ? 'PASS' : 'FAIL'}</span> ${test.charAt(0).toUpperCase() + test.slice(1)} Test</li>`;
+            }
+            
+            summaryHtml += '</ul>';
+            
+            if (passedTests === totalTests) {
+                summaryHtml += '<p><strong>🎉 All tests passed! Your Google OAuth integration is working correctly.</strong></p>';
+            } else {
+                summaryHtml += '<p><strong>⚠️ Some tests failed. Please check the logs above for details.</strong></p>';
+            }
+            
+            summaryContent.innerHTML = summaryHtml;
+            summaryDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

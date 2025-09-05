@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Flow Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Flow Test</h1>
+
+    <div class="test-section">
+        <h2>1. Health Check</h2>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result" class="result info">Click to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Google OAuth Test</h2>
+        <p>Enter a mock Google token to test the authentication flow:</p>
+        <input type="text" id="google-token" placeholder="Enter Google token" value="mock.google.token.test" />
+        <button onclick="testGoogleAuth()">Test Google Authentication</button>
+        <div id="google-result" class="result info">Click to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Email/Password Login Test</h2>
+        <input type="email" id="email" placeholder="Email" value="test@example.com" />
+        <input type="password" id="password" placeholder="Password" value="password123" />
+        <button onclick="testEmailLogin()">Test Email Login</button>
+        <div id="email-result" class="result info">Click to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Protected Route Test</h2>
+        <input type="text" id="auth-token" placeholder="Enter auth token" />
+        <button onclick="testProtectedRoute()">Test Protected Route</button>
+        <div id="protected-result" class="result info">Click to test...</div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                const data = await response.json();
+                return { status: response.status, data };
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        async function testHealth() {
+            const result = document.getElementById('health-result');
+            result.className = 'result info';
+            result.textContent = 'Testing...';
+
+            const response = await makeRequest(`${API_BASE}/health`);
+
+            if (response.error) {
+                result.className = 'result error';
+                result.textContent = `Error: ${response.error}`;
+            } else if (response.status === 200) {
+                result.className = 'result success';
+                result.textContent = `✅ Health Check Passed!\nStatus: ${response.data.status}\nVersion: ${response.data.version}\nTimestamp: ${response.data.timestamp}`;
+            } else {
+                result.className = 'result error';
+                result.textContent = `❌ Health Check Failed!\nStatus: ${response.status}\nResponse: ${JSON.stringify(response.data, null, 2)}`;
+            }
+        }
+
+        async function testGoogleAuth() {
+            const result = document.getElementById('google-result');
+            const token = document.getElementById('google-token').value;
+
+            result.className = 'result info';
+            result.textContent = 'Testing Google Authentication...';
+
+            const response = await makeRequest(`${API_BASE}/auth/google`, {
+                method: 'POST',
+                body: JSON.stringify({ token })
+            });
+
+            if (response.error) {
+                result.className = 'result error';
+                result.textContent = `Network Error: ${response.error}`;
+            } else if (response.status === 200 && response.data.success) {
+                result.className = 'result success';
+                result.textContent = `✅ Google Authentication Successful!\nUser: ${response.data.user.firstName} ${response.data.user.lastName}\nEmail: ${response.data.user.email}\nProvider: ${response.data.user.provider}`;
+            } else {
+                result.className = 'result error';
+                result.textContent = `❌ Google Authentication Failed!\nStatus: ${response.status}\nMessage: ${response.data.message}\nCode: ${response.data.code || 'N/A'}`;
+            }
+        }
+
+        async function testEmailLogin() {
+            const result = document.getElementById('email-result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            result.className = 'result info';
+            result.textContent = 'Testing Email Login...';
+
+            const response = await makeRequest(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.error) {
+                result.className = 'result error';
+                result.textContent = `Network Error: ${response.error}`;
+            } else if (response.status === 200 && response.data.success) {
+                result.className = 'result success';
+                result.textContent = `✅ Email Login Successful!\nUser: ${response.data.user.firstName} ${response.data.user.lastName}\nEmail: ${response.data.user.email}`;
+            } else {
+                result.className = 'result error';
+                result.textContent = `❌ Email Login Failed!\nStatus: ${response.status}\nMessage: ${response.data.message}`;
+            }
+        }
+
+        async function testProtectedRoute() {
+            const result = document.getElementById('protected-result');
+            const token = document.getElementById('auth-token').value;
+
+            result.className = 'result info';
+            result.textContent = 'Testing Protected Route...';
+
+            const response = await makeRequest(`${API_BASE}/auth/profile`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.error) {
+                result.className = 'result error';
+                result.textContent = `Network Error: ${response.error}`;
+            } else if (response.status === 200 && response.data.success) {
+                result.className = 'result success';
+                result.textContent = `✅ Protected Route Access Successful!\nUser: ${response.data.user.firstName} ${response.data.user.lastName}\nEmail: ${response.data.user.email}`;
+            } else {
+                result.className = 'result error';
+                result.textContent = `❌ Protected Route Access Failed!\nStatus: ${response.status}\nMessage: ${response.data.message}`;
+            }
+        }
+
+        // Auto-test health on page load
+        window.addEventListener('load', () => {
+            setTimeout(testHealth, 1000);
+        });
+    </script>
+</body>
+</html>
