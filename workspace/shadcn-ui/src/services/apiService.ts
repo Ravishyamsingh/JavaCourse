@@ -1,4 +1,4 @@
-import { AuthTokens, User } from '@/contexts/AuthContext';
+import { User, AuthTokens } from '@/types/auth';
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -113,31 +113,7 @@ class APIClient {
 
     // Response interceptor for token refresh
     this.addResponseInterceptor(async (response) => {
-      // If we get a 401, try to refresh the token
-      if (response.status === HTTP_STATUS.UNAUTHORIZED) {
-        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-        if (refreshToken) {
-          try {
-            const newTokens = await this.refreshAccessToken(refreshToken);
-            if (newTokens) {
-              // Retry the original request with new token
-              const originalRequest = response as any;
-              if (originalRequest.config) {
-                originalRequest.config.headers['Authorization'] = `Bearer ${newTokens.accessToken}`;
-                return this.request(originalRequest.config);
-              }
-            }
-          } catch (error) {
-            // Token refresh failed, redirect to login
-            this.handleAuthFailure();
-            throw new AuthenticationError();
-          }
-        } else {
-          this.handleAuthFailure();
-          throw new AuthenticationError();
-        }
-      }
-      return response;
+      return response; // Let the main request handler deal with 401s
     });
 
     // Error interceptor
@@ -318,6 +294,33 @@ class APIClient {
       };
 
       if (!response.ok) {
+        // Handle 401 Unauthorized specifically
+        if (response.status === HTTP_STATUS.UNAUTHORIZED) {
+          const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+          if (refreshToken && !endpoint.includes('/auth/refresh')) {
+            try {
+              const newTokens = await this.refreshAccessToken(refreshToken);
+              if (newTokens) {
+                // Retry the original request with new token
+                const retryConfig = {
+                  ...processedConfig,
+                  headers: {
+                    ...processedConfig.headers,
+                    'Authorization': `Bearer ${newTokens.accessToken}`,
+                  },
+                };
+                return this.request<T>(endpoint, retryConfig);
+              }
+            } catch (refreshError) {
+              this.handleAuthFailure();
+              throw new AuthenticationError('Session expired. Please login again.');
+            }
+          } else {
+            this.handleAuthFailure();
+            throw new AuthenticationError('Authentication required');
+          }
+        }
+
         const error = new APIError(
           responseData.message || `HTTP ${response.status}`,
           response.status,
@@ -386,7 +389,9 @@ export const authAPI = {
 
   // Login with Google OAuth
   async loginWithGoogle() {
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    // Get the backend URL for Google OAuth
+    const backendURL = API_BASE_URL.replace('/api', ''); // Remove /api suffix
+    window.location.href = `${backendURL}/api/auth/google`;
   },
 
   // Logout
