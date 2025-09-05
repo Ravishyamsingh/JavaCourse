@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google OAuth Test</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <h1>Google OAuth Test Page</h1>
+    <div id="g_id_onload"
+         data-client_id="21858022853-hn264ot2amaurp9ms4hof7kutgsr2ru0.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("Encoded JWT ID token: " + response.credential);
+            alert("Google Sign-In successful! Check console for token.");
+        }
+    </script>
+
+    <p><strong>✅ Configuration Complete!</strong></p>
+    <ol>
+        <li>✅ Client ID configured: 21858022853-hn264ot2amaurp9ms4hof7kutgsr2ru0.apps.googleusercontent.com</li>
+        <li>✅ Authorized origins set for localhost development</li>
+        <li>🧪 Click the Google Sign-In button above to test</li>
+        <li>✅ If successful, you'll see an alert and token in console</li>
+    </ol>
+</body>
+</html>
