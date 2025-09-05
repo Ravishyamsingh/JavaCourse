@@ -47,12 +47,24 @@ Choose your preferred platform:
 - **Backend:** Render/Heroku
 - **Database:** Supabase/PlanetScale
 
-### **4. Environment Configuration**
+### **4. Database Setup (IMPORTANT!)**
+Since you're using MongoDB Compass (local), you need a cloud database:
+
+#### **Quick MongoDB Atlas Setup (5 minutes):**
+1. Go to [MongoDB Atlas](https://www.mongodb.com/atlas) → Sign up FREE
+2. Create cluster (M0 Sandbox - FREE forever)
+3. Create database user and get connection string
+4. Replace your local MongoDB URL
+
+**See `MONGODB_DEPLOYMENT_GUIDE.md` for detailed steps!**
+
+### **5. Environment Configuration**
 After deployment, set these environment variables:
 
 #### **Backend (.env on production server):**
 ```bash
 NODE_ENV=production
+# MongoDB Atlas connection (replace with your Atlas connection string)
 MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/javacourse
 FRONTEND_URL=https://your-frontend-domain.com
 JWT_ACCESS_SECRET=generate-new-secret-for-production
@@ -68,6 +80,7 @@ VITE_GOOGLE_CLIENT_ID=your-production-google-client-id
 ```
 
 ## 📚 **Documentation Available:**
+- `MONGODB_DEPLOYMENT_GUIDE.md` - **Database migration from Compass to Atlas**
 - `PRODUCTION_DEPLOYMENT_GUIDE.md` - Complete deployment instructions
 - `README.md` - Project overview and setup
 - `ENVIRONMENT_VARIABLES_GUIDE.md` - Environment configuration
