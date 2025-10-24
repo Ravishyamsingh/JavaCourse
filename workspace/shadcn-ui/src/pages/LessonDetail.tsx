@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,98 @@ import { lessonsDatabase } from '@/data/lessonsData';
 import { courseModules, getNextLessonId } from '@/data/courseStructure';
 import UserProfile from '@/components/UserProfile';
 import useScrollToTop from '@/hooks/useScrollToTop';
+
+const renderExerciseContent = (rawContent: string): ReactNode[] => {
+  const lines = rawContent
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  const elements: ReactNode[] = [];
+  let currentList: { type: 'ul' | 'ol'; items: string[] } | null = null;
+
+  const flushList = () => {
+    if (!currentList) return;
+
+    if (currentList.type === 'ol') {
+      elements.push(
+        <ol
+          key={`list-${elements.length}`}
+          className="list-decimal pl-6 space-y-2 text-gray-700"
+        >
+          {currentList.items.map((item, index) => (
+            <li key={`list-${elements.length}-item-${index}`} className="leading-relaxed">
+              {item}
+            </li>
+          ))}
+        </ol>
+      );
+    } else {
+      elements.push(
+        <ul
+          key={`list-${elements.length}`}
+          className="list-disc pl-6 space-y-2 text-gray-700"
+        >
+          {currentList.items.map((item, index) => (
+            <li key={`list-${elements.length}-item-${index}`} className="leading-relaxed">
+              {item}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    currentList = null;
+  };
+
+  lines.forEach((line, index) => {
+    const isBoldHeading = line.startsWith('**') && line.endsWith('**');
+    const isNumbered = /^\d+[).\s]/.test(line);
+
+    if (isBoldHeading) {
+      flushList();
+      const text = line.replace(/\*\*/g, '').trim();
+      elements.push(
+        <h4
+          key={`heading-${index}`}
+          className="text-purple-700 font-semibold text-lg mt-6 mb-3 first:mt-0"
+        >
+          {text}
+        </h4>
+      );
+      return;
+    }
+
+    if (line.startsWith('- ')) {
+      if (!currentList || currentList.type !== 'ul') {
+        flushList();
+        currentList = { type: 'ul', items: [] };
+      }
+      currentList.items.push(line.slice(2).trim());
+      return;
+    }
+
+    if (isNumbered) {
+      if (!currentList || currentList.type !== 'ol') {
+        flushList();
+        currentList = { type: 'ol', items: [] };
+      }
+      currentList.items.push(line.replace(/^\d+[).\s]/, '').trim());
+      return;
+    }
+
+    flushList();
+    elements.push(
+      <p key={`paragraph-${index}`} className="text-gray-700 leading-relaxed">
+        {line}
+      </p>
+    );
+  });
+
+  flushList();
+
+  return elements;
+};
 
 export default function LessonDetail() {
   const { lessonId } = useParams();
@@ -64,6 +156,10 @@ public class ComingSoon {
 
   const lesson = getLessonData(lessonId || '');
   const nextLessonId = getNextLessonId(lessonId || '');
+  const formattedExerciseContent = useMemo(
+    () => renderExerciseContent(lesson.content.exercise),
+    [lesson.content.exercise]
+  );
 
   const getIconForType = (type: string) => {
     switch (type) {
@@ -311,7 +407,9 @@ public class ComingSoon {
                         </div>
                         <div>
                           <h4 className="font-bold text-gray-800 mb-2">Exercise Instructions</h4>
-                          <p className="text-gray-700 font-medium leading-relaxed">{lesson.content.exercise}</p>
+                          <div className="space-y-4 font-medium">
+                            {formattedExerciseContent}
+                          </div>
                         </div>
                       </div>
                     </div>

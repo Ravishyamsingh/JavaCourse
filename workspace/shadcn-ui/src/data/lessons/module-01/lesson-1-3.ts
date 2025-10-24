@@ -413,7 +413,7 @@ class PersonalizedGreeting {
  *    Java Version: 17.0.2
  *    Operating System: Windows 10
  *    User: StudentName
- *    Current Directory: C:\JavaProjects
+ *    Current Directory: C:\\JavaProjects
  * 
  * 🌟 Congratulations!
  * You've just created and run your first Java program!
