@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { LessonContent } from '../../types/LessonTypes';
 
 export const lesson_5_6: LessonContent = {
@@ -810,3 +811,5 @@ public class TextProcessingProject {
     `
   }
 };
+
+/* eslint-enable no-useless-escape */

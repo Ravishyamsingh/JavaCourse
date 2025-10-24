@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { LessonContent } from '../../types/LessonTypes';
 
 export const lesson_12_5: LessonContent = {
@@ -569,3 +570,5 @@ export const lesson_12_5: LessonContent = {
     `
   }
 };
+
+/* eslint-enable no-useless-escape */

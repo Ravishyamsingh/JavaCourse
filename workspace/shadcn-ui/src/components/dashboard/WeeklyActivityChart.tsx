@@ -11,24 +11,30 @@ interface WeeklyActivityChartProps {
   }>;
 }
 
+type WeeklyProgressEntry = WeeklyActivityChartProps['weeklyProgress'][number];
+
 export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityChartProps) {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'lessons' | 'time'>('lessons');
 
   const totalLessons = weeklyProgress.reduce((sum, day) => sum + day.lessons, 0);
   const totalTime = weeklyProgress.reduce((sum, day) => sum + day.studyTime, 0);
-  const averageLessons = totalLessons / weeklyProgress.length;
-  const averageTime = totalTime / weeklyProgress.length;
+  const averageLessons = weeklyProgress.length ? totalLessons / weeklyProgress.length : 0;
+  const averageTime = weeklyProgress.length ? totalTime / weeklyProgress.length : 0;
 
-  const maxValue = Math.max(...weeklyProgress.map(day =>
-    viewMode === 'lessons' ? day.lessons : day.studyTime
-  ));
+  const maxValue = weeklyProgress.length
+    ? Math.max(
+        ...weeklyProgress.map((day) =>
+          viewMode === 'lessons' ? day.lessons : day.studyTime
+        )
+      )
+    : 1;
 
   const getBarHeight = (value: number) => {
     return Math.max((value / maxValue) * 160, 8); // Minimum height of 8px
   };
 
-  const getBarColor = (day: any, index: number) => {
+  const getBarColor = (day: WeeklyProgressEntry) => {
     const isSelected = selectedDay === day.day;
     const isAboveAverage = viewMode === 'lessons'
       ? day.lessons > averageLessons
@@ -43,7 +49,7 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
     return 'from-blue-400 via-blue-500 to-purple-500';
   };
 
-  const getDayStats = (day: any) => {
+  const getDayStats = (day: WeeklyProgressEntry) => {
     if (!selectedDay || selectedDay !== day.day) return null;
     
     return (
@@ -125,20 +131,20 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
         {/* Interactive Chart */}
         <div className="relative">
           <div className="flex items-end justify-between h-48 relative">
-            {weeklyProgress.map((day, index) => {
+            {weeklyProgress.map((day) => {
               const value = viewMode === 'lessons' ? day.lessons : day.studyTime;
               const height = getBarHeight(value);
               
               return (
                 <div
-                  key={index}
+                  key={day.day}
                   className="flex flex-col items-center space-y-3 group relative cursor-pointer"
                   onMouseEnter={() => setSelectedDay(day.day)}
                   onMouseLeave={() => setSelectedDay(null)}
                 >
                   {getDayStats(day)}
                   <div
-                    className={`bg-gradient-to-t ${getBarColor(day, index)} rounded-t-lg min-w-[40px] transition-all duration-500 shadow-lg hover:shadow-xl group-hover:scale-110 relative overflow-hidden`}
+                    className={`bg-gradient-to-t ${getBarColor(day)} rounded-t-lg min-w-[40px] transition-all duration-500 shadow-lg hover:shadow-xl group-hover:scale-110 relative overflow-hidden`}
                     style={{ height: `${height}px` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

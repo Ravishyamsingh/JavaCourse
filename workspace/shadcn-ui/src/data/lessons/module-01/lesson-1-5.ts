@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { LessonContent } from '../../types/LessonTypes';
 
 export const lesson_1_5: LessonContent = {
@@ -630,3 +631,5 @@ public class OperatorsComprehensive {
     `
   }
 };
+
+/* eslint-enable no-useless-escape */
