@@ -42,6 +42,10 @@ class AuthService {
       const response = await apiClient.post('/auth/signup', data);
       return response.data;
     } catch (error: any) {
+      if (!error.response) {
+        throw new Error('Unable to connect to the server. Please try again later.');
+      }
+
       throw new Error(error.response?.data?.message || 'Signup failed');
     }
   }

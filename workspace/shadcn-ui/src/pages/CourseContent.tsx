@@ -93,7 +93,7 @@ export default function CourseContent() {
       </header>
 
       <div className="container mx-auto px-6 py-10">
-        <Tabs defaultValue="overview" className="space-y-8">
+  <Tabs defaultValue="modules" className="space-y-8">
           <TabsList className="grid w-full grid-cols-2 bg-white/60 backdrop-blur-sm p-1 rounded-xl shadow-lg border-0">
             <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white rounded-lg transition-all duration-300">
               <Brain className="w-4 h-4 mr-2" />

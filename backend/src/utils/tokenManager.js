@@ -2,16 +2,56 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Token } from '../models/Token.js';
 
+const UNIT_IN_MS = {
+  ms: 1,
+  s: 1000,
+  m: 60 * 1000,
+  h: 60 * 60 * 1000,
+  d: 24 * 60 * 60 * 1000
+};
+
 class TokenManager {
   constructor() {
-    this.JWT_SECRET = process.env.JWT_SECRET;
-    this.ACCESS_TOKEN_EXPIRY = '15m';
-    this.REFRESH_TOKEN_EXPIRY = '7d';
+    this.ACCESS_TOKEN_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '15m';
+    this.REFRESH_TOKEN_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '7d';
+    this.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+
+    if (!this.JWT_ACCESS_SECRET) {
+      throw new Error('JWT_ACCESS_SECRET (or JWT_SECRET) environment variable is required');
+    }
+
+    this.accessTokenExpiryMs = this.parseDurationToMs(this.ACCESS_TOKEN_EXPIRY, 15 * 60 * 1000);
+    this.refreshTokenExpiryMs = this.parseDurationToMs(this.REFRESH_TOKEN_EXPIRY, 7 * 24 * 60 * 60 * 1000);
+  }
+
+  parseDurationToMs(value, fallback) {
+    if (!value) return fallback;
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    const trimmed = String(value).trim().toLowerCase();
+    const match = trimmed.match(/^([0-9]+)(ms|s|m|h|d)?$/);
+
+    if (!match) {
+      return fallback;
+    }
+
+    const amount = Number(match[1]);
+    const unit = match[2] || 'ms';
+    const multiplier = UNIT_IN_MS[unit];
+
+    if (!Number.isFinite(amount) || !multiplier) {
+      return fallback;
+    }
+
+    return amount * multiplier;
   }
 
   // Generate secure access token
   generateAccessToken(payload) {
-    return jwt.sign(payload, this.JWT_SECRET, {
+    return jwt.sign(payload, this.JWT_ACCESS_SECRET, {
       expiresIn: this.ACCESS_TOKEN_EXPIRY,
       issuer: 'java-course-api',
       audience: 'java-course-client'
@@ -37,8 +77,8 @@ class TokenManager {
       
       const refreshToken = this.generateRefreshToken();
       
-      const accessExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-      const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const accessExpiry = new Date(Date.now() + this.accessTokenExpiryMs);
+  const refreshExpiry = new Date(Date.now() + this.refreshTokenExpiryMs);
 
       const tokenDoc = new Token({
         userId,
@@ -58,7 +98,7 @@ class TokenManager {
       return {
         accessToken,
         refreshToken,
-        expiresIn: 900, // 15 minutes in seconds
+        expiresIn: Math.floor(this.accessTokenExpiryMs / 1000),
         tokenType: 'Bearer'
       };
     } catch (error) {
@@ -70,7 +110,7 @@ class TokenManager {
   // Verify access token
   async verifyAccessToken(token) {
     try {
-      const decoded = jwt.verify(token, this.JWT_SECRET);
+      const decoded = jwt.verify(token, this.JWT_ACCESS_SECRET);
       const hashedToken = this.hashToken(token);
       
       const tokenDoc = await Token.findOne({
@@ -96,7 +136,7 @@ class TokenManager {
   // Refresh token pair
   async refreshTokenPair(refreshToken, req = {}) {
     try {
-      const hashedRefreshToken = this.hashToken(refreshToken);
+  const hashedRefreshToken = this.hashToken(refreshToken);
       
       const tokenDoc = await Token.findOne({
         refreshToken: hashedRefreshToken,

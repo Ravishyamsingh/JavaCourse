@@ -27,16 +27,14 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-
-  // Get redirect path from location state or default to dashboard
-  const from = location.state?.from?.pathname || '/dashboard';
+  const redirectPath = '/';
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      navigate(from, { replace: true });
+      navigate(redirectPath, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate, from]);
+  }, [isAuthenticated, authLoading, navigate, redirectPath]);
 
   // Handle URL parameters for OAuth callback
   useEffect(() => {
@@ -61,13 +59,13 @@ const Login: React.FC = () => {
         storeAuthData(tokens.accessToken, tokens.refreshToken, user);
 
         toast.success(`Welcome, ${user.firstName}!`);
-        navigate(from, { replace: true });
+        navigate(redirectPath, { replace: true });
       } catch (error) {
         console.error('Failed to parse OAuth callback data:', error);
         toast.error('Authentication failed');
       }
     }
-  }, [location.search, navigate, from]);
+  }, [location.search, navigate, redirectPath]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

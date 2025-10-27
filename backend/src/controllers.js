@@ -1,5 +1,6 @@
 import { User, CourseModel } from "./models.js";
-import { hashPassword, comparePassword, generateToken, validatePasswordStrength } from "./utils/auth.js";
+import { hashPassword, comparePassword, validatePasswordStrength } from "./utils/auth.js";
+import { tokenManager } from "./utils/tokenManager.js";
 import { verifyGoogleToken } from "./utils/googleAuth.js";
 import { validateRequest, signupSchema, loginSchema, sanitizeInput } from "./utils/validation.js";
 
@@ -94,18 +95,23 @@ export const signup = async (req, res) => {
 
     await newUser.save();
 
-    // Generate JWT token using deprecated function (will be replaced with tokenManager)
-    const token = generateToken({
-      _id: newUser._id,
-      email: newUser.email,
-      role: newUser.role
-    });
+    // Issue initial token pair so the new user is authenticated immediately
+    const { accessToken, refreshToken, expiresIn, tokenType } = await tokenManager.createTokenPair(
+      newUser._id,
+      'local',
+      [`role:${newUser.role}`],
+      req
+    );
 
     console.log('✅ User registered successfully:', email);
     res.status(201).json({
       success: true,
       message: "User created successfully",
-      token,
+      accessToken,
+      refreshToken,
+      expiresIn,
+      tokenType,
+      token: accessToken,
       user: {
         id: newUser._id,
         firstName: newUser.firstName,
@@ -158,51 +164,51 @@ export const login = async (req, res) => {
 
     // Always perform password hashing to prevent timing attacks
     const dummyHash = '$2b$12$dummyhashtopreventtimingattacksanduserenum';
-    let user = null;
-    let validPassword = false;
 
     try {
       // Find user
-      user = await User.findOne({ email });
-      
-      if (user) {
-        // Check if account is locked
-        if (user.isAccountLocked()) {
-          await comparePassword(password, dummyHash); // Constant time operation
-          return res.status(423).json({
-            success: false,
-            message: "Account is temporarily locked due to multiple failed login attempts",
-            code: 'ACCOUNT_LOCKED'
-          });
-        }
+      const user = await User.findOne({ email });
 
-        // Check if user signed up with Google
-        if (user.provider === 'google' && !user.password) {
-          await comparePassword(password, dummyHash); // Constant time operation
-          return res.status(401).json({
-            success: false,
-            message: "Please sign in with Google",
-            code: 'GOOGLE_AUTH_REQUIRED'
-          });
-        }
-
-        // Check password
-        validPassword = await comparePassword(password, user.password);
-      } else {
+      if (!user) {
         // Perform dummy password comparison to prevent timing attacks
         await comparePassword(password, dummyHash);
+
+        return res.status(404).json({
+          success: false,
+          message: "User not found. Please register first.",
+          code: 'USER_NOT_FOUND'
+        });
       }
 
-      if (!user || !validPassword) {
-        // Increment login attempts if user exists
-        if (user) {
-          await user.incLoginAttempts();
-        }
-        
+      // Check if account is locked
+      if (user.isAccountLocked()) {
+        await comparePassword(password, dummyHash); // Constant time operation
+        return res.status(423).json({
+          success: false,
+          message: "Account is temporarily locked due to multiple failed login attempts",
+          code: 'ACCOUNT_LOCKED'
+        });
+      }
+
+      // Check if user signed up with Google
+      if (user.provider === 'google' && !user.password) {
+        await comparePassword(password, dummyHash); // Constant time operation
         return res.status(401).json({
           success: false,
-          message: "Invalid email or password",
-          code: 'INVALID_CREDENTIALS'
+          message: "Please sign in with Google",
+          code: 'GOOGLE_AUTH_REQUIRED'
+        });
+      }
+
+      // Check password
+      const validPassword = await comparePassword(password, user.password);
+
+      if (!validPassword) {
+        await user.incLoginAttempts();
+        return res.status(401).json({
+          success: false,
+          message: "Invalid password.",
+          code: 'INVALID_PASSWORD'
         });
       }
 
@@ -213,18 +219,23 @@ export const login = async (req, res) => {
       user.lastLogin = new Date();
       await user.save();
 
-      // Generate token using deprecated function (will be replaced with tokenManager)
-      const token = generateToken({
-        _id: user._id,
-        email: user.email,
-        role: user.role
-      });
+      // Issue a fresh access/refresh token pair for the session
+      const { accessToken, refreshToken, expiresIn, tokenType } = await tokenManager.createTokenPair(
+        user._id,
+        'local',
+        [`role:${user.role}`],
+        req
+      );
 
       console.log('✅ Login successful for:', email);
       res.json({
         success: true,
         message: "Login successful",
-        token: token,
+        accessToken,
+        refreshToken,
+        expiresIn,
+        tokenType,
+        token: accessToken, // Backward compatibility for legacy clients
         user: {
           id: user._id,
           firstName: user.firstName,
@@ -344,17 +355,22 @@ export const googleAuth = async (req, res) => {
     // Admin role assignment is now handled through proper admin invitation system
     // No automatic role escalation based on email addresses
 
-    // Generate JWT token
-    const jwtToken = generateToken({
-      _id: user._id,
-      email: user.email,
-      role: user.role
-    });
+    // Issue token pair for Google-authenticated session
+    const { accessToken, refreshToken, expiresIn, tokenType } = await tokenManager.createTokenPair(
+      user._id,
+      'google',
+      [`role:${user.role}`],
+      req
+    );
 
     res.json({
       success: true,
       message: "Google authentication successful",
-      token: jwtToken,
+      accessToken,
+      refreshToken,
+      expiresIn,
+      tokenType,
+      token: accessToken,
       user: {
         id: user._id,
         firstName: user.firstName,

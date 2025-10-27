@@ -1,5 +1,7 @@
 {
-  "dependencies": {
-    "firebase": "^12.1.0"
+  "name": "java-course",
+  "private": true,
+  "scripts": {
+    "build": "npm install --prefix workspace/shadcn-ui && npm run build --prefix workspace/shadcn-ui"
   }
 }

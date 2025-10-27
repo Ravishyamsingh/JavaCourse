@@ -3,7 +3,6 @@ import { getAccessToken, clearAuthData } from './auth';
 
 // Use the correct environment variable as specified in copilot instructions
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-console.log('API URL:', API_URL);
 
 // Create axios instance with /api prefix as specified
 export const apiClient = axios.create({
