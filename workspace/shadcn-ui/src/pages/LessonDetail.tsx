@@ -28,6 +28,7 @@ import { lessonsDatabase } from '@/data/lessonsData';
 import { courseModules, getNextLessonId } from '@/data/courseStructure';
 import UserProfile from '@/components/UserProfile';
 import useScrollToTop from '@/hooks/useScrollToTop';
+import BackButton from '@/components/BackButton';
 
 const renderExerciseContent = (rawContent: string): ReactNode[] => {
   const lines = rawContent
@@ -444,6 +445,14 @@ public class Exercise {
               </div>
             </TabsContent>
           </Tabs>
+
+          <div className="flex justify-start">
+            <BackButton
+              to="/course"
+              label="Back to Module"
+              className="shadow-sm"
+            />
+          </div>
 
           {/* Beautiful Completion Section */}
           <Card className="overflow-hidden border-0 bg-white/70 backdrop-blur-lg shadow-2xl">

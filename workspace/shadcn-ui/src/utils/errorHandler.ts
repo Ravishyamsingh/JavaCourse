@@ -9,6 +9,7 @@ export interface AuthError {
 
 export enum AuthErrorCode {
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  INVALID_PASSWORD = 'INVALID_PASSWORD',
   ACCOUNT_LOCKED = 'ACCOUNT_LOCKED',
   EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED',
   SESSION_EXPIRED = 'SESSION_EXPIRED',
@@ -21,11 +22,13 @@ export enum AuthErrorCode {
   TOKEN_INVALID = 'TOKEN_INVALID',
   REFRESH_FAILED = 'REFRESH_FAILED',
   GOOGLE_AUTH_ERROR = 'GOOGLE_AUTH_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR'
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  USER_NOT_FOUND = 'USER_NOT_FOUND'
 }
 
 export const ERROR_MESSAGES: Record<AuthErrorCode, string> = {
   [AuthErrorCode.INVALID_CREDENTIALS]: 'Invalid email or password. Please check your credentials and try again.',
+  [AuthErrorCode.INVALID_PASSWORD]: 'Invalid password. Please try again.',
   [AuthErrorCode.ACCOUNT_LOCKED]: 'Your account has been temporarily locked due to multiple failed login attempts.',
   [AuthErrorCode.EMAIL_NOT_VERIFIED]: 'Please verify your email address before signing in.',
   [AuthErrorCode.SESSION_EXPIRED]: 'Your session has expired. Please sign in again.',
@@ -38,7 +41,8 @@ export const ERROR_MESSAGES: Record<AuthErrorCode, string> = {
   [AuthErrorCode.TOKEN_INVALID]: 'Authentication token is invalid. Please sign in again.',
   [AuthErrorCode.REFRESH_FAILED]: 'Failed to refresh session. Please sign in again.',
   [AuthErrorCode.GOOGLE_AUTH_ERROR]: 'Google authentication failed. Please try again.',
-  [AuthErrorCode.VALIDATION_ERROR]: 'Please check your input and try again.'
+  [AuthErrorCode.VALIDATION_ERROR]: 'Please check your input and try again.',
+  [AuthErrorCode.USER_NOT_FOUND]: 'User not found. Please register first.'
 };
 
 export const ERROR_ACTIONS: Record<AuthErrorCode, { 
@@ -48,6 +52,7 @@ export const ERROR_ACTIONS: Record<AuthErrorCode, {
   showDetails?: boolean;
 }> = {
   [AuthErrorCode.INVALID_CREDENTIALS]: { retry: true },
+  [AuthErrorCode.INVALID_PASSWORD]: { retry: true },
   [AuthErrorCode.ACCOUNT_LOCKED]: { action: 'Contact Support', showDetails: true },
   [AuthErrorCode.EMAIL_NOT_VERIFIED]: { action: 'Resend Verification', redirect: '/verify-email' },
   [AuthErrorCode.SESSION_EXPIRED]: { redirect: '/login' },
@@ -60,7 +65,8 @@ export const ERROR_ACTIONS: Record<AuthErrorCode, {
   [AuthErrorCode.TOKEN_INVALID]: { redirect: '/login' },
   [AuthErrorCode.REFRESH_FAILED]: { redirect: '/login' },
   [AuthErrorCode.GOOGLE_AUTH_ERROR]: { retry: true },
-  [AuthErrorCode.VALIDATION_ERROR]: { retry: true }
+  [AuthErrorCode.VALIDATION_ERROR]: { retry: true },
+  [AuthErrorCode.USER_NOT_FOUND]: { action: 'Register', redirect: '/register' }
 };
 
 export class AuthErrorHandler {
@@ -103,6 +109,14 @@ export class AuthErrorHandler {
     }
     
     // Authentication specific errors
+    if (message.includes('user not found')) {
+      return this.createError(AuthErrorCode.USER_NOT_FOUND, { originalError: error, context });
+    }
+
+    if (message.includes('invalid password')) {
+      return this.createError(AuthErrorCode.INVALID_PASSWORD, { originalError: error, context });
+    }
+
     if (message.includes('invalid credentials') || message.includes('unauthorized')) {
       return this.createError(AuthErrorCode.INVALID_CREDENTIALS, { originalError: error, context });
     }

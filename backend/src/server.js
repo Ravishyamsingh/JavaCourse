@@ -165,8 +165,7 @@ const connectDB = async () => {
       socketTimeoutMS: 45000,
     });
 
-    logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+  logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
 
     // Handle connection events
     mongoose.connection.on('error', (err) => {
@@ -228,10 +227,9 @@ const startServer = async () => {
     // Start HTTP server
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-      console.log(`🔐 JWT Secret: ${process.env.JWT_ACCESS_SECRET ? 'Configured' : 'Missing'}`);
-      console.log(`🔑 Google OAuth: ${process.env.GOOGLE_CLIENT_ID ? 'Configured' : 'Missing'}`);
+      logger.info(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+      logger.info(`🔐 JWT Secret configured: ${Boolean(process.env.JWT_ACCESS_SECRET)}`);
+      logger.info(`🔑 Google OAuth client configured: ${Boolean(process.env.GOOGLE_CLIENT_ID)}`);
     });
 
     // Handle server errors

@@ -113,7 +113,7 @@ const Signup: React.FC = () => {
 
     try {
       // Get API URL from environment variables
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       console.log('📍 Using API URL for signup:', API_URL);
       
       // Call signup API directly
@@ -148,7 +148,14 @@ const Signup: React.FC = () => {
       // Redirect to dashboard
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Signup failed';
+      let errorMessage = 'Signup failed';
+
+      if (error instanceof TypeError) {
+        errorMessage = 'Unable to connect to the server. Please try again later.';
+      } else if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      }
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

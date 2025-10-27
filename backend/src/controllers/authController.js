@@ -292,6 +292,16 @@ export const googleAuthCallback = (req, res, next) => {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
       const redirectUrl = new URL('/auth/callback', frontendUrl);
 
+      const userPayload = {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+        provider: user.provider
+      };
+
       // Set secure HTTP-only cookies for tokens
       const cookieOptions = {
         httpOnly: true,
@@ -311,15 +321,7 @@ export const googleAuthCallback = (req, res, next) => {
       res.cookie('refreshToken', tokens.refreshToken, refreshCookieOptions);
       
       // Set user data in a separate cookie (non-sensitive data only)
-      res.cookie('userData', JSON.stringify({
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        avatar: user.avatar,
-        role: user.role,
-        provider: user.provider
-      }), {
+      res.cookie('userData', JSON.stringify(userPayload), {
         ...cookieOptions,
         httpOnly: false, // Allow frontend to read user data
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
@@ -328,6 +330,9 @@ export const googleAuthCallback = (req, res, next) => {
       // Add success parameter to URL instead of tokens
       redirectUrl.searchParams.set('auth', 'success');
       redirectUrl.searchParams.set('provider', 'google');
+      redirectUrl.searchParams.set('accessToken', tokens.accessToken);
+      redirectUrl.searchParams.set('refreshToken', tokens.refreshToken);
+      redirectUrl.searchParams.set('user', JSON.stringify(userPayload));
 
       res.redirect(redirectUrl.toString());
     } catch (error) {

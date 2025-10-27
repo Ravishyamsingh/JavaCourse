@@ -6,12 +6,15 @@ import crypto from 'crypto';
 // Store for tracking failed attempts per IP/email combination
 const failedAttempts = new Map();
 
+const getAttemptKey = (req) => `${req.ip}:${req.body?.email || req.user?.email || 'unknown'}`;
+const getFailedAttemptCount = (req) => failedAttempts.get(getAttemptKey(req)) || 0;
+const calculateWaitTime = (attempts) => Math.min(15 * Math.pow(2, Math.floor(attempts / 3)), 60);
+
 // Progressive rate limiting for authentication endpoints
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: (req) => {
-    const key = req.ip + ':' + (req.body?.email || 'unknown');
-    const attempts = failedAttempts.get(key) || 0;
+    const attempts = getFailedAttemptCount(req);
     
     // Progressive limits based on failed attempts
     if (attempts >= 10) return 1; // Very strict after 10 failures
@@ -19,34 +22,24 @@ export const authRateLimit = rateLimit({
     if (attempts >= 3) return 3;  // Moderate after 3 failures
     return 5; // Initial limit
   },
-  message: (req) => {
-    const key = req.ip + ':' + (req.body?.email || 'unknown');
-    const attempts = failedAttempts.get(key) || 0;
-    const waitTime = Math.min(15 * Math.pow(2, Math.floor(attempts / 3)), 60); // Exponential backoff, max 60 min
-    
-    return {
-      success: false,
-      message: `Too many authentication attempts. Please try again in ${waitTime} minutes.`,
-      code: 'RATE_LIMITED',
-      retryAfter: waitTime * 60,
-      attempts: attempts
-    };
-  },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.ip + ':' + (req.body?.email || 'unknown');
-  },
+  keyGenerator: getAttemptKey,
   skip: (req) => {
     // Skip rate limiting for successful authentications
     return req.authSuccess === true;
   },
-  onLimitReached: (req) => {
-    const key = req.ip + ':' + (req.body?.email || 'unknown');
-    const attempts = failedAttempts.get(key) || 0;
-    failedAttempts.set(key, attempts + 1);
-    
-    console.log(`🚫 Rate limit reached for ${key}, attempts: ${attempts + 1}`);
+  handler: (req, res, _next, options) => {
+    const attempts = incrementFailedAttempts(req);
+    const waitTime = calculateWaitTime(attempts); // Exponential backoff, max 60 min
+
+    res.status(options.statusCode ?? 429).json({
+      success: false,
+      message: `Too many authentication attempts. Please try again in ${waitTime} minutes.`,
+      code: 'RATE_LIMITED',
+      retryAfter: waitTime * 60,
+      attempts
+    });
   }
 });
 
@@ -96,22 +89,25 @@ export const adminRateLimit = rateLimit({
 
 // Function to reset failed attempts on successful login
 export const resetFailedAttempts = (req) => {
-  const key = req.ip + ':' + (req.body?.email || req.user?.email || 'unknown');
+  const key = getAttemptKey(req);
   failedAttempts.delete(key);
   req.authSuccess = true;
 };
 
 // Function to increment failed attempts
 export const incrementFailedAttempts = (req) => {
-  const key = req.ip + ':' + (req.body?.email || 'unknown');
+  const key = getAttemptKey(req);
   const attempts = failedAttempts.get(key) || 0;
-  failedAttempts.set(key, attempts + 1);
+  const updatedAttempts = attempts + 1;
+  failedAttempts.set(key, updatedAttempts);
   
   // Clean up old entries periodically
   if (failedAttempts.size > 10000) {
     const entries = Array.from(failedAttempts.entries());
     entries.slice(0, 5000).forEach(([key]) => failedAttempts.delete(key));
   }
+
+  return updatedAttempts;
 };
 
 // Cleanup function to remove old failed attempts (run periodically)
@@ -265,16 +261,18 @@ export const requestLogger = (req, res, next) => {
   
   res.send = function(data) {
     const duration = Date.now() - start;
-    console.log({
-      timestamp: new Date().toISOString(),
-      method: req.method,
-      url: req.url,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      statusCode: res.statusCode,
-      duration: `${duration}ms`,
-      userId: req.user?._id || 'anonymous'
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log({
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.url,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        statusCode: res.statusCode,
+        duration: `${duration}ms`,
+        userId: req.user?._id || 'anonymous'
+      });
+    }
     originalSend.call(this, data);
   };
   
