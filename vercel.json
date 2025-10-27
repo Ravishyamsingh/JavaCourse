@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm install --prefix workspace/shadcn-ui && npm run build --prefix workspace/shadcn-ui && node scripts/copy-dist.js",
   "outputDirectory": "dist",
   "framework": "vite"
 }
