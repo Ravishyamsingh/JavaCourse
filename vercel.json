@@ -1,6 +1,6 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "outputDirectory": "workspace/shadcn-ui/dist",
+  "outputDirectory": "dist",
   "framework": "vite"
 }
