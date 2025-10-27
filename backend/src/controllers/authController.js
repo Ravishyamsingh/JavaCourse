@@ -302,13 +302,31 @@ export const googleAuthCallback = (req, res, next) => {
         provider: user.provider
       };
 
+      // Determine the cookie domain so tokens remain accessible in production
+      const cookieDomain = (() => {
+        if (process.env.COOKIE_DOMAIN) {
+          return process.env.COOKIE_DOMAIN.trim();
+        }
+
+        if (process.env.NODE_ENV === 'production') {
+          try {
+            const { hostname } = new URL(frontendUrl);
+            return hostname === 'localhost' ? undefined : hostname;
+          } catch (error) {
+            console.warn('⚠️  Unable to derive cookie domain:', error);
+          }
+        }
+
+        return undefined;
+      })();
+
       // Set secure HTTP-only cookies for tokens
       const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: 15 * 60 * 1000, // 15 minutes for access token
-        domain: process.env.NODE_ENV === 'production' ? '.your-domain.com' : undefined
+        domain: cookieDomain
       };
 
       const refreshCookieOptions = {
