@@ -23,7 +23,7 @@ export const hashPassword = async (password) => {
     throw new Error('Password must be at least 6 characters long');
   }
   
-  const saltRounds = Number(process.env.SALT_ROUNDS) || SALT_ROUNDS;
+  const saltRounds = Number(process.env.SALT_ROUNDS || process.env.BCRYPT_SALT_ROUNDS) || SALT_ROUNDS;
   const salt = await bcrypt.genSalt(saltRounds);
   return await bcrypt.hash(password, salt);
 };
