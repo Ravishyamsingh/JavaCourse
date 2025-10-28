@@ -1,5 +1,5 @@
 // backend/src/controllers/progressController.js
-import User from '../src/models.js';
+import User from '../models.js';
 
 export const getUserProgress = async (req, res) => {
   try {
