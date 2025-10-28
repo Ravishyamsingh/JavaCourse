@@ -39,7 +39,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [totalStudyTime, setTotalStudyTime] = useState(0);
   const { isAuthenticated } = useAuth();
 
-  // Load progress from backend on login, fallback to localStorage if not authenticated
+  // Always use backend as source of truth for authenticated users
   useEffect(() => {
     const loadProgress = async () => {
       if (isAuthenticated) {
@@ -52,25 +52,30 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             return;
           }
         } catch (e) {
-          // fallback to localStorage if backend fails
+          // If backend fails, clear progress for authenticated users
+          setCompletedLessons([]);
+          setStudyStreak(1);
+          setTotalStudyTime(0);
         }
-      }
-      // fallback: localStorage
-      const savedProgress = localStorage.getItem('course-progress');
-      const savedStudyTime = localStorage.getItem('study-time');
-      const savedStreak = localStorage.getItem('study-streak');
-      if (savedProgress) {
-        try {
-          const parsed = JSON.parse(savedProgress);
-          setCompletedLessons(parsed);
-        } catch (error) {
-          console.error('Error loading progress:', error);
+      } else {
+        // fallback: localStorage for unauthenticated users only
+        const savedProgress = localStorage.getItem('course-progress');
+        const savedStudyTime = localStorage.getItem('study-time');
+        const savedStreak = localStorage.getItem('study-streak');
+        if (savedProgress) {
+          try {
+            const parsed = JSON.parse(savedProgress);
+            setCompletedLessons(parsed);
+          } catch (error) {
+            console.error('Error loading progress:', error);
+          }
         }
+        if (savedStudyTime) setTotalStudyTime(parseFloat(savedStudyTime));
+        if (savedStreak) setStudyStreak(parseInt(savedStreak));
       }
-      if (savedStudyTime) setTotalStudyTime(parseFloat(savedStudyTime));
-      if (savedStreak) setStudyStreak(parseInt(savedStreak));
     };
     loadProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   // Save progress to backend (if authenticated) or localStorage on change
@@ -81,12 +86,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         achievements: [], // handled in AchievementContext
         studyStreak,
         totalStudyTime
-      }).catch(() => {
-        // fallback to localStorage if backend fails
-        localStorage.setItem('course-progress', JSON.stringify(completedLessons));
-        localStorage.setItem('study-time', totalStudyTime.toString());
-        localStorage.setItem('study-streak', studyStreak.toString());
-      });
+      }); // Do not fallback to localStorage for authenticated users
     } else {
       localStorage.setItem('course-progress', JSON.stringify(completedLessons));
       localStorage.setItem('study-time', totalStudyTime.toString());
