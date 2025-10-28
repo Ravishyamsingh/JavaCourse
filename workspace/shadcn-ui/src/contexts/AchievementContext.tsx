@@ -1,7 +1,9 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useQuiz } from './QuizContext';
+import { fetchUserProgress, saveUserProgress } from '@/services/progressApi';
+import { useAuth } from './AuthContext';
 
-interface Achievement {
+export interface Achievement {
   id: string;
   title: string;
   description: string;
@@ -70,11 +72,42 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : initialAchievements;
   });
   const { quizResults, getQuizScore } = useQuiz();
+  const { isAuthenticated } = useAuth();
 
-  // Save achievements to localStorage whenever they change
+  // Load achievements from backend on login, fallback to localStorage
   useEffect(() => {
-    localStorage.setItem('achievements', JSON.stringify(achievements));
-  }, [achievements]);
+    const loadAchievements = async () => {
+      if (isAuthenticated) {
+        try {
+          const res = await fetchUserProgress();
+          if (res.success && res.achievements) {
+            setAchievements(res.achievements.length ? res.achievements : initialAchievements);
+            return;
+          }
+        } catch (e) {}
+      }
+      // fallback: localStorage
+      const saved = localStorage.getItem('achievements');
+      setAchievements(saved ? JSON.parse(saved) : initialAchievements);
+    };
+    loadAchievements();
+  }, [isAuthenticated]);
+
+  // Save achievements to backend (if authenticated) or localStorage
+  useEffect(() => {
+    if (isAuthenticated) {
+      saveUserProgress({
+        completedLessons: [], // handled in ProgressContext
+        achievements,
+        studyStreak: 0,
+        totalStudyTime: 0
+      }).catch(() => {
+        localStorage.setItem('achievements', JSON.stringify(achievements));
+      });
+    } else {
+      localStorage.setItem('achievements', JSON.stringify(achievements));
+    }
+  }, [achievements, isAuthenticated]);
 
   // Check for quiz-related achievements
   useEffect(() => {
@@ -82,26 +115,10 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       const score = getQuizScore();
       const total = quizResults.length;
       const percentage = total > 0 ? (score / total) * 100 : 0;
-      
-      // Unlock "First Quiz" achievement
-      if (quizResults.length >= 1) {
-        unlockAchievement('first-quiz');
-      }
-      
-      // Unlock "Quiz Master" achievement
-      if (percentage >= 90) {
-        unlockAchievement('quiz-master');
-      }
-      
-      // Unlock "Perfect Score" achievement
-      if (percentage === 100) {
-        unlockAchievement('perfect-score');
-      }
-      
-      // Unlock "Consistent Learner" achievement
-      if (quizResults.length >= 5) {
-        unlockAchievement('consistent-learner');
-      }
+      if (quizResults.length >= 1) unlockAchievement('first-quiz');
+      if (percentage >= 90) unlockAchievement('quiz-master');
+      if (percentage === 100) unlockAchievement('perfect-score');
+      if (quizResults.length >= 5) unlockAchievement('consistent-learner');
     }
   }, [quizResults, getQuizScore]);
 
