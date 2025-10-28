@@ -37,10 +37,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [studyStreak, setStudyStreak] = useState(1);
   const [totalStudyTime, setTotalStudyTime] = useState(0);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Always use backend as source of truth for authenticated users
   useEffect(() => {
+    if (isLoading) return; // Wait for auth to finish initializing
     const loadProgress = async () => {
       if (isAuthenticated) {
         try {
@@ -52,7 +53,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             return;
           }
         } catch (e) {
-          // If backend fails, clear progress for authenticated users
           setCompletedLessons([]);
           setStudyStreak(1);
           setTotalStudyTime(0);
@@ -76,7 +76,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     loadProgress();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading]);
 
   // Save progress to backend (if authenticated) or localStorage on change
   useEffect(() => {
