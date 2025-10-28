@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { courseModules, getTotalLessonsCount, getModuleProgress } from '@/data/courseStructure';
+import { fetchUserProgress, saveUserProgress } from '@/services/progressApi';
+import { useAuth } from './AuthContext';
 
 interface ProgressContextType {
   completedLessons: string[];
@@ -35,43 +37,62 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [studyStreak, setStudyStreak] = useState(1);
   const [totalStudyTime, setTotalStudyTime] = useState(0);
+  const { isAuthenticated } = useAuth();
 
-  // Load progress from localStorage on initialization
+  // Load progress from backend on login, fallback to localStorage if not authenticated
   useEffect(() => {
-    const savedProgress = localStorage.getItem('course-progress');
-    const savedStudyTime = localStorage.getItem('study-time');
-    const savedStreak = localStorage.getItem('study-streak');
-    
-    if (savedProgress) {
-      try {
-        const parsed = JSON.parse(savedProgress);
-        setCompletedLessons(parsed);
-      } catch (error) {
-        console.error('Error loading progress:', error);
+    const loadProgress = async () => {
+      if (isAuthenticated) {
+        try {
+          const res = await fetchUserProgress();
+          if (res.success && res.progress) {
+            setCompletedLessons(res.progress.completedLessons || []);
+            setStudyStreak(res.progress.studyStreak || 1);
+            setTotalStudyTime(res.progress.totalStudyTime || 0);
+            return;
+          }
+        } catch (e) {
+          // fallback to localStorage if backend fails
+        }
       }
-    }
-    
-    if (savedStudyTime) {
-      setTotalStudyTime(parseFloat(savedStudyTime));
-    }
-    
-    if (savedStreak) {
-      setStudyStreak(parseInt(savedStreak));
-    }
-  }, []);
+      // fallback: localStorage
+      const savedProgress = localStorage.getItem('course-progress');
+      const savedStudyTime = localStorage.getItem('study-time');
+      const savedStreak = localStorage.getItem('study-streak');
+      if (savedProgress) {
+        try {
+          const parsed = JSON.parse(savedProgress);
+          setCompletedLessons(parsed);
+        } catch (error) {
+          console.error('Error loading progress:', error);
+        }
+      }
+      if (savedStudyTime) setTotalStudyTime(parseFloat(savedStudyTime));
+      if (savedStreak) setStudyStreak(parseInt(savedStreak));
+    };
+    loadProgress();
+  }, [isAuthenticated]);
 
-  // Save progress to localStorage whenever it changes
+  // Save progress to backend (if authenticated) or localStorage on change
   useEffect(() => {
-    localStorage.setItem('course-progress', JSON.stringify(completedLessons));
-  }, [completedLessons]);
-
-  useEffect(() => {
-    localStorage.setItem('study-time', totalStudyTime.toString());
-  }, [totalStudyTime]);
-
-  useEffect(() => {
-    localStorage.setItem('study-streak', studyStreak.toString());
-  }, [studyStreak]);
+    if (isAuthenticated) {
+      saveUserProgress({
+        completedLessons,
+        achievements: [], // handled in AchievementContext
+        studyStreak,
+        totalStudyTime
+      }).catch(() => {
+        // fallback to localStorage if backend fails
+        localStorage.setItem('course-progress', JSON.stringify(completedLessons));
+        localStorage.setItem('study-time', totalStudyTime.toString());
+        localStorage.setItem('study-streak', studyStreak.toString());
+      });
+    } else {
+      localStorage.setItem('course-progress', JSON.stringify(completedLessons));
+      localStorage.setItem('study-time', totalStudyTime.toString());
+      localStorage.setItem('study-streak', studyStreak.toString());
+    }
+  }, [completedLessons, studyStreak, totalStudyTime, isAuthenticated]);
 
   const markLessonComplete = (lessonId: string) => {
     setCompletedLessons(prev => {

@@ -34,6 +34,8 @@ import {
   requireOwnership,
   requireEnrollment
 } from "./middleware/rbac.js";
+
+import { getUserProgress, updateUserProgress } from './controllers/progressController.js';
 import {
   validateRequest,
   signupSchema,
@@ -45,8 +47,13 @@ import {
 
 const router = express.Router();
 
+
 // Apply general rate limiting to all routes
 router.use(generalRateLimit);
+
+// Progress endpoints
+router.get('/user/progress', authMiddleware, getUserProgress);
+router.post('/user/progress', authMiddleware, updateUserProgress);
 
 // Provide CSRF tokens for all routes
 router.use(provideCSRFToken);

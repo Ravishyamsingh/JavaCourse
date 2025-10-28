@@ -30,6 +30,7 @@ import UserProfile from '@/components/UserProfile';
 
 // Import new dashboard components
 import StatsCards from '@/components/dashboard/StatsCards';
+import MotivationWidget from '@/components/dashboard/MotivationWidget';
 import WeeklyActivityChart from '@/components/dashboard/WeeklyActivityChart';
 import RecentAchievements from '@/components/dashboard/RecentAchievements';
 import ModuleProgress from '@/components/dashboard/ModuleProgress';
@@ -275,6 +276,8 @@ export default function Dashboard() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 sm:space-y-8">
+            {/* Motivation Widget */}
+            <MotivationWidget />
             {/* Stats Cards */}
             <StatsCards
               progressPercentage={progressPercentage}
