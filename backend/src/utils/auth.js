@@ -6,11 +6,25 @@ const TOKEN_EXPIRY = '15m'; // Reduced from 7d for better security
 
 // Validate required environment variables at startup
 const validateEnvironment = () => {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is required');
-  }
-  if (process.env.JWT_SECRET.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters long');
+  // In production, require a strong JWT_SECRET. In development, allow a fallback
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is required in production');
+    }
+    if (process.env.JWT_SECRET.length < 32) {
+      throw new Error('JWT_SECRET must be at least 32 characters long in production');
+    }
+  } else {
+    // Development: if JWT_SECRET is missing, try falling back to access secret or set a dev default.
+    if (!process.env.JWT_SECRET) {
+      if (process.env.JWT_ACCESS_SECRET) {
+        process.env.JWT_SECRET = process.env.JWT_ACCESS_SECRET;
+        console.warn('⚠️ JWT_SECRET not found; falling back to JWT_ACCESS_SECRET for development');
+      } else {
+        process.env.JWT_SECRET = 'dev-jwt-secret-change-this-in-local';
+        console.warn('⚠️ JWT_SECRET not set — using a weak development default. Do NOT use in production.');
+      }
+    }
   }
 };
 
