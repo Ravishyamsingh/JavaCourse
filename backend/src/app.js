@@ -36,20 +36,25 @@ const getAllowedOrigins = () => {
     'https://apis.google.com'      // Required for Google APIs
   ];
 
+  // Allow operators to inject additional origins even if NODE_ENV is misconfigured.
+  const envOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+    : [];
+
   if (process.env.NODE_ENV === 'production') {
     // Production origins from environment variables
-    const prodOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
-    return [...baseOrigins, ...prodOrigins];
-  } else {
-    // Development origins - still restricted but more permissive
-    return [
-      ...baseOrigins,
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://127.0.0.1:5173',
-      'http://localhost:8080'
-    ];
+    return Array.from(new Set([...baseOrigins, ...envOrigins]));
   }
+
+  // Development origins - still restricted but more permissive
+  const devOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://localhost:8080'
+  ];
+
+  return Array.from(new Set([...baseOrigins, ...devOrigins, ...envOrigins]));
 };
 
 const allowedOrigins = getAllowedOrigins();
