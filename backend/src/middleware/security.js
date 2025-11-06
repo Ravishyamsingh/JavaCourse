@@ -3,6 +3,15 @@ import helmet from 'helmet';
 import { body, validationResult } from 'express-validator';
 import crypto from 'crypto';
 
+// Configure Google OAuth rate limiting so we can tune it per environment
+// Allow higher limits in shared test environments while keeping production defaults tight
+const googleOAuthWindowMs = parseInt(process.env.GOOGLE_OAUTH_WINDOW_MS || `${5 * 60 * 1000}`, 10);
+const googleOAuthMaxAttempts = parseInt(process.env.GOOGLE_OAUTH_MAX_ATTEMPTS || '10', 10);
+const googleOAuthRetryMinutes = Math.ceil(googleOAuthWindowMs / 60000);
+const googleOAuthRetryLabel = googleOAuthRetryMinutes === 1
+  ? '1 minute'
+  : `${googleOAuthRetryMinutes} minutes`;
+
 // Store for tracking failed attempts per IP/email combination
 const failedAttempts = new Map();
 
@@ -45,13 +54,13 @@ export const authRateLimit = rateLimit({
 
 // Strict rate limiting for Google OAuth
 export const googleAuthRateLimit = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 3, // Reduced from 10 to 3 attempts per window
+  windowMs: googleOAuthWindowMs,
+  max: googleOAuthMaxAttempts,
   message: {
     success: false,
-    message: 'Too many Google authentication attempts. Please try again in 5 minutes.',
+    message: `Too many Google authentication attempts. Please try again in ${googleOAuthRetryLabel}.`,
     code: 'GOOGLE_RATE_LIMITED',
-    retryAfter: 5 * 60
+    retryAfter: googleOAuthRetryMinutes * 60
   },
   standardHeaders: true,
   legacyHeaders: false,
