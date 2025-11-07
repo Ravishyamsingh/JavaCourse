@@ -280,6 +280,10 @@ export const sanitizeInput = (input) => {
     });
   }
   
+  if (Array.isArray(input)) {
+    return input.map(item => sanitizeInput(item));
+  }
+
   if (typeof input === 'object' && input !== null) {
     const sanitized = {};
     for (const [key, value] of Object.entries(input)) {
