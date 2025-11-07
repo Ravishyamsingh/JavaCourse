@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { courseModules, getTotalLessonsCount, getModuleProgress } from '@/data/courseStructure';
-import { fetchUserProgress, saveUserProgress } from '@/services/progressApi';
+import { fetchUserProgress, saveUserProgress, ProgressUpdatePayload } from '@/services/progressApi';
 import { useAuth } from './AuthContext';
 
 interface ProgressContextType {
@@ -56,20 +56,129 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           const res = await fetchUserProgress(accessToken);
           if (res.success && res.progress) {
-            setCompletedLessons(res.progress.completedLessons || []);
-            const syncedStreak = res.progress.studyStreak ?? 1;
-            setStudyStreak(syncedStreak > 0 ? syncedStreak : 1);
-            setTotalStudyTime(res.progress.totalStudyTime || 0);
-            setLastCompletedLessonId(res.progress.lastCompletedLessonId || null);
+            const serverProgress = res.progress;
 
-            if (res.progress.lastCompletedAt) {
-              const isoValue = new Date(res.progress.lastCompletedAt).toISOString();
+            // Pull any locally cached progress (e.g. from pre-auth browsing)
+            const localLessonsRaw = localStorage.getItem('course-progress');
+            const localStudyTimeRaw = localStorage.getItem('study-time');
+            const localStreakRaw = localStorage.getItem('study-streak');
+            const localLastCompletion = localStorage.getItem('last-completion-date');
+
+            const serverLessons = Array.isArray(serverProgress.completedLessons)
+              ? serverProgress.completedLessons
+              : [];
+            let localLessons: string[] = [];
+            if (localLessonsRaw) {
+              try {
+                const parsed = JSON.parse(localLessonsRaw);
+                if (Array.isArray(parsed)) {
+                  localLessons = parsed;
+                }
+              } catch (parseError) {
+                console.warn('Failed to parse local lesson cache:', parseError);
+              }
+            }
+            const mergedLessons = Array.from(new Set([...(serverLessons || []), ...(localLessons || [])]));
+
+            const serverStudyTime = typeof serverProgress.totalStudyTime === 'number' ? serverProgress.totalStudyTime : 0;
+            const localStudyTime = localStudyTimeRaw ? parseFloat(localStudyTimeRaw) : 0;
+            const mergedStudyTime = Number.isFinite(localStudyTime)
+              ? Math.max(serverStudyTime, localStudyTime)
+              : serverStudyTime;
+
+            const serverStreak = typeof serverProgress.studyStreak === 'number' ? serverProgress.studyStreak : 0;
+            const localStreak = localStreakRaw ? parseInt(localStreakRaw, 10) : 0;
+            const mergedStreak = Number.isFinite(localStreak)
+              ? Math.max(serverStreak, localStreak)
+              : serverStreak;
+
+            const updates: ProgressUpdatePayload = {};
+            let syncSucceeded = false;
+
+            if (mergedLessons.length !== serverLessons.length) {
+              updates.completedLessons = mergedLessons;
+            }
+
+            if (mergedStudyTime > serverStudyTime) {
+              updates.totalStudyTime = parseFloat(mergedStudyTime.toFixed(2));
+            }
+
+            if (mergedStreak > serverStreak) {
+              updates.studyStreak = mergedStreak;
+            }
+
+            if (localLastCompletion) {
+              const localCompletedDate = new Date(localLastCompletion);
+              const localTimestamp = localCompletedDate.getTime();
+              const serverCompletedDate = serverProgress.lastCompletedAt ? new Date(serverProgress.lastCompletedAt) : null;
+              const serverTimestamp = serverCompletedDate ? serverCompletedDate.getTime() : NaN;
+
+              if (!Number.isNaN(localTimestamp) && (Number.isNaN(serverTimestamp) || localTimestamp > serverTimestamp)) {
+                updates.lastCompletedAt = localCompletedDate.toISOString();
+              }
+            }
+
+            let syncedProgress = serverProgress;
+
+            const pendingUpdateKeys = Object.keys(updates);
+
+            if (pendingUpdateKeys.length === 0) {
+              syncSucceeded = true;
+            }
+
+            if (pendingUpdateKeys.length > 0) {
+              try {
+                const syncResponse = await saveUserProgress(updates, accessToken);
+                if (syncResponse.success && syncResponse.progress) {
+                  syncedProgress = syncResponse.progress;
+                  syncSucceeded = true;
+                } else {
+                  syncedProgress = {
+                    ...serverProgress,
+                    ...updates,
+                  };
+                }
+              } catch (syncError) {
+                console.error('Failed to sync local progress with server:', syncError);
+                syncedProgress = {
+                  ...serverProgress,
+                  ...updates,
+                };
+              }
+            }
+
+            setCompletedLessons(syncedProgress.completedLessons || []);
+            const syncedStreak = syncedProgress.studyStreak ?? mergedStreak ?? 1;
+            setStudyStreak(syncedStreak > 0 ? syncedStreak : 1);
+            setTotalStudyTime(syncedProgress.totalStudyTime ?? mergedStudyTime ?? 0);
+            setLastCompletedLessonId(syncedProgress.lastCompletedLessonId || null);
+
+            if (syncedProgress.lastCompletedAt) {
+              const isoValue = new Date(syncedProgress.lastCompletedAt).toISOString();
               setLastCompletedAt(isoValue);
               setLastCompletionDate(new Date(isoValue).toDateString());
+            } else if (localLastCompletion) {
+              const fallbackDate = new Date(localLastCompletion);
+              if (!Number.isNaN(fallbackDate.getTime())) {
+                setLastCompletedAt(fallbackDate.toISOString());
+                setLastCompletionDate(fallbackDate.toDateString());
+              } else {
+                setLastCompletedAt(null);
+                setLastCompletionDate(null);
+              }
             } else {
               setLastCompletedAt(null);
               setLastCompletionDate(null);
             }
+
+            // Once synced, clear stale local cache so we don't reapply it later
+            if (syncSucceeded) {
+              localStorage.removeItem('course-progress');
+              localStorage.removeItem('study-time');
+              localStorage.removeItem('study-streak');
+              localStorage.removeItem('last-completion-date');
+            }
+
             hasLoadedFromSource.current = true;
             return;
           }
