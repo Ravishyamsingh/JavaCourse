@@ -180,9 +180,14 @@ public class ComingSoon {
     }
   };
 
-  const markAsCompleted = () => {
-    if (lessonId) {
-      markLessonComplete(lessonId);
+  const markAsCompleted = async () => {
+    if (!lessonId) {
+      return;
+    }
+    try {
+      await markLessonComplete(lessonId);
+    } catch (error) {
+      console.error('Failed to mark lesson complete:', error);
     }
   };
 

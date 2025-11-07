@@ -13,7 +13,7 @@ import { useAuth } from './AuthContext';
 
 interface ProgressContextType {
   completedLessons: string[];
-  markLessonComplete: (lessonId: string) => void;
+  markLessonComplete: (lessonId: string) => Promise<void>;
   isLessonCompleted: (lessonId: string) => boolean;
   getProgressPercentage: () => number;
   getCompletedCount: () => number;
@@ -45,6 +45,71 @@ const allLessonsData = courseModules.flatMap((module) =>
 );
 
 const TOTAL_LESSONS = allLessonsData.length;
+
+const MIN_LESSON_DURATION_MINUTES = 15;
+
+const parseDurationToMinutes = (duration?: string): number => {
+  if (!duration || typeof duration !== 'string') {
+    return MIN_LESSON_DURATION_MINUTES;
+  }
+
+  const normalised = duration.toLowerCase();
+  const numericMatches = normalised.match(/\d+(?:\.\d+)?/g);
+  if (!numericMatches || numericMatches.length === 0) {
+    return MIN_LESSON_DURATION_MINUTES;
+  }
+
+  const toNumber = (value: string) => Number.parseFloat(value);
+
+  if (normalised.includes('hour')) {
+    const hours = toNumber(numericMatches[0]);
+    let minutes = hours * 60;
+    if (Number.isFinite(minutes) && numericMatches.length > 1 && normalised.includes('min')) {
+      minutes += toNumber(numericMatches[1]);
+    }
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      return MIN_LESSON_DURATION_MINUTES;
+    }
+    return Math.max(MIN_LESSON_DURATION_MINUTES, Math.round(minutes));
+  }
+
+  if (normalised.includes('-') && numericMatches.length >= 2) {
+    const first = toNumber(numericMatches[0]);
+    const second = toNumber(numericMatches[1]);
+    const average = (first + second) / 2;
+    if (!Number.isFinite(average) || average <= 0) {
+      return MIN_LESSON_DURATION_MINUTES;
+    }
+    return Math.max(MIN_LESSON_DURATION_MINUTES, Math.round(average));
+  }
+
+  const minutes = toNumber(numericMatches[0]);
+  if (!Number.isFinite(minutes) || minutes <= 0) {
+    return MIN_LESSON_DURATION_MINUTES;
+  }
+
+  return Math.max(MIN_LESSON_DURATION_MINUTES, Math.round(minutes));
+};
+
+interface LessonMetadata {
+  moduleId: string;
+  title: string;
+  type: string;
+  durationMinutes: number;
+}
+
+const lessonMetadata = new Map<string, LessonMetadata>();
+
+courseModules.forEach((module) => {
+  module.lessons.forEach((lesson) => {
+    lessonMetadata.set(lesson.id, {
+      moduleId: module.id,
+      title: lesson.title,
+      type: lesson.type,
+      durationMinutes: parseDurationToMinutes(lesson.duration)
+    });
+  });
+});
 
 const createEmptyWeeklyActivity = (): WeeklyActivityEntry[] => {
   const today = new Date();
@@ -110,6 +175,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
   const [totalQuizAttempts, setTotalQuizAttempts] = useState(0);
   const hasLoadedFromSource = useRef(false);
+  const lessonsInFlightRef = useRef<Set<string>>(new Set());
   const { isAuthenticated, isLoading, tokens } = useAuth();
   const accessToken = tokens?.accessToken;
 
@@ -451,87 +517,150 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     applySyncedProgress
   ]);
 
-  const markLessonComplete = (lessonId: string) => {
-    setCompletedLessons(prev => {
-      if (!prev.includes(lessonId)) {
-        // Add lesson to completed list
-        const newCompleted = [...prev, lessonId];
-        
-        // Update study time (simulate lesson duration)
-        const lessonDuration = Math.floor(Math.random() * 30) + 15; // Random 15-45 minutes
-        const durationHours = lessonDuration / 60;
-        setTotalStudyTime(prevTime => prevTime + durationHours);
-        
-        // Update streak (simple logic - could be more sophisticated)
-        const today = new Date();
-        const todayKey = today.toDateString();
-        const lastRecorded = isAuthenticated ? lastCompletionDate : localStorage.getItem('last-completion-date');
+  const markLessonComplete = useCallback(async (lessonId: string) => {
+    const normalisedId = lessonId?.trim();
+    if (!normalisedId) {
+      return;
+    }
 
-        if (lastRecorded !== todayKey) {
-          const previousDate = lastRecorded ? new Date(lastRecorded) : null;
-          if (previousDate) {
-            const diffDays = Math.floor(
-              (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) -
-                Date.UTC(previousDate.getFullYear(), previousDate.getMonth(), previousDate.getDate())) /
-              (24 * 60 * 60 * 1000)
-            );
-            setStudyStreak(prevStreak => (diffDays === 1 ? prevStreak + 1 : 1));
-          } else {
-            setStudyStreak(1);
-          }
+    if (lessonsInFlightRef.current.has(normalisedId)) {
+      return;
+    }
+
+    lessonsInFlightRef.current.add(normalisedId);
+
+    const metadata = lessonMetadata.get(normalisedId);
+    const durationMinutes = metadata?.durationMinutes ?? MIN_LESSON_DURATION_MINUTES;
+    const durationHours = Number.parseFloat((durationMinutes / 60).toFixed(2));
+    const completionDate = new Date();
+    const completionIso = completionDate.toISOString();
+    const completionDayKey = completionDate.toDateString();
+    const mergedLessons = Array.from(new Set([...completedLessons, normalisedId]));
+    const lessonAlreadyCompleted = completedLessons.includes(normalisedId);
+    const previousCompletionDate = lastCompletionDate ? new Date(lastCompletionDate) : null;
+
+    const nextStudyStreak = (() => {
+      if (lessonAlreadyCompleted) {
+        return studyStreak;
+      }
+      if (!previousCompletionDate || Number.isNaN(previousCompletionDate.getTime())) {
+        return 1;
+      }
+      const diffDays = Math.floor(
+        (Date.UTC(
+          completionDate.getFullYear(),
+          completionDate.getMonth(),
+          completionDate.getDate()
+        ) -
+          Date.UTC(
+            previousCompletionDate.getFullYear(),
+            previousCompletionDate.getMonth(),
+            previousCompletionDate.getDate()
+          )) /
+          (24 * 60 * 60 * 1000)
+      );
+      if (diffDays === 0) {
+        return studyStreak;
+      }
+      if (diffDays === 1) {
+        return studyStreak + 1;
+      }
+      return 1;
+    })();
+
+    const updatedTotalStudyTime = lessonAlreadyCompleted
+      ? totalStudyTime
+      : Number.parseFloat((totalStudyTime + durationHours).toFixed(2));
+
+    try {
+      if (isAuthenticated && accessToken) {
+        const payload: ProgressUpdatePayload = {
+          completedLessons: mergedLessons,
+          lastCompletedLessonId: normalisedId,
+          lastCompletedAt: completionIso,
+          studyStreak: nextStudyStreak,
+          totalStudyTime: updatedTotalStudyTime
+        };
+
+        if (!lessonAlreadyCompleted) {
+          payload.activityEntry = {
+            date: completionIso,
+            lessonsCompleted: 1,
+            studyTime: durationHours,
+            quizAttempts: 0,
+            scoreEarned: 0
+          };
         }
 
-        setWeeklyActivity(prevActivity => {
-          const baseline = prevActivity.length ? prevActivity : createEmptyWeeklyActivity();
-          const todayDate = new Date();
-          todayDate.setHours(0, 0, 0, 0);
-          const dateKey = todayDate.toISOString().split('T')[0];
+        await saveUserProgress(payload, accessToken);
+        await loadProgress();
+        return;
+      }
 
-          let found = false;
-          const updated = baseline.map((entry) => {
-            const entryKey = entry.date.split('T')[0];
-            if (entryKey === dateKey) {
-              found = true;
-              return {
-                ...entry,
-                lessons: entry.lessons + 1,
-                studyTime: parseFloat((entry.studyTime + durationHours).toFixed(2))
-              };
-            }
-            return entry;
-          });
+      if (lessonAlreadyCompleted) {
+        setLastActivityAt(completionIso);
+        setLastCompletedLessonId(normalisedId);
+        setLastCompletedAt(completionIso);
+        setLastCompletionDate(completionDayKey);
+        return;
+      }
 
-          if (!found) {
-            const newEntry: WeeklyActivityEntry = {
-              date: `${dateKey}T00:00:00.000Z`,
-              lessons: 1,
-              studyTime: parseFloat(durationHours.toFixed(2)),
-              quizAttempts: 0,
-              scoreEarned: 0
+      setCompletedLessons((prev) => Array.from(new Set([...prev, normalisedId])));
+      setTotalStudyTime(() => updatedTotalStudyTime);
+      setStudyStreak(() => nextStudyStreak);
+
+      setWeeklyActivity((prevActivity) => {
+        const baseline = prevActivity.length ? prevActivity : createEmptyWeeklyActivity();
+        const dateKey = completionIso.split('T')[0];
+        let found = false;
+
+        const updated = baseline.map((entry) => {
+          const entryKey = entry.date.split('T')[0];
+          if (entryKey === dateKey) {
+            found = true;
+            return {
+              ...entry,
+              lessons: entry.lessons + 1,
+              studyTime: parseFloat((entry.studyTime + durationHours).toFixed(2))
             };
-            return [...updated.slice(1), newEntry];
           }
-
-          return updated;
+          return entry;
         });
 
-  setLastActivityAt(today.toISOString());
-
-        if (isAuthenticated) {
-          setLastCompletedLessonId(lessonId);
-          const isoValue = today.toISOString();
-          setLastCompletedAt(isoValue);
-          setLastCompletionDate(todayKey);
-        } else {
-          localStorage.setItem('last-completion-date', todayKey);
-          setLastCompletionDate(todayKey);
+        if (!found) {
+          const newEntry: WeeklyActivityEntry = {
+            date: `${dateKey}T00:00:00.000Z`,
+            lessons: 1,
+            studyTime: parseFloat(durationHours.toFixed(2)),
+            quizAttempts: 0,
+            scoreEarned: 0
+          };
+          return [...updated.slice(1), newEntry];
         }
-        
-        return newCompleted;
-      }
-      return prev;
-    });
-  };
+
+        return updated;
+      });
+
+      setLastActivityAt(completionIso);
+      setLastCompletedLessonId(normalisedId);
+      setLastCompletedAt(completionIso);
+      setLastCompletionDate(completionDayKey);
+      localStorage.setItem('last-completion-date', completionDayKey);
+    } catch (error) {
+      console.error('Failed to mark lesson as complete:', error);
+      throw error;
+    } finally {
+      lessonsInFlightRef.current.delete(normalisedId);
+    }
+  }, [
+    completedLessons,
+    isAuthenticated,
+    accessToken,
+    lastCompletionDate,
+    studyStreak,
+    totalStudyTime,
+    loadProgress
+  ]);
 
   const isLessonCompleted = (lessonId: string): boolean => {
     return completedLessons.includes(lessonId);
