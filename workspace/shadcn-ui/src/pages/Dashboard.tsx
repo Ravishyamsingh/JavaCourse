@@ -1,3 +1,4 @@
+import { useMemo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +26,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useProgress } from '@/contexts/ProgressContext';
-import { useAchievements } from '@/contexts/AchievementContext';
+import { useAchievements, Achievement as AchievementType } from '@/contexts/AchievementContext';
 import UserProfile from '@/components/UserProfile';
 
 // Import new dashboard components
@@ -40,6 +41,35 @@ import LearningRecommendations from '@/components/dashboard/LearningRecommendati
 import QuizLeaderboard from '@/components/dashboard/QuizLeaderboard';
 import QuizHistory from '@/components/dashboard/QuizHistory';
 
+type WeeklyChartEntry = {
+  day: string;
+  lessonsCompleted: number;
+  studyHours: number;
+  quizAttempts: number;
+  activityModes: string[];
+};
+
+type AchievementDisplay = Omit<AchievementType, 'icon'> & { icon: ReactNode };
+const generateEmptyWeeklyChartData = (): WeeklyChartEntry[] => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const result: WeeklyChartEntry[] = [];
+
+  for (let i = 6; i >= 0; i -= 1) {
+    const currentDate = new Date(today);
+    currentDate.setDate(today.getDate() - i);
+    result.push({
+      day: currentDate.toLocaleDateString(undefined, { weekday: 'short' }),
+      lessonsCompleted: 0,
+      studyHours: 0,
+      quizAttempts: 0,
+      activityModes: ['Planning']
+    });
+  }
+
+  return result;
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const {
@@ -49,7 +79,11 @@ export default function Dashboard() {
     getTotalLessons,
     getModuleProgress,
     studyStreak,
-    totalStudyTime
+    totalStudyTime,
+    weeklyActivity,
+    quizHistory,
+    lastActivityAt,
+    totalQuizAttempts
   } = useProgress();
   
   const { achievements } = useAchievements();
@@ -58,112 +92,111 @@ export default function Dashboard() {
   const totalModules = 20; // Updated to reflect all 20 modules
   const progressPercentage = getProgressPercentage();
   const completedModules = Math.floor(progressPercentage / (100 / totalModules));
-
-  const weeklyProgress = [
-    { day: 'Mon', lessons: 3, studyTime: 2.5 },
-    { day: 'Tue', lessons: 2, studyTime: 1.8 },
-    { day: 'Wed', lessons: 4, studyTime: 3.2 },
-    { day: 'Thu', lessons: 1, studyTime: 0.8 },
-    { day: 'Fri', lessons: 5, studyTime: 4.1 },
-    { day: 'Sat', lessons: 3, studyTime: 2.3 },
-    { day: 'Sun', lessons: 2, studyTime: 1.5 }
-  ];
-
-  const dashboardAchievements = [
-    {
-      id: 'first-lesson',
-      title: 'First Steps',
-      description: 'Completed your first lesson',
-      icon: <BookOpen className="h-6 w-6" />,
-      unlocked: true,
-      date: '2024-01-15',
-      category: 'milestone',
-      rarity: 'common'
-    },
-    {
-      id: 'coding-master',
-      title: 'Coding Master',
-      description: 'Completed 10 coding exercises',
-      icon: <Code className="h-6 w-6" />,
-      unlocked: true,
-      date: '2024-01-18',
-      category: 'skill',
-      rarity: 'uncommon'
-    },
-    {
-      id: 'week-streak',
-      title: 'Week Warrior',
-      description: 'Maintained 7-day study streak',
-      icon: <Flame className="h-6 w-6" />,
-      unlocked: true,
-      date: '2024-01-20',
-      category: 'consistency',
-      rarity: 'rare'
-    },
-    {
-      id: 'oop-expert',
-      title: 'OOP Expert',
-      description: 'Mastered Object-Oriented Programming',
-      icon: <Target className="h-6 w-6" />,
-      unlocked: completedLessons.some(lesson => lesson.startsWith('module-3')),
-      date: completedLessons.some(lesson => lesson.startsWith('module-3')) ? '2024-01-25' : null,
-      category: 'mastery',
-      rarity: 'epic'
-    },
-    {
-      id: 'java-fundamentals',
-      title: 'Java Foundation',
-      description: 'Completed Java Fundamentals module',
-      icon: <Brain className="h-6 w-6" />,
-      unlocked: getModuleProgress('module-1') === 100,
-      date: getModuleProgress('module-1') === 100 ? '2024-01-12' : null,
-      category: 'module',
-      rarity: 'common'
-    },
-    {
-      id: 'web-developer',
-      title: 'Web Developer',
-      description: 'Completed Web Development modules',
-      icon: <Code className="h-6 w-6" />,
-      unlocked: getModuleProgress('module-16') === 100,
-      date: getModuleProgress('module-16') === 100 ? '2024-02-15' : null,
-      category: 'specialization',
-      rarity: 'legendary'
-    },
-    {
-      id: 'career-ready',
-      title: 'Career Ready',
-      description: 'Completed Career and Advanced Learning',
-      icon: <Award className="h-6 w-6" />,
-      unlocked: getModuleProgress('module-20') === 100,
-      date: getModuleProgress('module-20') === 100 ? '2024-03-01' : null,
-      category: 'completion',
-      rarity: 'legendary'
-    },
-    {
-      id: 'speed-learner',
-      title: 'Speed Learner',
-      description: 'Completed 5 lessons in one day',
-      icon: <Zap className="h-6 w-6" />,
-      unlocked: false,
-      date: null,
-      category: 'performance',
-      rarity: 'rare'
-    },
-    // Add quiz achievements
-    ...achievements.map(achievement => ({
-      id: achievement.id,
-      title: achievement.title,
-      description: achievement.description,
-      icon: <Star className="h-6 w-6" />,
-      unlocked: achievement.unlocked,
-      date: achievement.date,
-      category: achievement.category,
-      rarity: achievement.rarity
-    }))
-  ];
-
   const canGetCertificate = progressPercentage >= 100;
+
+  const weeklyChartData = useMemo<WeeklyChartEntry[]>(() => {
+    if (!Array.isArray(weeklyActivity) || weeklyActivity.length === 0) {
+      return generateEmptyWeeklyChartData();
+    }
+
+    const mapped = weeklyActivity.map<WeeklyChartEntry>((entry) => {
+      const parsedDate = new Date(entry.date);
+      const validDate = !Number.isNaN(parsedDate.getTime());
+      const lessonsCompleted = Number.isFinite(entry.lessons) ? entry.lessons : 0;
+      const studyHours = Number.isFinite(entry.studyTime)
+        ? parseFloat(entry.studyTime.toFixed(2))
+        : 0;
+      const quizAttempts = Number.isFinite(entry.quizAttempts) ? entry.quizAttempts : 0;
+      const scoreEarned = Number.isFinite(entry.scoreEarned) ? entry.scoreEarned : 0;
+
+      const modes = new Set<string>();
+      if (lessonsCompleted > 0) modes.add('Lessons');
+      if (quizAttempts > 0) modes.add('Quizzes');
+      if (studyHours >= 1.5) modes.add('Deep Study');
+      if (scoreEarned > 0) modes.add('Assessments');
+      if (modes.size === 0) modes.add('Planning');
+
+      return {
+        day: validDate ? parsedDate.toLocaleDateString(undefined, { weekday: 'short' }) : '—',
+        lessonsCompleted,
+        studyHours,
+        quizAttempts,
+        activityModes: Array.from(modes)
+      };
+    });
+
+    return mapped.length ? mapped : generateEmptyWeeklyChartData();
+  }, [weeklyActivity]);
+
+  const totalWeeklyLessons = weeklyChartData.reduce((sum, entry) => sum + entry.lessonsCompleted, 0);
+  const totalWeeklyStudyHours = weeklyChartData.reduce((sum, entry) => sum + entry.studyHours, 0);
+  const totalWeeklyQuizAttempts = weeklyChartData.reduce((sum, entry) => sum + entry.quizAttempts, 0);
+  const averageLessons = weeklyChartData.length ? totalWeeklyLessons / weeklyChartData.length : 0;
+  const averageStudyHours = weeklyChartData.length ? totalWeeklyStudyHours / weeklyChartData.length : 0;
+
+  const fallbackWeeklyEntry: WeeklyChartEntry = {
+    day: '—',
+    lessonsCompleted: 0,
+    studyHours: 0,
+    quizAttempts: 0,
+    activityModes: ['Planning']
+  };
+
+  const peakLessonsEntry = weeklyChartData.length
+    ? weeklyChartData.reduce<WeeklyChartEntry>((max, entry) =>
+        entry.lessonsCompleted > max.lessonsCompleted ? entry : max,
+        weeklyChartData[0]
+      )
+    : fallbackWeeklyEntry;
+
+  const peakStudyEntry = weeklyChartData.length
+    ? weeklyChartData.reduce<WeeklyChartEntry>((max, entry) =>
+        entry.studyHours > max.studyHours ? entry : max,
+        weeklyChartData[0]
+      )
+    : fallbackWeeklyEntry;
+
+  let minLessonsCount = weeklyChartData.length ? weeklyChartData[0].lessonsCompleted : 0;
+  let maxLessonsCount = weeklyChartData.length ? weeklyChartData[0].lessonsCompleted : 0;
+  weeklyChartData.forEach((entry) => {
+    if (entry.lessonsCompleted < minLessonsCount) minLessonsCount = entry.lessonsCompleted;
+    if (entry.lessonsCompleted > maxLessonsCount) maxLessonsCount = entry.lessonsCompleted;
+  });
+  const consistencyScore = maxLessonsCount > 0
+    ? Math.max(0, Math.round((1 - (maxLessonsCount - minLessonsCount) / maxLessonsCount) * 100))
+    : 100;
+
+  const achievementsForDisplay = useMemo<AchievementDisplay[]>(() =>
+    achievements.map((achievement) => ({
+      ...achievement,
+      icon: typeof achievement.icon === 'string'
+        ? <span className="text-xl" role="img" aria-hidden="true">{achievement.icon}</span>
+        : achievement.icon
+    })),
+  [achievements]);
+
+  const lockedAchievementsCount = achievements.filter(achievement => !achievement.unlocked).length;
+  const achievementsMessage = lockedAchievementsCount > 0
+    ? `${lockedAchievementsCount} achievements to unlock`
+    : 'All achievements unlocked';
+
+  const lastActivityLabel = useMemo(() => {
+    if (!lastActivityAt) return 'No recent activity yet';
+    const parsed = new Date(lastActivityAt);
+    if (Number.isNaN(parsed.getTime())) return 'No recent activity yet';
+
+    const diffMs = Date.now() - parsed.getTime();
+    if (diffMs < 0) return parsed.toLocaleString();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes} min ago`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours} hr${diffHours > 1 ? 's' : ''} ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return parsed.toLocaleDateString();
+  }, [lastActivityAt]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
@@ -207,11 +240,11 @@ export default function Dashboard() {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                   <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
                     <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Last activity: Today</span>
+                    <span>Last activity: {lastActivityLabel}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
                     <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>3 new achievements available</span>
+                    <span>{achievementsMessage}</span>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -297,12 +330,12 @@ export default function Dashboard() {
 
             {/* Weekly Activity Chart and Quiz History */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              <WeeklyActivityChart weeklyProgress={weeklyProgress} />
-              <QuizHistory />
+              <WeeklyActivityChart weeklyProgress={weeklyChartData} />
+              <QuizHistory history={quizHistory} totalQuizAttempts={totalQuizAttempts} />
             </div>
 
             {/* Recent Achievements */}
-            <RecentAchievements achievements={achievements} />
+            <RecentAchievements achievements={achievementsForDisplay} />
           </TabsContent>
 
           <TabsContent value="progress" className="space-y-4 sm:space-y-6">
@@ -310,7 +343,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-4 sm:space-y-6">
-            <AchievementsGrid achievements={achievements} />
+              <AchievementsGrid achievements={achievementsForDisplay} />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
@@ -329,13 +362,25 @@ export default function Dashboard() {
                     <div className="flex justify-between items-center">
                       <span className="text-xs sm:text-sm text-gray-600">Lessons per week</span>
                       <span className="font-bold text-blue-600 text-sm sm:text-base">
-                        {weeklyProgress.reduce((sum, day) => sum + day.lessons, 0)} lessons
+                        {totalWeeklyLessons} lessons
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs sm:text-sm text-gray-600">Average study time</span>
                       <span className="font-bold text-green-600 text-sm sm:text-base">
-                        {(weeklyProgress.reduce((sum, day) => sum + day.studyTime, 0) / 7).toFixed(1)}h/day
+                        {averageStudyHours.toFixed(1)}h/day
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm text-gray-600">Consistency score</span>
+                      <span className="font-bold text-indigo-600 text-sm sm:text-base">
+                        {consistencyScore}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm text-gray-600">Quiz attempts this week</span>
+                      <span className="font-bold text-pink-600 text-sm sm:text-base">
+                        {totalWeeklyQuizAttempts}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -396,12 +441,15 @@ export default function Dashboard() {
                   <div className="grid grid-cols-3 gap-3 sm:gap-6">
                     <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
                       <div className="text-lg sm:text-2xl font-bold text-blue-600 mb-1 sm:mb-2">
-                        {Math.max(...weeklyProgress.map(d => d.lessons))}
+                        {peakLessonsEntry.lessonsCompleted}
                       </div>
                       <div className="text-xs sm:text-sm text-gray-600">Peak Daily Lessons</div>
                       <div className="text-[0.6rem] sm:text-xs text-gray-500 mt-1">
-                        {weeklyProgress.find(d => d.lessons === Math.max(...weeklyProgress.map(d => d.lessons)))?.day}
+                        {peakLessonsEntry.day}
                       </div>
+                        <div className="text-[0.6rem] sm:text-xs text-gray-500 mt-1">
+                          Longest session: {peakStudyEntry.studyHours.toFixed(1)}h
+                        </div>
                     </div>
                     <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
                       <div className="text-lg sm:text-2xl font-bold text-green-600 mb-1 sm:mb-2">
@@ -424,7 +472,7 @@ export default function Dashboard() {
               </Card>
               
               {/* Quiz Leaderboard */}
-              <QuizLeaderboard />
+              <QuizLeaderboard history={quizHistory} totalQuizAttempts={totalQuizAttempts} />
             </div>
           </TabsContent>
 

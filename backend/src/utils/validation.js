@@ -262,7 +262,23 @@ export const progressUpdateSchema = Joi.object({
     .optional(),
   enrolledCourses: Joi.array()
     .items(Joi.string().trim())
-    .optional()
+    .optional(),
+  activityEntry: Joi.object({
+    date: Joi.date().iso().required(),
+    lessonsCompleted: Joi.number().integer().min(0).optional(),
+    studyTime: Joi.number().min(0).optional(),
+    quizAttempts: Joi.number().integer().min(0).optional(),
+    scoreEarned: Joi.number().min(0).optional()
+  }).optional(),
+  quizAttempt: Joi.object({
+    quizId: Joi.string().trim().max(100).required(),
+    moduleId: Joi.string().trim().max(100).allow(null, '').optional(),
+    topic: Joi.string().trim().max(200).required(),
+    score: Joi.number().integer().min(0).required(),
+    totalQuestions: Joi.number().integer().min(1).required(),
+    timeTakenMinutes: Joi.number().min(0).optional(),
+    completedAt: Joi.date().optional()
+  }).optional()
 });
 
 // Input sanitization functions
