@@ -5,12 +5,18 @@ import crypto from 'crypto';
 
 // Configure Google OAuth rate limiting so we can tune it per environment
 // Allow higher limits in shared test environments while keeping production defaults tight
-const googleOAuthWindowMs = parseInt(process.env.GOOGLE_OAUTH_WINDOW_MS || `${5 * 60 * 1000}`, 10);
-const googleOAuthMaxAttempts = parseInt(process.env.GOOGLE_OAUTH_MAX_ATTEMPTS || '10', 10);
+const defaultGoogleOAuthWindowMs = 60 * 60 * 1000; // 1 hour default window
+const googleOAuthWindowMs = parseInt(process.env.GOOGLE_OAUTH_WINDOW_MS || `${defaultGoogleOAuthWindowMs}`, 10);
+const googleOAuthMaxAttempts = parseInt(process.env.GOOGLE_OAUTH_MAX_ATTEMPTS || '60', 10);
+
 const googleOAuthRetryMinutes = Math.ceil(googleOAuthWindowMs / 60000);
-const googleOAuthRetryLabel = googleOAuthRetryMinutes === 1
-  ? '1 minute'
-  : `${googleOAuthRetryMinutes} minutes`;
+const googleOAuthRetryLabel = (() => {
+  if (googleOAuthRetryMinutes >= 120) {
+    const hours = Math.ceil(googleOAuthRetryMinutes / 60);
+    return hours === 1 ? '1 hour' : `${hours} hours`;
+  }
+  return googleOAuthRetryMinutes === 1 ? '1 minute' : `${googleOAuthRetryMinutes} minutes`;
+})();
 
 // Store for tracking failed attempts per IP/email combination
 const failedAttempts = new Map();

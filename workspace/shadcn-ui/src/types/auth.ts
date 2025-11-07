@@ -60,6 +60,9 @@ export interface User {
     enrolledCourses: string[];
     studyStreak: number;
     totalStudyTime: number;
+    lastCompletedLessonId?: string | null;
+    lastCompletedAt?: string | null;
+    lastSyncedAt?: string | null;
   };
   createdAt: string;
   updatedAt: string;

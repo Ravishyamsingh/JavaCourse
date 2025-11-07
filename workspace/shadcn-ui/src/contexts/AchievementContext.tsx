@@ -72,14 +72,15 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : initialAchievements;
   });
   const { quizResults, getQuizScore } = useQuiz();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, tokens } = useAuth();
+  const accessToken = tokens?.accessToken;
 
   // Load achievements from backend on login, fallback to localStorage
   useEffect(() => {
     const loadAchievements = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && accessToken) {
         try {
-          const res = await fetchUserProgress();
+          const res = await fetchUserProgress(accessToken);
           if (res.success && res.achievements) {
             setAchievements(res.achievements.length ? res.achievements : initialAchievements);
             return;
@@ -91,23 +92,20 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       setAchievements(saved ? JSON.parse(saved) : initialAchievements);
     };
     loadAchievements();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, accessToken]);
 
   // Save achievements to backend (if authenticated) or localStorage
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && accessToken) {
       saveUserProgress({
-        completedLessons: [], // handled in ProgressContext
-        achievements,
-        studyStreak: 0,
-        totalStudyTime: 0
-      }).catch(() => {
+        achievements
+      }, accessToken).catch(() => {
         localStorage.setItem('achievements', JSON.stringify(achievements));
       });
     } else {
       localStorage.setItem('achievements', JSON.stringify(achievements));
     }
-  }, [achievements, isAuthenticated]);
+  }, [achievements, isAuthenticated, accessToken]);
 
   // Check for quiz-related achievements
   useEffect(() => {

@@ -212,6 +212,59 @@ export const roleUpdateSchema = Joi.object({
     })
 });
 
+export const progressUpdateSchema = Joi.object({
+  completedLessons: Joi.array()
+    .items(
+      Joi.string()
+        .trim()
+        .max(100)
+    )
+    .optional(),
+  completedQuizzes: Joi.array()
+    .items(
+      Joi.string()
+        .trim()
+        .max(100)
+    )
+    .optional(),
+  achievements: Joi.array()
+    .items(
+      Joi.alternatives(
+        Joi.string().trim().max(100),
+        Joi.object().unknown(true)
+      )
+    )
+    .optional(),
+  certificatesEarned: Joi.array()
+    .items(
+      Joi.string()
+        .trim()
+        .max(100)
+    )
+    .optional(),
+  studyStreak: Joi.number()
+    .integer()
+    .min(0)
+    .optional(),
+  totalStudyTime: Joi.number()
+    .min(0)
+    .max(10000)
+    .optional(),
+  totalScore: Joi.number()
+    .min(0)
+    .max(100000)
+    .optional(),
+  lastCompletedLessonId: Joi.string()
+    .trim()
+    .max(100)
+    .optional(),
+  lastCompletedAt: Joi.date()
+    .optional(),
+  enrolledCourses: Joi.array()
+    .items(Joi.string().trim())
+    .optional()
+});
+
 // Input sanitization functions
 export const sanitizeInput = (input) => {
   if (typeof input === 'string') {
@@ -331,6 +384,7 @@ export default {
   profileUpdateSchema,
   searchQuerySchema,
   roleUpdateSchema,
+  progressUpdateSchema,
   sanitizeInput,
   validateRequest,
   validateSignup,

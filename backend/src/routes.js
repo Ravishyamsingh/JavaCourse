@@ -42,7 +42,8 @@ import {
   loginSchema,
   profileUpdateSchema,
   searchQuerySchema,
-  roleUpdateSchema
+  roleUpdateSchema,
+  progressUpdateSchema
 } from "./utils/validation.js";
 
 const router = express.Router();
@@ -53,7 +54,11 @@ router.use(generalRateLimit);
 
 // Progress endpoints
 router.get('/user/progress', authMiddleware, getUserProgress);
-router.post('/user/progress', authMiddleware, updateUserProgress);
+router.post('/user/progress',
+  authMiddleware,
+  validateRequest(progressUpdateSchema),
+  updateUserProgress
+);
 
 // Provide CSRF tokens for all routes
 router.use(provideCSRFToken);
