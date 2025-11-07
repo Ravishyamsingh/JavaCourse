@@ -54,7 +54,10 @@ const userSchema = new mongoose.Schema({
     totalScore: { type: Number, default: 0 },
     enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
     studyStreak: { type: Number, default: 0 },
-    totalStudyTime: { type: Number, default: 0 } // in minutes
+    totalStudyTime: { type: Number, default: 0 }, // stored in hours to match UI calculations
+    lastCompletedLessonId: { type: String },
+    lastCompletedAt: { type: Date },
+    lastSyncedAt: { type: Date }
   },
   // Security and session management
   security: {

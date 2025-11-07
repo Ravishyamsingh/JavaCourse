@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { courseModules, getTotalLessonsCount, getModuleProgress } from '@/data/courseStructure';
 import { fetchUserProgress, saveUserProgress } from '@/services/progressApi';
 import { useAuth } from './AuthContext';
@@ -37,25 +37,50 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [studyStreak, setStudyStreak] = useState(1);
   const [totalStudyTime, setTotalStudyTime] = useState(0);
-  const { isAuthenticated, isLoading } = useAuth();
+  const [lastCompletedLessonId, setLastCompletedLessonId] = useState<string | null>(null);
+  const [lastCompletedAt, setLastCompletedAt] = useState<string | null>(null);
+  const [lastCompletionDate, setLastCompletionDate] = useState<string | null>(null);
+  const hasLoadedFromSource = useRef(false);
+  const { isAuthenticated, isLoading, tokens } = useAuth();
+  const accessToken = tokens?.accessToken;
 
   // Always use backend as source of truth for authenticated users
   useEffect(() => {
     if (isLoading) return; // Wait for auth to finish initializing
+    if (isAuthenticated && !accessToken) return; // Wait for tokens before syncing
+
+    hasLoadedFromSource.current = false;
+
     const loadProgress = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && accessToken) {
         try {
-          const res = await fetchUserProgress();
+          const res = await fetchUserProgress(accessToken);
           if (res.success && res.progress) {
             setCompletedLessons(res.progress.completedLessons || []);
-            setStudyStreak(res.progress.studyStreak || 1);
+            const syncedStreak = res.progress.studyStreak ?? 1;
+            setStudyStreak(syncedStreak > 0 ? syncedStreak : 1);
             setTotalStudyTime(res.progress.totalStudyTime || 0);
+            setLastCompletedLessonId(res.progress.lastCompletedLessonId || null);
+
+            if (res.progress.lastCompletedAt) {
+              const isoValue = new Date(res.progress.lastCompletedAt).toISOString();
+              setLastCompletedAt(isoValue);
+              setLastCompletionDate(new Date(isoValue).toDateString());
+            } else {
+              setLastCompletedAt(null);
+              setLastCompletionDate(null);
+            }
+            hasLoadedFromSource.current = true;
             return;
           }
         } catch (e) {
           setCompletedLessons([]);
           setStudyStreak(1);
           setTotalStudyTime(0);
+          setLastCompletedLessonId(null);
+          setLastCompletedAt(null);
+          setLastCompletionDate(null);
+          hasLoadedFromSource.current = true;
         }
       } else {
         // fallback: localStorage for unauthenticated users only
@@ -70,29 +95,54 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             console.error('Error loading progress:', error);
           }
         }
-        if (savedStudyTime) setTotalStudyTime(parseFloat(savedStudyTime));
-        if (savedStreak) setStudyStreak(parseInt(savedStreak));
+        if (savedStudyTime !== null) {
+          const parsedStudyTime = parseFloat(savedStudyTime);
+          setTotalStudyTime(Number.isNaN(parsedStudyTime) ? 0 : parsedStudyTime);
+        }
+        if (savedStreak !== null) {
+          const parsedStreak = parseInt(savedStreak, 10);
+          setStudyStreak(Number.isNaN(parsedStreak) ? 1 : parsedStreak);
+        }
+        const savedLastCompletion = localStorage.getItem('last-completion-date');
+        if (savedLastCompletion) {
+          setLastCompletionDate(savedLastCompletion);
+        } else {
+          setLastCompletionDate(null);
+        }
+        setLastCompletedLessonId(null);
+        setLastCompletedAt(null);
+        hasLoadedFromSource.current = true;
       }
     };
     loadProgress();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, accessToken]);
 
   // Save progress to backend (if authenticated) or localStorage on change
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!hasLoadedFromSource.current) return;
+
+    if (isAuthenticated && accessToken) {
       saveUserProgress({
         completedLessons,
-        achievements: [], // handled in AchievementContext
         studyStreak,
-        totalStudyTime
-      }); // Do not fallback to localStorage for authenticated users
+        totalStudyTime,
+        lastCompletedLessonId: lastCompletedLessonId || undefined,
+        lastCompletedAt,
+      }, accessToken).catch((error) => {
+        console.error('Failed to sync progress with server:', error);
+      });
     } else {
       localStorage.setItem('course-progress', JSON.stringify(completedLessons));
       localStorage.setItem('study-time', totalStudyTime.toString());
       localStorage.setItem('study-streak', studyStreak.toString());
+      if (lastCompletionDate) {
+        localStorage.setItem('last-completion-date', lastCompletionDate);
+      } else {
+        localStorage.removeItem('last-completion-date');
+      }
     }
-  }, [completedLessons, studyStreak, totalStudyTime, isAuthenticated]);
+  }, [completedLessons, studyStreak, totalStudyTime, isAuthenticated, accessToken, lastCompletedAt, lastCompletedLessonId, lastCompletionDate]);
 
   const markLessonComplete = (lessonId: string) => {
     setCompletedLessons(prev => {
@@ -105,12 +155,32 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setTotalStudyTime(prevTime => prevTime + (lessonDuration / 60));
         
         // Update streak (simple logic - could be more sophisticated)
-        const lastCompletionDate = localStorage.getItem('last-completion-date');
-        const today = new Date().toDateString();
-        
-        if (lastCompletionDate !== today) {
-          setStudyStreak(prev => prev + 1);
-          localStorage.setItem('last-completion-date', today);
+        const today = new Date();
+        const todayKey = today.toDateString();
+        const lastRecorded = isAuthenticated ? lastCompletionDate : localStorage.getItem('last-completion-date');
+
+        if (lastRecorded !== todayKey) {
+          const previousDate = lastRecorded ? new Date(lastRecorded) : null;
+          if (previousDate) {
+            const diffDays = Math.floor(
+              (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) -
+                Date.UTC(previousDate.getFullYear(), previousDate.getMonth(), previousDate.getDate())) /
+              (24 * 60 * 60 * 1000)
+            );
+            setStudyStreak(prevStreak => (diffDays === 1 ? prevStreak + 1 : 1));
+          } else {
+            setStudyStreak(1);
+          }
+        }
+
+        if (isAuthenticated) {
+          setLastCompletedLessonId(lessonId);
+          const isoValue = today.toISOString();
+          setLastCompletedAt(isoValue);
+          setLastCompletionDate(todayKey);
+        } else {
+          localStorage.setItem('last-completion-date', todayKey);
+          setLastCompletionDate(todayKey);
         }
         
         return newCompleted;
@@ -148,12 +218,16 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setCompletedLessons([]);
     setStudyStreak(1);
     setTotalStudyTime(0);
+    setLastCompletedLessonId(null);
+    setLastCompletedAt(null);
+    setLastCompletionDate(null);
     
     // Clear localStorage
     localStorage.removeItem('course-progress');
     localStorage.removeItem('study-time');
     localStorage.removeItem('study-streak');
     localStorage.removeItem('last-completion-date');
+    hasLoadedFromSource.current = true;
   };
 
   const value: ProgressContextType = {
