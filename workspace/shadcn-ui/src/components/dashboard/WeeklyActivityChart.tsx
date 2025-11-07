@@ -1,34 +1,59 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, TrendingUp, Calendar, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { Zap, TrendingUp } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
-interface WeeklyActivityChartProps {
-  weeklyProgress: Array<{
-    day: string;
-    lessons: number;
-    studyTime: number;
-  }>;
+interface WeeklyActivityDay {
+  day: string;
+  lessonsCompleted: number;
+  studyHours: number;
+  quizAttempts: number;
+  activityModes: string[];
 }
 
-type WeeklyProgressEntry = WeeklyActivityChartProps['weeklyProgress'][number];
+interface WeeklyActivityChartProps {
+  weeklyProgress: WeeklyActivityDay[];
+}
+
+type WeeklyProgressEntry = WeeklyActivityDay;
 
 export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityChartProps) {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'lessons' | 'time'>('lessons');
 
-  const totalLessons = weeklyProgress.reduce((sum, day) => sum + day.lessons, 0);
-  const totalTime = weeklyProgress.reduce((sum, day) => sum + day.studyTime, 0);
+  const totalLessons = weeklyProgress.reduce((sum, day) => sum + day.lessonsCompleted, 0);
+  const totalTime = weeklyProgress.reduce((sum, day) => sum + day.studyHours, 0);
+  const totalQuizAttempts = weeklyProgress.reduce((sum, day) => sum + day.quizAttempts, 0);
   const averageLessons = weeklyProgress.length ? totalLessons / weeklyProgress.length : 0;
   const averageTime = weeklyProgress.length ? totalTime / weeklyProgress.length : 0;
 
-  const maxValue = weeklyProgress.length
-    ? Math.max(
-        ...weeklyProgress.map((day) =>
-          viewMode === 'lessons' ? day.lessons : day.studyTime
-        )
-      )
-    : 1;
+  const metricValues = weeklyProgress.map((day) =>
+    viewMode === 'lessons' ? day.lessonsCompleted : day.studyHours
+  );
+  const maxValue = metricValues.length ? Math.max(...metricValues, 1) : 1;
+
+  const lessonsDistribution = weeklyProgress.map((day) => day.lessonsCompleted);
+  const maxLessons = lessonsDistribution.length ? Math.max(...lessonsDistribution) : 0;
+  const minLessons = lessonsDistribution.length ? Math.min(...lessonsDistribution) : 0;
+  const consistencyScore = maxLessons > 0
+    ? Math.max(0, Math.round((1 - (maxLessons - minLessons) / maxLessons) * 100))
+    : 100;
+
+  const activityModeFrequency = useMemo(() => {
+    return weeklyProgress.reduce<Record<string, number>>((acc, day) => {
+      day.activityModes.forEach((mode) => {
+        acc[mode] = (acc[mode] ?? 0) + 1;
+      });
+      return acc;
+    }, {});
+  }, [weeklyProgress]);
+
+  const dominantActivityMode = useMemo(() => {
+    const entries = Object.entries(activityModeFrequency);
+    if (!entries.length) return 'Balanced';
+    const [mode] = entries.sort((a, b) => b[1] - a[1])[0];
+    return mode;
+  }, [activityModeFrequency]);
 
   const getBarHeight = (value: number) => {
     return Math.max((value / maxValue) * 160, 8); // Minimum height of 8px
@@ -37,8 +62,8 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
   const getBarColor = (day: WeeklyProgressEntry) => {
     const isSelected = selectedDay === day.day;
     const isAboveAverage = viewMode === 'lessons'
-      ? day.lessons > averageLessons
-      : day.studyTime > averageTime;
+      ? day.lessonsCompleted > averageLessons
+      : day.studyHours > averageTime;
 
     if (isSelected) {
       return 'from-yellow-400 via-orange-400 to-red-400';
@@ -58,17 +83,43 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
         <div className="text-xs space-y-1">
           <div className="flex justify-between">
             <span>Lessons:</span>
-            <span className="font-bold">{day.lessons}</span>
+            <span className="font-bold">{day.lessonsCompleted}</span>
           </div>
           <div className="flex justify-between">
             <span>Time:</span>
-            <span className="font-bold">{day.studyTime}h</span>
+            <span className="font-bold">{day.studyHours.toFixed(1)}h</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Quizzes:</span>
+            <span className="font-bold">{day.quizAttempts}</span>
           </div>
         </div>
         <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
       </div>
     );
   };
+
+  const mostProductiveDay = useMemo(() => {
+    return weeklyProgress.reduce<WeeklyProgressEntry | null>((max, day) => {
+      if (!max || day.lessonsCompleted > max.lessonsCompleted) {
+        return day;
+      }
+      return max;
+    }, null);
+  }, [weeklyProgress]);
+
+  const longestStudyDay = useMemo(() => {
+    return weeklyProgress.reduce<WeeklyProgressEntry | null>((max, day) => {
+      if (!max || day.studyHours > max.studyHours) {
+        return day;
+      }
+      return max;
+    }, null);
+  }, [weeklyProgress]);
+
+  const hasAnyActivity = weeklyProgress.some((day) =>
+    day.lessonsCompleted > 0 || day.studyHours > 0 || day.quizAttempts > 0
+  );
 
   return (
     <Card className="overflow-hidden border-0 bg-white/70 backdrop-blur-lg shadow-2xl">
@@ -109,7 +160,7 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
       </CardHeader>
       <CardContent className="p-8">
         {/* Summary Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
             <div className="text-lg font-bold text-blue-600">{totalLessons}</div>
             <div className="text-xs text-gray-600">Total Lessons</div>
@@ -126,13 +177,17 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
             <div className="text-lg font-bold text-orange-600">{averageTime.toFixed(1)}h</div>
             <div className="text-xs text-gray-600">Avg Time/Day</div>
           </div>
+          <div className="text-center p-3 bg-gradient-to-br from-indigo-50 to-blue-100 rounded-xl">
+            <div className="text-lg font-bold text-indigo-600">{totalQuizAttempts}</div>
+            <div className="text-xs text-gray-600">Quiz Attempts</div>
+          </div>
         </div>
 
         {/* Interactive Chart */}
         <div className="relative">
           <div className="flex items-end justify-between h-48 relative">
             {weeklyProgress.map((day) => {
-              const value = viewMode === 'lessons' ? day.lessons : day.studyTime;
+              const value = viewMode === 'lessons' ? day.lessonsCompleted : day.studyHours;
               const height = getBarHeight(value);
               
               return (
@@ -152,7 +207,18 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
                   <div className="text-center">
                     <div className="text-xs font-medium text-gray-600 mb-1">{day.day}</div>
                     <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {viewMode === 'lessons' ? `${day.lessons} lessons` : `${day.studyTime}h`}
+                      {viewMode === 'lessons' ? `${day.lessonsCompleted} lessons` : `${day.studyHours.toFixed(1)}h`}
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-1 mt-1">
+                      {day.activityModes.map((mode) => (
+                        <Badge
+                          key={`${day.day}-${mode}`}
+                          variant="secondary"
+                          className="text-[0.6rem] bg-white/80 text-indigo-600 border border-indigo-100"
+                        >
+                          {mode}
+                        </Badge>
+                      ))}
                     </div>
                     {selectedDay === day.day && (
                       <Badge className="mt-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
@@ -188,19 +254,18 @@ export default function WeeklyActivityChart({ weeklyProgress }: WeeklyActivityCh
             <TrendingUp className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-medium text-gray-800">Weekly Insights</span>
           </div>
-          <div className="text-xs text-gray-600 space-y-1">
-            <div>• Most productive day: {weeklyProgress.reduce((max, day) =>
-              day.lessons > max.lessons ? day : max
-            ).day} ({weeklyProgress.reduce((max, day) =>
-              day.lessons > max.lessons ? day : max
-            ).lessons} lessons)</div>
-            <div>• Longest study session: {weeklyProgress.reduce((max, day) =>
-              day.studyTime > max.studyTime ? day : max
-            ).studyTime}h on {weeklyProgress.reduce((max, day) =>
-              day.studyTime > max.studyTime ? day : max
-            ).day}</div>
-            <div>• Consistency score: {Math.round((1 - (Math.max(...weeklyProgress.map(d => d.lessons)) - Math.min(...weeklyProgress.map(d => d.lessons))) / Math.max(...weeklyProgress.map(d => d.lessons))) * 100)}%</div>
-          </div>
+          {hasAnyActivity ? (
+            <div className="text-xs text-gray-600 space-y-1">
+              <div>• Most productive day: {mostProductiveDay?.day ?? '—'} ({mostProductiveDay?.lessonsCompleted ?? 0} lessons)</div>
+              <div>• Longest study session: {longestStudyDay?.studyHours.toFixed(1) ?? '0.0'}h on {longestStudyDay?.day ?? '—'}</div>
+              <div>• Consistency score: {consistencyScore}%</div>
+              <div>• Dominant activity mode: {dominantActivityMode}</div>
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500">
+              No recorded activity yet. Start a lesson or quiz to unlock weekly insights.
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

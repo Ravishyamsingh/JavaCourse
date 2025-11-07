@@ -48,8 +48,8 @@ const userSchema = new mongoose.Schema({
   // Course progress tracking
   progress: {
     completedLessons: [{ type: String }],
-    completedQuizzes: [{ type: String }],
-    achievements: [{ type: String }],
+  completedQuizzes: [{ type: String }],
+  achievements: [{ type: mongoose.Schema.Types.Mixed }],
     certificatesEarned: [{ type: String }],
     totalScore: { type: Number, default: 0 },
     enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
@@ -57,7 +57,23 @@ const userSchema = new mongoose.Schema({
     totalStudyTime: { type: Number, default: 0 }, // stored in hours to match UI calculations
     lastCompletedLessonId: { type: String },
     lastCompletedAt: { type: Date },
-    lastSyncedAt: { type: Date }
+    lastSyncedAt: { type: Date },
+    activityLog: [{
+      date: { type: Date, required: true },
+      lessonsCompleted: { type: Number, default: 0 },
+      studyTime: { type: Number, default: 0 },
+      quizAttempts: { type: Number, default: 0 },
+      scoreEarned: { type: Number, default: 0 }
+    }],
+    quizHistory: [{
+      quizId: { type: String },
+      moduleId: { type: String },
+      topic: { type: String },
+      score: { type: Number, default: 0 },
+      totalQuestions: { type: Number, default: 0 },
+      timeTakenMinutes: { type: Number, default: 0 },
+      completedAt: { type: Date, default: Date.now }
+    }]
   },
   // Security and session management
   security: {

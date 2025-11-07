@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { courseModules, getTotalLessonsCount, getModuleProgress } from '@/data/courseStructure';
-import { fetchUserProgress, saveUserProgress, ProgressUpdatePayload } from '@/services/progressApi';
+import {
+  fetchUserProgress,
+  saveUserProgress,
+  ProgressUpdatePayload,
+  WeeklyActivityEntry,
+  QuizHistoryEntry,
+  ProgressMetrics,
+  UserProgressState
+} from '@/services/progressApi';
 import { useAuth } from './AuthContext';
 
 interface ProgressContextType {
@@ -15,6 +23,11 @@ interface ProgressContextType {
   totalStudyTime: number;
   updateStudyTime: (minutes: number) => void;
   resetProgress: () => void;
+  weeklyActivity: WeeklyActivityEntry[];
+  quizHistory: QuizHistoryEntry[];
+  lastActivityAt: string | null;
+  totalQuizAttempts: number;
+  refreshProgress: () => Promise<void>;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -33,6 +46,58 @@ const allLessonsData = courseModules.flatMap((module) =>
 
 const TOTAL_LESSONS = allLessonsData.length;
 
+const createEmptyWeeklyActivity = (): WeeklyActivityEntry[] => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const result: WeeklyActivityEntry[] = [];
+
+  for (let i = 6; i >= 0; i -= 1) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    result.push({
+      date: `${date.toISOString().split('T')[0]}T00:00:00.000Z`,
+      lessons: 0,
+      studyTime: 0,
+      quizAttempts: 0,
+      scoreEarned: 0
+    });
+  }
+
+  return result;
+};
+
+const normaliseWeeklyActivity = (entries?: WeeklyActivityEntry[]): WeeklyActivityEntry[] => {
+  if (!entries || !Array.isArray(entries) || entries.length === 0) {
+    return createEmptyWeeklyActivity();
+  }
+
+  return entries.map((entry) => ({
+    date: typeof entry.date === 'string' ? entry.date : new Date(entry.date).toISOString(),
+    lessons: Number.isFinite(entry.lessons) ? entry.lessons : 0,
+    studyTime: Number.isFinite(entry.studyTime) ? entry.studyTime : 0,
+    quizAttempts: Number.isFinite(entry.quizAttempts) ? entry.quizAttempts : 0,
+    scoreEarned: Number.isFinite(entry.scoreEarned) ? entry.scoreEarned : 0
+  }));
+};
+
+const normaliseQuizHistoryEntries = (entries?: QuizHistoryEntry[]): QuizHistoryEntry[] => {
+  if (!entries || !Array.isArray(entries) || entries.length === 0) {
+    return [];
+  }
+
+  return entries
+    .map((entry) => ({
+      quizId: entry.quizId,
+      moduleId: entry.moduleId ?? null,
+      topic: entry.topic,
+      score: Number.isFinite(entry.score) ? entry.score : 0,
+      totalQuestions: Number.isFinite(entry.totalQuestions) ? entry.totalQuestions : 0,
+      timeTakenMinutes: Number.isFinite(entry.timeTakenMinutes) ? entry.timeTakenMinutes : 0,
+      completedAt: typeof entry.completedAt === 'string' ? entry.completedAt : new Date(entry.completedAt).toISOString()
+    }))
+    .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+};
+
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [studyStreak, setStudyStreak] = useState(1);
@@ -40,207 +105,330 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [lastCompletedLessonId, setLastCompletedLessonId] = useState<string | null>(null);
   const [lastCompletedAt, setLastCompletedAt] = useState<string | null>(null);
   const [lastCompletionDate, setLastCompletionDate] = useState<string | null>(null);
+  const [weeklyActivity, setWeeklyActivity] = useState<WeeklyActivityEntry[]>(createEmptyWeeklyActivity());
+  const [quizHistory, setQuizHistory] = useState<QuizHistoryEntry[]>([]);
+  const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
+  const [totalQuizAttempts, setTotalQuizAttempts] = useState(0);
   const hasLoadedFromSource = useRef(false);
   const { isAuthenticated, isLoading, tokens } = useAuth();
   const accessToken = tokens?.accessToken;
 
-  // Always use backend as source of truth for authenticated users
-  useEffect(() => {
-    if (isLoading) return; // Wait for auth to finish initializing
-    if (isAuthenticated && !accessToken) return; // Wait for tokens before syncing
+  const applySyncedProgress = useCallback(
+    (progress: UserProgressState, metrics?: ProgressMetrics | null, fallbackCompletion?: string | null) => {
+      const resolvedProgress: UserProgressState = {
+        ...progress,
+        completedLessons: progress.completedLessons || [],
+        completedQuizzes: progress.completedQuizzes || [],
+        achievements: progress.achievements || [],
+        certificatesEarned: progress.certificatesEarned || [],
+        totalScore: progress.totalScore ?? 0,
+        enrolledCourses: progress.enrolledCourses || [],
+        studyStreak: progress.studyStreak ?? 0,
+        totalStudyTime: progress.totalStudyTime ?? 0,
+        lastCompletedLessonId: progress.lastCompletedLessonId ?? null,
+        lastCompletedAt: progress.lastCompletedAt ?? null,
+        lastSyncedAt: progress.lastSyncedAt ?? null,
+        activityLog: progress.activityLog || [],
+        quizHistory: progress.quizHistory || []
+      };
+
+      setCompletedLessons(resolvedProgress.completedLessons);
+      const streakValue = resolvedProgress.studyStreak > 0 ? resolvedProgress.studyStreak : 1;
+      setStudyStreak(streakValue);
+      setTotalStudyTime(resolvedProgress.totalStudyTime);
+      setLastCompletedLessonId(resolvedProgress.lastCompletedLessonId);
+
+      const fallbackLastCompletion = fallbackCompletion || null;
+
+      let resolvedLastCompletedAt: string | null = null;
+      if (resolvedProgress.lastCompletedAt) {
+        const parsedLastCompleted = new Date(resolvedProgress.lastCompletedAt);
+        if (!Number.isNaN(parsedLastCompleted.getTime())) {
+          resolvedLastCompletedAt = parsedLastCompleted.toISOString();
+        }
+      }
+
+      if (resolvedLastCompletedAt) {
+        setLastCompletedAt(resolvedLastCompletedAt);
+        setLastCompletionDate(new Date(resolvedLastCompletedAt).toDateString());
+      } else if (fallbackLastCompletion) {
+        const fallbackDate = new Date(fallbackLastCompletion);
+        if (!Number.isNaN(fallbackDate.getTime())) {
+          const isoValue = fallbackDate.toISOString();
+          setLastCompletedAt(isoValue);
+          setLastCompletionDate(fallbackDate.toDateString());
+        } else {
+          setLastCompletedAt(null);
+          setLastCompletionDate(null);
+        }
+      } else {
+        setLastCompletedAt(null);
+        setLastCompletionDate(null);
+      }
+
+      const resolvedLastActivity =
+        metrics?.lastActivityAt ||
+        resolvedProgress.lastCompletedAt ||
+        resolvedProgress.lastSyncedAt ||
+        fallbackLastCompletion ||
+        null;
+      let resolvedLastActivityIso: string | null = null;
+      if (resolvedLastActivity) {
+        const parsedLastActivity = new Date(resolvedLastActivity);
+        if (!Number.isNaN(parsedLastActivity.getTime())) {
+          resolvedLastActivityIso = parsedLastActivity.toISOString();
+        }
+      }
+
+      setLastActivityAt(resolvedLastActivityIso);
+
+      const weeklyData = metrics?.weeklyActivity ?? [];
+      setWeeklyActivity(normaliseWeeklyActivity(weeklyData));
+
+      const quizData = metrics?.quizHistory?.length
+        ? metrics.quizHistory
+        : resolvedProgress.quizHistory;
+
+      const normalisedHistory = normaliseQuizHistoryEntries(quizData);
+      setQuizHistory(normalisedHistory);
+      setTotalQuizAttempts(metrics?.totalQuizAttempts ?? normalisedHistory.length);
+    },
+    []
+  );
+
+  const loadProgress = useCallback(async () => {
+    if (isLoading) return;
+    if (isAuthenticated && !accessToken) return;
 
     hasLoadedFromSource.current = false;
 
-    const loadProgress = async () => {
-      if (isAuthenticated && accessToken) {
-        try {
-          const res = await fetchUserProgress(accessToken);
-          if (res.success && res.progress) {
-            const serverProgress = res.progress;
+    const applyDefaultState = (fallbackLastCompletion?: string | null) => {
+      let fallbackIso: string | null = null;
+      if (fallbackLastCompletion) {
+        const parsed = new Date(fallbackLastCompletion);
+        if (!Number.isNaN(parsed.getTime())) {
+          fallbackIso = parsed.toISOString();
+        }
+      }
 
-            // Pull any locally cached progress (e.g. from pre-auth browsing)
-            const localLessonsRaw = localStorage.getItem('course-progress');
-            const localStudyTimeRaw = localStorage.getItem('study-time');
-            const localStreakRaw = localStorage.getItem('study-streak');
-            const localLastCompletion = localStorage.getItem('last-completion-date');
+      setCompletedLessons([]);
+      setStudyStreak(1);
+      setTotalStudyTime(0);
+      setLastCompletedLessonId(null);
+      setLastCompletedAt(null);
+      setLastCompletionDate(fallbackLastCompletion ?? null);
+      setWeeklyActivity(createEmptyWeeklyActivity());
+      setQuizHistory([]);
+      setLastActivityAt(fallbackIso);
+      setTotalQuizAttempts(0);
+      hasLoadedFromSource.current = true;
+    };
 
-            const serverLessons = Array.isArray(serverProgress.completedLessons)
-              ? serverProgress.completedLessons
-              : [];
-            let localLessons: string[] = [];
-            if (localLessonsRaw) {
-              try {
-                const parsed = JSON.parse(localLessonsRaw);
-                if (Array.isArray(parsed)) {
-                  localLessons = parsed;
-                }
-              } catch (parseError) {
-                console.warn('Failed to parse local lesson cache:', parseError);
+    if (isAuthenticated && accessToken) {
+      try {
+        const res = await fetchUserProgress(accessToken);
+        if (res.success && res.progress) {
+          const serverProgress = res.progress;
+          const metrics = res.metrics ?? null;
+
+          const localLessonsRaw = localStorage.getItem('course-progress');
+          const localStudyTimeRaw = localStorage.getItem('study-time');
+          const localStreakRaw = localStorage.getItem('study-streak');
+          const localLastCompletion = localStorage.getItem('last-completion-date');
+
+          const serverLessons = Array.isArray(serverProgress.completedLessons)
+            ? serverProgress.completedLessons
+            : [];
+          let localLessons: string[] = [];
+          if (localLessonsRaw) {
+            try {
+              const parsed = JSON.parse(localLessonsRaw);
+              if (Array.isArray(parsed)) {
+                localLessons = parsed;
               }
+            } catch (parseError) {
+              console.warn('Failed to parse local lesson cache:', parseError);
             }
-            const mergedLessons = Array.from(new Set([...(serverLessons || []), ...(localLessons || [])]));
+          }
+          const mergedLessons = Array.from(new Set([...(serverLessons || []), ...(localLessons || [])]));
 
-            const serverStudyTime = typeof serverProgress.totalStudyTime === 'number' ? serverProgress.totalStudyTime : 0;
-            const localStudyTime = localStudyTimeRaw ? parseFloat(localStudyTimeRaw) : 0;
-            const mergedStudyTime = Number.isFinite(localStudyTime)
-              ? Math.max(serverStudyTime, localStudyTime)
-              : serverStudyTime;
+          const serverStudyTime =
+            typeof serverProgress.totalStudyTime === 'number' ? serverProgress.totalStudyTime : 0;
+          const localStudyTime = localStudyTimeRaw ? parseFloat(localStudyTimeRaw) : 0;
+          const mergedStudyTime = Number.isFinite(localStudyTime)
+            ? Math.max(serverStudyTime, localStudyTime)
+            : serverStudyTime;
 
-            const serverStreak = typeof serverProgress.studyStreak === 'number' ? serverProgress.studyStreak : 0;
-            const localStreak = localStreakRaw ? parseInt(localStreakRaw, 10) : 0;
-            const mergedStreak = Number.isFinite(localStreak)
-              ? Math.max(serverStreak, localStreak)
-              : serverStreak;
+          const serverStreak =
+            typeof serverProgress.studyStreak === 'number' ? serverProgress.studyStreak : 0;
+          const localStreak = localStreakRaw ? parseInt(localStreakRaw, 10) : 0;
+          const mergedStreak = Number.isFinite(localStreak)
+            ? Math.max(serverStreak, localStreak)
+            : serverStreak;
 
-            const updates: ProgressUpdatePayload = {};
-            let syncSucceeded = false;
+          const updates: ProgressUpdatePayload = {};
+          const sanitizedUpdates: Partial<UserProgressState> = {};
 
-            if (mergedLessons.length !== serverLessons.length) {
-              updates.completedLessons = mergedLessons;
+          if (mergedLessons.length !== serverLessons.length) {
+            updates.completedLessons = mergedLessons;
+            sanitizedUpdates.completedLessons = mergedLessons;
+          }
+
+          if (mergedStudyTime > serverStudyTime) {
+            const roundedStudyTime = parseFloat(mergedStudyTime.toFixed(2));
+            updates.totalStudyTime = roundedStudyTime;
+            sanitizedUpdates.totalStudyTime = roundedStudyTime;
+          }
+
+          if (mergedStreak > serverStreak) {
+            updates.studyStreak = mergedStreak;
+            sanitizedUpdates.studyStreak = mergedStreak;
+          }
+
+          if (localLastCompletion) {
+            const localCompletedDate = new Date(localLastCompletion);
+            const localTimestamp = localCompletedDate.getTime();
+            const serverCompletedDate = serverProgress.lastCompletedAt
+              ? new Date(serverProgress.lastCompletedAt)
+              : null;
+            const serverTimestamp = serverCompletedDate ? serverCompletedDate.getTime() : NaN;
+
+            if (
+              !Number.isNaN(localTimestamp) &&
+              (Number.isNaN(serverTimestamp) || localTimestamp > serverTimestamp)
+            ) {
+              const isoValue = localCompletedDate.toISOString();
+              updates.lastCompletedAt = isoValue;
+              sanitizedUpdates.lastCompletedAt = isoValue;
             }
+          }
 
-            if (mergedStudyTime > serverStudyTime) {
-              updates.totalStudyTime = parseFloat(mergedStudyTime.toFixed(2));
-            }
+          let latestMetrics = metrics;
+          let syncedProgress = serverProgress;
+          let syncSucceeded = Object.keys(updates).length === 0;
 
-            if (mergedStreak > serverStreak) {
-              updates.studyStreak = mergedStreak;
-            }
-
-            if (localLastCompletion) {
-              const localCompletedDate = new Date(localLastCompletion);
-              const localTimestamp = localCompletedDate.getTime();
-              const serverCompletedDate = serverProgress.lastCompletedAt ? new Date(serverProgress.lastCompletedAt) : null;
-              const serverTimestamp = serverCompletedDate ? serverCompletedDate.getTime() : NaN;
-
-              if (!Number.isNaN(localTimestamp) && (Number.isNaN(serverTimestamp) || localTimestamp > serverTimestamp)) {
-                updates.lastCompletedAt = localCompletedDate.toISOString();
-              }
-            }
-
-            let syncedProgress = serverProgress;
-
-            const pendingUpdateKeys = Object.keys(updates);
-
-            if (pendingUpdateKeys.length === 0) {
-              syncSucceeded = true;
-            }
-
-            if (pendingUpdateKeys.length > 0) {
-              try {
-                const syncResponse = await saveUserProgress(updates, accessToken);
-                if (syncResponse.success && syncResponse.progress) {
-                  syncedProgress = syncResponse.progress;
-                  syncSucceeded = true;
-                } else {
-                  syncedProgress = {
-                    ...serverProgress,
-                    ...updates,
-                  };
-                }
-              } catch (syncError) {
-                console.error('Failed to sync local progress with server:', syncError);
+          if (!syncSucceeded) {
+            try {
+              const syncResponse = await saveUserProgress(updates, accessToken);
+              if (syncResponse.success && syncResponse.progress) {
+                syncedProgress = syncResponse.progress;
+                latestMetrics = syncResponse.metrics ?? latestMetrics;
+                syncSucceeded = true;
+              } else {
                 syncedProgress = {
                   ...serverProgress,
-                  ...updates,
+                  ...sanitizedUpdates,
+                  activityLog: serverProgress.activityLog,
+                  quizHistory: serverProgress.quizHistory
                 };
               }
+            } catch (syncError) {
+              console.error('Failed to sync local progress with server:', syncError);
+              syncedProgress = {
+                ...serverProgress,
+                ...sanitizedUpdates,
+                activityLog: serverProgress.activityLog,
+                quizHistory: serverProgress.quizHistory
+              };
             }
-
-            setCompletedLessons(syncedProgress.completedLessons || []);
-            const syncedStreak = syncedProgress.studyStreak ?? mergedStreak ?? 1;
-            setStudyStreak(syncedStreak > 0 ? syncedStreak : 1);
-            setTotalStudyTime(syncedProgress.totalStudyTime ?? mergedStudyTime ?? 0);
-            setLastCompletedLessonId(syncedProgress.lastCompletedLessonId || null);
-
-            if (syncedProgress.lastCompletedAt) {
-              const isoValue = new Date(syncedProgress.lastCompletedAt).toISOString();
-              setLastCompletedAt(isoValue);
-              setLastCompletionDate(new Date(isoValue).toDateString());
-            } else if (localLastCompletion) {
-              const fallbackDate = new Date(localLastCompletion);
-              if (!Number.isNaN(fallbackDate.getTime())) {
-                setLastCompletedAt(fallbackDate.toISOString());
-                setLastCompletionDate(fallbackDate.toDateString());
-              } else {
-                setLastCompletedAt(null);
-                setLastCompletionDate(null);
-              }
-            } else {
-              setLastCompletedAt(null);
-              setLastCompletionDate(null);
-            }
-
-            // Once synced, clear stale local cache so we don't reapply it later
-            if (syncSucceeded) {
-              localStorage.removeItem('course-progress');
-              localStorage.removeItem('study-time');
-              localStorage.removeItem('study-streak');
-              localStorage.removeItem('last-completion-date');
-            }
-
-            hasLoadedFromSource.current = true;
-            return;
           }
-        } catch (e) {
-          setCompletedLessons([]);
-          setStudyStreak(1);
-          setTotalStudyTime(0);
-          setLastCompletedLessonId(null);
-          setLastCompletedAt(null);
-          setLastCompletionDate(null);
+
+          applySyncedProgress(syncedProgress, latestMetrics, localLastCompletion ?? null);
+
+          if (syncSucceeded) {
+            localStorage.removeItem('course-progress');
+            localStorage.removeItem('study-time');
+            localStorage.removeItem('study-streak');
+            localStorage.removeItem('last-completion-date');
+          }
+
           hasLoadedFromSource.current = true;
+          return;
         }
-      } else {
-        // fallback: localStorage for unauthenticated users only
-        const savedProgress = localStorage.getItem('course-progress');
-        const savedStudyTime = localStorage.getItem('study-time');
-        const savedStreak = localStorage.getItem('study-streak');
-        if (savedProgress) {
-          try {
-            const parsed = JSON.parse(savedProgress);
-            setCompletedLessons(parsed);
-          } catch (error) {
-            console.error('Error loading progress:', error);
-          }
-        }
-        if (savedStudyTime !== null) {
-          const parsedStudyTime = parseFloat(savedStudyTime);
-          setTotalStudyTime(Number.isNaN(parsedStudyTime) ? 0 : parsedStudyTime);
-        }
-        if (savedStreak !== null) {
-          const parsedStreak = parseInt(savedStreak, 10);
-          setStudyStreak(Number.isNaN(parsedStreak) ? 1 : parsedStreak);
-        }
-        const savedLastCompletion = localStorage.getItem('last-completion-date');
-        if (savedLastCompletion) {
-          setLastCompletionDate(savedLastCompletion);
-        } else {
-          setLastCompletionDate(null);
-        }
-        setLastCompletedLessonId(null);
-        setLastCompletedAt(null);
-        hasLoadedFromSource.current = true;
+
+        applyDefaultState();
+      } catch (error) {
+        applyDefaultState();
       }
-    };
+      return;
+    }
+
+    // Local fallback for unauthenticated users
+    const savedProgress = localStorage.getItem('course-progress');
+    const savedStudyTime = localStorage.getItem('study-time');
+    const savedStreak = localStorage.getItem('study-streak');
+    const savedLastCompletion = localStorage.getItem('last-completion-date');
+
+    if (savedProgress) {
+      try {
+        const parsed = JSON.parse(savedProgress);
+        setCompletedLessons(Array.isArray(parsed) ? parsed : []);
+      } catch (error) {
+        console.error('Error loading progress:', error);
+        setCompletedLessons([]);
+      }
+    } else {
+      setCompletedLessons([]);
+    }
+
+    if (savedStudyTime !== null) {
+      const parsedStudyTime = parseFloat(savedStudyTime);
+      setTotalStudyTime(Number.isNaN(parsedStudyTime) ? 0 : parsedStudyTime);
+    } else {
+      setTotalStudyTime(0);
+    }
+
+    if (savedStreak !== null) {
+      const parsedStreak = parseInt(savedStreak, 10);
+      setStudyStreak(Number.isNaN(parsedStreak) ? 1 : parsedStreak);
+    } else {
+      setStudyStreak(1);
+    }
+
+    if (savedLastCompletion) {
+      setLastCompletionDate(savedLastCompletion);
+      const fallbackDate = new Date(savedLastCompletion);
+      setLastCompletedAt(!Number.isNaN(fallbackDate.getTime()) ? fallbackDate.toISOString() : null);
+      setLastActivityAt(!Number.isNaN(fallbackDate.getTime()) ? fallbackDate.toISOString() : null);
+    } else {
+      setLastCompletionDate(null);
+      setLastCompletedAt(null);
+      setLastActivityAt(null);
+    }
+
+    setWeeklyActivity(createEmptyWeeklyActivity());
+    setQuizHistory([]);
+    setTotalQuizAttempts(0);
+
+    hasLoadedFromSource.current = true;
+  }, [isAuthenticated, isLoading, accessToken, applySyncedProgress]);
+
+  useEffect(() => {
     loadProgress();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isLoading, accessToken]);
+  }, [loadProgress]);
 
   // Save progress to backend (if authenticated) or localStorage on change
   useEffect(() => {
     if (!hasLoadedFromSource.current) return;
 
     if (isAuthenticated && accessToken) {
-      saveUserProgress({
+      const payload: ProgressUpdatePayload = {
         completedLessons,
         studyStreak,
         totalStudyTime,
         lastCompletedLessonId: lastCompletedLessonId || undefined,
         lastCompletedAt,
-      }, accessToken).catch((error) => {
-        console.error('Failed to sync progress with server:', error);
-      });
+      };
+
+      saveUserProgress(payload, accessToken)
+        .then((response) => {
+          if (response?.success && response.progress) {
+            applySyncedProgress(response.progress, response.metrics ?? null, lastCompletedAt);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to sync progress with server:', error);
+        });
     } else {
       localStorage.setItem('course-progress', JSON.stringify(completedLessons));
       localStorage.setItem('study-time', totalStudyTime.toString());
@@ -251,7 +439,17 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         localStorage.removeItem('last-completion-date');
       }
     }
-  }, [completedLessons, studyStreak, totalStudyTime, isAuthenticated, accessToken, lastCompletedAt, lastCompletedLessonId, lastCompletionDate]);
+  }, [
+    completedLessons,
+    studyStreak,
+    totalStudyTime,
+    isAuthenticated,
+    accessToken,
+    lastCompletedAt,
+    lastCompletedLessonId,
+    lastCompletionDate,
+    applySyncedProgress
+  ]);
 
   const markLessonComplete = (lessonId: string) => {
     setCompletedLessons(prev => {
@@ -261,7 +459,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         // Update study time (simulate lesson duration)
         const lessonDuration = Math.floor(Math.random() * 30) + 15; // Random 15-45 minutes
-        setTotalStudyTime(prevTime => prevTime + (lessonDuration / 60));
+        const durationHours = lessonDuration / 60;
+        setTotalStudyTime(prevTime => prevTime + durationHours);
         
         // Update streak (simple logic - could be more sophisticated)
         const today = new Date();
@@ -281,6 +480,42 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setStudyStreak(1);
           }
         }
+
+        setWeeklyActivity(prevActivity => {
+          const baseline = prevActivity.length ? prevActivity : createEmptyWeeklyActivity();
+          const todayDate = new Date();
+          todayDate.setHours(0, 0, 0, 0);
+          const dateKey = todayDate.toISOString().split('T')[0];
+
+          let found = false;
+          const updated = baseline.map((entry) => {
+            const entryKey = entry.date.split('T')[0];
+            if (entryKey === dateKey) {
+              found = true;
+              return {
+                ...entry,
+                lessons: entry.lessons + 1,
+                studyTime: parseFloat((entry.studyTime + durationHours).toFixed(2))
+              };
+            }
+            return entry;
+          });
+
+          if (!found) {
+            const newEntry: WeeklyActivityEntry = {
+              date: `${dateKey}T00:00:00.000Z`,
+              lessons: 1,
+              studyTime: parseFloat(durationHours.toFixed(2)),
+              quizAttempts: 0,
+              scoreEarned: 0
+            };
+            return [...updated.slice(1), newEntry];
+          }
+
+          return updated;
+        });
+
+  setLastActivityAt(today.toISOString());
 
         if (isAuthenticated) {
           setLastCompletedLessonId(lessonId);
@@ -330,6 +565,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLastCompletedLessonId(null);
     setLastCompletedAt(null);
     setLastCompletionDate(null);
+    setWeeklyActivity(createEmptyWeeklyActivity());
+    setQuizHistory([]);
+    setLastActivityAt(null);
+    setTotalQuizAttempts(0);
     
     // Clear localStorage
     localStorage.removeItem('course-progress');
@@ -338,6 +577,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.removeItem('last-completion-date');
     hasLoadedFromSource.current = true;
   };
+
+  const refreshProgress = useCallback(async () => {
+    await loadProgress();
+  }, [loadProgress]);
 
   const value: ProgressContextType = {
     completedLessons,
@@ -350,7 +593,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     studyStreak,
     totalStudyTime,
     updateStudyTime,
-    resetProgress
+    resetProgress,
+    weeklyActivity,
+    quizHistory,
+    lastActivityAt,
+    totalQuizAttempts,
+    refreshProgress
   };
 
   return (
