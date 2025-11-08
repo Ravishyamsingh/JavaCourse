@@ -536,36 +536,39 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const completionDate = new Date();
     const completionIso = completionDate.toISOString();
     const completionDayKey = completionDate.toDateString();
-    const mergedLessons = Array.from(new Set([...completedLessons, normalisedId]));
     const lessonAlreadyCompleted = completedLessons.includes(normalisedId);
-    const previousCompletionDate = lastCompletionDate ? new Date(lastCompletionDate) : null;
+    const uniqueLessons = Array.from(new Set([...completedLessons, normalisedId]));
+    const previousCompletionDate = lastCompletedAt ? new Date(lastCompletedAt) : null;
 
     const nextStudyStreak = (() => {
       if (lessonAlreadyCompleted) {
         return studyStreak;
       }
+
       if (!previousCompletionDate || Number.isNaN(previousCompletionDate.getTime())) {
         return 1;
       }
-      const diffDays = Math.floor(
-        (Date.UTC(
-          completionDate.getFullYear(),
-          completionDate.getMonth(),
-          completionDate.getDate()
-        ) -
-          Date.UTC(
-            previousCompletionDate.getFullYear(),
-            previousCompletionDate.getMonth(),
-            previousCompletionDate.getDate()
-          )) /
-          (24 * 60 * 60 * 1000)
+
+      const completionUtc = Date.UTC(
+        completionDate.getFullYear(),
+        completionDate.getMonth(),
+        completionDate.getDate()
       );
+      const previousUtc = Date.UTC(
+        previousCompletionDate.getFullYear(),
+        previousCompletionDate.getMonth(),
+        previousCompletionDate.getDate()
+      );
+      const diffDays = Math.floor((completionUtc - previousUtc) / (1000 * 60 * 60 * 24));
+
       if (diffDays === 0) {
         return studyStreak;
       }
+
       if (diffDays === 1) {
         return studyStreak + 1;
       }
+
       return 1;
     })();
 
@@ -573,21 +576,26 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       ? totalStudyTime
       : Number.parseFloat((totalStudyTime + durationHours).toFixed(2));
 
-    const applyLocalCompletion = () => {
-      // Only update totals, streaks and weekly activity if this call actually adds the lesson
-      let didAddLesson = false;
-      setCompletedLessons((prev) => {
-        if (prev.includes(normalisedId)) return prev;
-        didAddLesson = true;
-        return Array.from(new Set([...prev, normalisedId]));
-      });
+    const applyGuestCompletion = () => {
+      if (!lessonAlreadyCompleted) {
+        setCompletedLessons(uniqueLessons);
+        localStorage.setItem('course-progress', JSON.stringify(uniqueLessons));
+      } else {
+        localStorage.setItem('course-progress', JSON.stringify(completedLessons));
+      }
 
-      if (didAddLesson) {
-        setTotalStudyTime(() => updatedTotalStudyTime);
-        setStudyStreak(() => nextStudyStreak);
+      setTotalStudyTime(updatedTotalStudyTime);
+      localStorage.setItem('study-time', updatedTotalStudyTime.toString());
 
+      setStudyStreak(nextStudyStreak);
+      localStorage.setItem('study-streak', nextStudyStreak.toString());
+
+      if (!lessonAlreadyCompleted) {
         setWeeklyActivity((prevActivity) => {
-          const baseline = prevActivity.length ? prevActivity : createEmptyWeeklyActivity();
+          const baseline =
+            Array.isArray(prevActivity) && prevActivity.length === 7
+              ? prevActivity
+              : createEmptyWeeklyActivity();
           const dateKey = completionIso.split('T')[0];
           let found = false;
 
@@ -619,63 +627,68 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       }
 
-      // Always update last activity timestamps even if already completed so UI shows recent interaction
       setLastActivityAt(completionIso);
       setLastCompletedLessonId(normalisedId);
       setLastCompletedAt(completionIso);
       setLastCompletionDate(completionDayKey);
+      localStorage.setItem('last-completion-date', completionDayKey);
     };
 
     try {
-      if (isAuthenticated && accessToken) {
-        const payload: ProgressUpdatePayload = {
-          completedLessons: mergedLessons,
-          lastCompletedLessonId: normalisedId,
-          lastCompletedAt: completionIso,
-          studyStreak: nextStudyStreak,
-          totalStudyTime: updatedTotalStudyTime
-        };
-
-        if (!lessonAlreadyCompleted) {
-          payload.activityEntry = {
-            date: completionIso,
-            lessonsCompleted: 1,
-            studyTime: durationHours,
-            quizAttempts: 0,
-            scoreEarned: 0
-          };
-        }
-
-        const response = await saveUserProgress(payload, accessToken);
-
-        if (response?.success && response.progress) {
-          applySyncedProgress(response.progress, response.metrics ?? null, completionIso);
-          hasLoadedFromSource.current = true;
-          return;
-        }
-
-        await loadProgress();
-        applyLocalCompletion();
+      if (!isAuthenticated || !accessToken) {
+        applyGuestCompletion();
         return;
       }
 
-      applyLocalCompletion();
+      const payload: ProgressUpdatePayload = {
+        completedLessons: lessonAlreadyCompleted ? completedLessons : uniqueLessons,
+        lastCompletedLessonId: normalisedId,
+        lastCompletedAt: completionIso,
+        studyStreak: nextStudyStreak,
+        totalStudyTime: updatedTotalStudyTime
+      };
+
+      if (!lessonAlreadyCompleted) {
+        payload.activityEntry = {
+          date: completionIso,
+          lessonsCompleted: 1,
+          studyTime: durationHours,
+          quizAttempts: 0,
+          scoreEarned: 0
+        };
+      }
+
+      const response = await saveUserProgress(payload, accessToken);
+
+      if (response?.success && response.progress) {
+        applySyncedProgress(response.progress, response.metrics ?? null, completionIso);
+        hasLoadedFromSource.current = true;
+        return;
+      }
+
+      const refreshed = await fetchUserProgress(accessToken);
+      if (refreshed?.success && refreshed.progress) {
+        applySyncedProgress(refreshed.progress, refreshed.metrics ?? null, completionIso);
+        hasLoadedFromSource.current = true;
+        return;
+      }
+
+      throw new Error('Progress update did not persist to the server');
     } catch (error) {
       console.error('Failed to mark lesson as complete:', error);
-      applyLocalCompletion();
+      applyGuestCompletion();
       throw error;
     } finally {
       lessonsInFlightRef.current.delete(normalisedId);
     }
   }, [
     completedLessons,
-    isAuthenticated,
-    accessToken,
-    lastCompletionDate,
     studyStreak,
     totalStudyTime,
-    applySyncedProgress,
-    loadProgress
+    isAuthenticated,
+    accessToken,
+    lastCompletedAt,
+    applySyncedProgress
   ]);
 
   const isLessonCompleted = (lessonId: string): boolean => {
