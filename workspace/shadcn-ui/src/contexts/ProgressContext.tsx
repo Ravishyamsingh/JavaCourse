@@ -15,6 +15,7 @@ interface ProgressContextType {
   completedLessons: string[];
   markLessonComplete: (lessonId: string) => Promise<void>;
   isLessonCompleted: (lessonId: string) => boolean;
+  isMarkingLesson: (lessonId: string) => boolean;
   getProgressPercentage: () => number;
   getCompletedCount: () => number;
   getTotalLessons: () => number;
@@ -572,6 +573,59 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       ? totalStudyTime
       : Number.parseFloat((totalStudyTime + durationHours).toFixed(2));
 
+    const applyLocalCompletion = () => {
+      // Only update totals, streaks and weekly activity if this call actually adds the lesson
+      let didAddLesson = false;
+      setCompletedLessons((prev) => {
+        if (prev.includes(normalisedId)) return prev;
+        didAddLesson = true;
+        return Array.from(new Set([...prev, normalisedId]));
+      });
+
+      if (didAddLesson) {
+        setTotalStudyTime(() => updatedTotalStudyTime);
+        setStudyStreak(() => nextStudyStreak);
+
+        setWeeklyActivity((prevActivity) => {
+          const baseline = prevActivity.length ? prevActivity : createEmptyWeeklyActivity();
+          const dateKey = completionIso.split('T')[0];
+          let found = false;
+
+          const updated = baseline.map((entry) => {
+            const entryKey = entry.date.split('T')[0];
+            if (entryKey === dateKey) {
+              found = true;
+              return {
+                ...entry,
+                lessons: entry.lessons + 1,
+                studyTime: parseFloat((entry.studyTime + durationHours).toFixed(2))
+              };
+            }
+            return entry;
+          });
+
+          if (!found) {
+            const newEntry: WeeklyActivityEntry = {
+              date: `${dateKey}T00:00:00.000Z`,
+              lessons: 1,
+              studyTime: parseFloat(durationHours.toFixed(2)),
+              quizAttempts: 0,
+              scoreEarned: 0
+            };
+            return [...updated.slice(1), newEntry];
+          }
+
+          return updated;
+        });
+      }
+
+      // Always update last activity timestamps even if already completed so UI shows recent interaction
+      setLastActivityAt(completionIso);
+      setLastCompletedLessonId(normalisedId);
+      setLastCompletedAt(completionIso);
+      setLastCompletionDate(completionDayKey);
+    };
+
     try {
       if (isAuthenticated && accessToken) {
         const payload: ProgressUpdatePayload = {
@@ -592,62 +646,23 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           };
         }
 
-        await saveUserProgress(payload, accessToken);
-        await loadProgress();
-        return;
-      }
+        const response = await saveUserProgress(payload, accessToken);
 
-      if (lessonAlreadyCompleted) {
-        setLastActivityAt(completionIso);
-        setLastCompletedLessonId(normalisedId);
-        setLastCompletedAt(completionIso);
-        setLastCompletionDate(completionDayKey);
-        return;
-      }
-
-      setCompletedLessons((prev) => Array.from(new Set([...prev, normalisedId])));
-      setTotalStudyTime(() => updatedTotalStudyTime);
-      setStudyStreak(() => nextStudyStreak);
-
-      setWeeklyActivity((prevActivity) => {
-        const baseline = prevActivity.length ? prevActivity : createEmptyWeeklyActivity();
-        const dateKey = completionIso.split('T')[0];
-        let found = false;
-
-        const updated = baseline.map((entry) => {
-          const entryKey = entry.date.split('T')[0];
-          if (entryKey === dateKey) {
-            found = true;
-            return {
-              ...entry,
-              lessons: entry.lessons + 1,
-              studyTime: parseFloat((entry.studyTime + durationHours).toFixed(2))
-            };
-          }
-          return entry;
-        });
-
-        if (!found) {
-          const newEntry: WeeklyActivityEntry = {
-            date: `${dateKey}T00:00:00.000Z`,
-            lessons: 1,
-            studyTime: parseFloat(durationHours.toFixed(2)),
-            quizAttempts: 0,
-            scoreEarned: 0
-          };
-          return [...updated.slice(1), newEntry];
+        if (response?.success && response.progress) {
+          applySyncedProgress(response.progress, response.metrics ?? null, completionIso);
+          hasLoadedFromSource.current = true;
+          return;
         }
 
-        return updated;
-      });
+        await loadProgress();
+        applyLocalCompletion();
+        return;
+      }
 
-      setLastActivityAt(completionIso);
-      setLastCompletedLessonId(normalisedId);
-      setLastCompletedAt(completionIso);
-      setLastCompletionDate(completionDayKey);
-      localStorage.setItem('last-completion-date', completionDayKey);
+      applyLocalCompletion();
     } catch (error) {
       console.error('Failed to mark lesson as complete:', error);
+      applyLocalCompletion();
       throw error;
     } finally {
       lessonsInFlightRef.current.delete(normalisedId);
@@ -659,6 +674,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     lastCompletionDate,
     studyStreak,
     totalStudyTime,
+    applySyncedProgress,
     loadProgress
   ]);
 
@@ -714,6 +730,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const value: ProgressContextType = {
     completedLessons,
     markLessonComplete,
+    isMarkingLesson: (lessonId: string) => lessonsInFlightRef.current.has(lessonId),
     isLessonCompleted,
     getProgressPercentage,
     getCompletedCount,
