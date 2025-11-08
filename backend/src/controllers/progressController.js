@@ -154,6 +154,11 @@ export const getUserProgress = async (req, res) => {
       ...storedProgress
     };
 
+    // Ensure completedLessons is always an array
+    if (!Array.isArray(progressData.completedLessons)) {
+      progressData.completedLessons = [];
+    }
+
     const activityLog = normaliseActivityLog(progressData.activityLog);
     const quizHistory = normaliseQuizHistory(progressData.quizHistory);
 
@@ -193,6 +198,7 @@ export const getUserProgress = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Progress fetch error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch progress' });
   }
 };
@@ -299,10 +305,17 @@ export const updateUserProgress = async (req, res) => {
       }
     }
 
+    // Ensure completedLessons is always an array and deduplicated
+    const finalCompletedLessons = Array.from(new Set([
+      ...(currentProgress.completedLessons || []),
+      ...(updates.completedLessons || [])
+    ])).filter(Boolean);
+
     user.progress = {
       ...defaultProgressState,
       ...currentProgress,
       ...updates,
+      completedLessons: finalCompletedLessons,
       lastSyncedAt: new Date()
     };
 
@@ -344,6 +357,7 @@ export const updateUserProgress = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Progress update error:', error);
     res.status(500).json({ success: false, message: 'Failed to update progress' });
   }
 };

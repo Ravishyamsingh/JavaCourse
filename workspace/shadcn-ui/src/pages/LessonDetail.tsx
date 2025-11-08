@@ -184,10 +184,24 @@ public class ComingSoon {
   const markAsCompleted = async () => {
     if (!lessonId) return;
     if (isMarkingLesson(lessonId)) return; // prevent double clicks
+
+    // Disable button immediately to prevent multiple clicks
+    const button = document.querySelector('[data-testid="mark-complete-button"]') as HTMLButtonElement;
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Marking...';
+    }
+
     try {
       await markLessonComplete(lessonId);
+      // Success - button will be hidden by conditional rendering
     } catch (error) {
       console.error('Failed to mark lesson complete:', error);
+      // Re-enable button on error
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Mark as Complete';
+      }
     }
   };
 
@@ -490,11 +504,13 @@ public class Exercise {
                   {!isCompleted && (
                     <Button
                       onClick={markAsCompleted}
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
+                      disabled={isMarkingLesson(lessonId || '')}
+                      data-testid="mark-complete-button"
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       size="sm"
                     >
                       <Trophy className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-                      Mark as Complete
+                      {isMarkingLesson(lessonId || '') ? 'Marking...' : 'Mark as Complete'}
                     </Button>
                   )}
                   <Button
