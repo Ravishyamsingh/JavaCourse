@@ -127,6 +127,7 @@ export default function LessonDetail() {
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const { markLessonComplete, isLessonCompleted } = useProgress();
+  const { isMarkingLesson } = useProgress();
   
   // Scroll to top when component mounts or lesson changes
   useScrollToTop();
@@ -181,9 +182,8 @@ public class ComingSoon {
   };
 
   const markAsCompleted = async () => {
-    if (!lessonId) {
-      return;
-    }
+    if (!lessonId) return;
+    if (isMarkingLesson(lessonId)) return; // prevent double clicks
     try {
       await markLessonComplete(lessonId);
     } catch (error) {
