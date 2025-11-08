@@ -266,247 +266,46 @@ export const lesson_2_1: LessonContent = {
         </section>
       </div>
     `,
-    codeExample: `/**
- * ConditionalStatementsDemo.java
- * 
- * This comprehensive example demonstrates various conditional statements in Java:
- * - Simple if statements
- * - if-else statements
- * - if-else-if ladders
- * - Nested conditional statements
- * - Complex boolean expressions
- * - Best practices for conditional code organization
- * 
- * Run this program to see how different conditional structures work in practice.
- */
-
-public class ConditionalStatementsDemo {
-    
+    codeExample: `public class ConditionalStatements {
     public static void main(String[] args) {
-        printHeader();
-        
-        // Demonstrate simple if statement
-        demonstrateSimpleIf();
-        
-        // Demonstrate if-else statement
-        demonstrateIfElse();
-        
-        // Demonstrate if-else-if ladder
-        demonstrateIfElseIfLadder();
-        
-        // Demonstrate nested conditionals
-        demonstrateNestedConditionals();
-        
-        // Demonstrate complex boolean expressions
-        demonstrateComplexConditions();
-        
-        printFooter();
-    }
-    
-    private static void printHeader() {
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                 CONDITIONAL STATEMENTS DEMO                  ║");
-        System.out.println("║            Understanding Decision Making in Java             ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
-        System.out.println();
-    }
-    
-    private static void demonstrateSimpleIf() {
-        System.out.println("🔸 SIMPLE IF STATEMENT");
-        System.out.println("   ───────────────────");
-        
-        int temperature = 30;
-        System.out.println("   Current temperature: " + temperature + "°C");
-        
-        if (temperature > 25) {
-            System.out.println("   It's a hot day! Stay hydrated.");
-        }
-        
-        System.out.println();
-    }
-    
-    private static void demonstrateIfElse() {
-        System.out.println("🔸 IF-ELSE STATEMENT");
-        System.out.println("   ─────────────────");
-        
-        int age = 17;
-        System.out.println("   Person's age: " + age + " years");
-        
+        // Simple if statement
+        int age = 20;
         if (age >= 18) {
-            System.out.println("   ✅ Person is eligible to vote");
-            System.out.println("   ✅ Person can obtain a driver's license");
-        } else {
-            System.out.println("   ⚠️  Person is not yet eligible to vote");
-            System.out.println("   ⚠️  Person cannot obtain a driver's license");
+            System.out.println("You are an adult");
         }
-        
-        System.out.println();
-    }
-    
-    private static void demonstrateIfElseIfLadder() {
-        System.out.println("🔸 IF-ELSE-IF LADDER");
-        System.out.println("   ─────────────────");
-        
-        int score = 87;
-        System.out.println("   Student score: " + score + " points");
-        
-        if (score >= 90) {
-            System.out.println("   Grade: A (Excellent!)");
-            System.out.println("   Status: Outstanding performance");
-        } else if (score >= 80) {
-            System.out.println("   Grade: B (Good job!)");
-            System.out.println("   Status: Above average performance");
-        } else if (score >= 70) {
-            System.out.println("   Grade: C (Satisfactory)");
-            System.out.println("   Status: Meets basic requirements");
-        } else if (score >= 60) {
-            System.out.println("   Grade: D (Needs improvement)");
-            System.out.println("   Status: Below average performance");
-        } else {
-            System.out.println("   Grade: F (Fail)");
-            System.out.println("   Status: Requires significant improvement");
-        }
-        
-        System.out.println();
-    }
-    
-    private static void demonstrateNestedConditionals() {
-        System.out.println("🔸 NESTED CONDITIONAL STATEMENTS");
-        System.out.println("   ─────────────────────────────");
-        
-        boolean isMember = true;
-        int age = 65;
-        boolean hasCoupon = true;
-        
-        System.out.println("   Customer details:");
-        System.out.println("   - Member: " + (isMember ? "Yes" : "No"));
-        System.out.println("   - Age: " + age);
-        System.out.println("   - Has coupon: " + (hasCoupon ? "Yes" : "No"));
-        
-        // Complex discount calculation based on multiple conditions
-        if (isMember) {
-            if (age >= 65) {
-                if (hasCoupon) {
-                    System.out.println("   🎉 Maximum discount: 30% (Senior Member + Coupon)");
-                } else {
-                    System.out.println("   🎉 Senior member discount: 20%");
-                }
-            } else {
-                if (hasCoupon) {
-                    System.out.println("   🎉 Member discount: 15% + Coupon bonus");
-                } else {
-                    System.out.println("   🎉 Regular member discount: 10%");
-                }
-            }
-        } else {
-            if (hasCoupon) {
-                System.out.println("   🎉 Coupon discount: 5%");
-            } else {
-                System.out.println("   ℹ️  No discount available");
-            }
-        }
-        
-        System.out.println();
-    }
-    
-    private static void demonstrateComplexConditions() {
-        System.out.println("🔸 COMPLEX BOOLEAN EXPRESSIONS");
-        System.out.println("   ───────────────────────────");
-        
-        int temperature = 28;
-        boolean isSunny = true;
-        boolean hasUmbrella = false;
-        int hour = 14; // 2 PM
-        
-        System.out.println("   Weather conditions:");
-        System.out.println("   - Temperature: " + temperature + "°C");
-        System.out.println("   - Sunny: " + (isSunny ? "Yes" : "No"));
-        System.out.println("   - Has umbrella: " + (hasUmbrella ? "Yes" : "No"));
-        System.out.println("   - Time: " + hour + ":00");
-        
-        // Complex decision for going outside
-        if ((temperature >= 20 && temperature <= 35) && 
-            (isSunny || hasUmbrella) && 
-            (hour >= 9 && hour <= 18)) {
-            System.out.println("   ✅ Perfect conditions for outdoor activities!");
-        } else if (temperature < 20 || temperature > 35) {
-            System.out.println("   ⚠️  Temperature is not ideal for outdoor activities");
-        } else if (!isSunny && !hasUmbrella) {
-            System.out.println("   ⚠️  Not sunny and no umbrella - risk of getting wet");
-        } else if (hour < 9 || hour > 18) {
-            System.out.println("   ⚠️  Not an appropriate time for outdoor activities");
-        }
-        
-        System.out.println();
-    }
-    
-    private static void printFooter() {
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                    🎉 DEMONSTRATION COMPLETE! 🎉           ║");
-        System.out.println("║                                                              ║");
-        System.out.println("║  You've learned about:                                       ║");
-        System.out.println("║  • Simple if statements for basic conditions                 ║");
-        System.out.println("║  • if-else statements for binary decisions                   ║");
-        System.out.println("║  • if-else-if ladders for multiple conditions                ║");
-        System.out.println("║  • Nested conditionals for complex logic                     ║");
-        System.out.println("║  • Boolean operators for combining conditions                ║");
-        System.out.println("║  • Best practices for writing clean conditional code         ║");
-        System.out.println("║                                                              ║");
-        System.out.println("║  Remember to:                                                ║");
-        System.out.println("║  • Keep conditions simple and readable                       ║");
-        System.out.println("║  • Use descriptive variable names                            ║");
-        System.out.println("║  • Comment complex logic for maintainability                 ║");
-        System.out.println("║  • Avoid deeply nested conditionals when possible            ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
-    }
-}
 
-/*
- * SAMPLE OUTPUT:
- * 
- * ╔══════════════════════════════════════════════════════════════╗
- * ║                 CONDITIONAL STATEMENTS DEMO                  ║
- * ║            Understanding Decision Making in Java             ║
- * ╚══════════════════════════════════════════════════════════════╝
- * 
- * 🔸 SIMPLE IF STATEMENT
- *    ───────────────────
- *    Current temperature: 30°C
- *    It's a hot day! Stay hydrated.
- * 
- * 🔸 IF-ELSE STATEMENT
- *    ─────────────────
- *    Person's age: 17 years
- *    ⚠️  Person is not yet eligible to vote
- *    ⚠️  Person cannot obtain a driver's license
- * 
- * 🔸 IF-ELSE-IF LADDER
- *    ─────────────────
- *    Student score: 87 points
- *    Grade: B (Good job!)
- *    Status: Above average performance
- * 
- * 🔸 NESTED CONDITIONAL STATEMENTS
- *    ─────────────────────────────
- *    Customer details:
- *    - Member: Yes
- *    - Age: 65
- *    - Has coupon: Yes
- *    🎉 Maximum discount: 30% (Senior Member + Coupon)
- * 
- * 🔸 COMPLEX BOOLEAN EXPRESSIONS
- *    ───────────────────────────
- *    Weather conditions:
- *    - Temperature: 28°C
- *    - Sunny: Yes
- *    - Has umbrella: No
- *    - Time: 14:00
- *    ✅ Perfect conditions for outdoor activities!
- * 
- * ╔══════════════════════════════════════════════════════════════╗
- * ║                    🎉 DEMONSTRATION COMPLETE! 🎉           ║
- * ╚══════════════════════════════════════════════════════════════╝
- */`,
+        // if-else statement
+        int score = 85;
+        if (score >= 60) {
+            System.out.println("You passed!");
+        } else {
+            System.out.println("You failed");
+        }
+
+        // if-else-if ladder
+        int marks = 75;
+        if (marks >= 90) {
+            System.out.println("Grade: A");
+        } else if (marks >= 80) {
+            System.out.println("Grade: B");
+        } else if (marks >= 70) {
+            System.out.println("Grade: C");
+        } else {
+            System.out.println("Grade: D");
+        }
+
+        // Nested if statements
+        boolean isStudent = true;
+        int studentAge = 16;
+        if (isStudent) {
+            if (studentAge >= 18) {
+                System.out.println("Adult student");
+            } else {
+                System.out.println("Young student");
+            }
+        }
+    }
+}`,
     exercise: `
       **🎯 Conditional Statements Practice Exercise**
 

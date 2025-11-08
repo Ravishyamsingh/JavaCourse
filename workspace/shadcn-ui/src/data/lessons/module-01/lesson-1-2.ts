@@ -174,7 +174,7 @@ export const lesson_1_2: LessonContent = {
     `,
     codeExample: `/**
  * EnvironmentTest.java
- * 
+ *
  * This comprehensive test program verifies your Java development environment
  * and displays detailed system information. It demonstrates:
  * - System property access
@@ -182,15 +182,15 @@ export const lesson_1_2: LessonContent = {
  * - Runtime information
  * - Memory management details
  * - File system properties
- * 
+ *
  * Run this program to ensure your Java setup is working correctly!
  */
- 
+
 import java.io.File;
 import java.util.Properties;
 
 public class EnvironmentTest {
-    
+
     public static void main(String[] args) {
         printWelcomeHeader();
         printJavaVersionInfo();
@@ -200,7 +200,7 @@ public class EnvironmentTest {
         printFileSystemInfo();
         printSuccessMessage();
     }
-    
+
     /**
      * Print a welcome header with formatting
      */
@@ -211,7 +211,7 @@ public class EnvironmentTest {
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.println();
     }
-    
+
     /**
      * Display comprehensive Java version information
      */
@@ -226,15 +226,15 @@ public class EnvironmentTest {
         System.out.println("   JVM Name:     " + System.getProperty("java.vm.name"));
         System.out.println();
     }
-    
+
     /**
      * Show operating system and runtime properties
      */
     private static void printSystemProperties() {
         System.out.println("🔸 SYSTEM INFORMATION");
         System.out.println("   ──────────────────");
-        System.out.println("   Operating System: " + System.getProperty("os.name") + 
-                          " " + System.getProperty("os.version"));
+        System.out.println("   Operating System: " + System.getProperty("os.name") +
+                           " " + System.getProperty("os.version"));
         System.out.println("   System Architecture: " + System.getProperty("os.arch"));
         System.out.println("   User Name: " + System.getProperty("user.name"));
         System.out.println("   User Home: " + System.getProperty("user.dir"));
@@ -243,21 +243,21 @@ public class EnvironmentTest {
         System.out.println("   Path Separator: '" + System.getProperty("path.separator") + "'");
         System.out.println();
     }
-    
+
     /**
      * Display environment variables relevant to Java development
      */
     private static void printEnvironmentInfo() {
         System.out.println("🔸 ENVIRONMENT VARIABLES");
         System.out.println("   ─────────────────────");
-        
+
         String javaHome = System.getenv("JAVA_HOME");
         if (javaHome != null) {
             System.out.println("   JAVA_HOME: " + javaHome + " ✅");
         } else {
             System.out.println("   JAVA_HOME: Not set ⚠️  (Recommended to set this)");
         }
-        
+
         String path = System.getenv("PATH");
         if (path != null && path.contains("java")) {
             System.out.println("   PATH: Contains Java ✅");
@@ -266,7 +266,7 @@ public class EnvironmentTest {
         }
         System.out.println();
     }
-    
+
     /**
      * Show JVM memory information
      */
@@ -275,7 +275,7 @@ public class EnvironmentTest {
         long totalMemory = runtime.totalMemory();
         long freeMemory = runtime.freeMemory();
         long maxMemory = runtime.maxMemory();
-        
+
         System.out.println("🔸 JVM MEMORY INFORMATION");
         System.out.println("   ──────────────────────");
         System.out.println("   Total Memory:     " + formatBytes(totalMemory));
@@ -285,19 +285,19 @@ public class EnvironmentTest {
         System.out.println("   Available Processors: " + runtime.availableProcessors());
         System.out.println();
     }
-    
+
     /**
      * Display file system information and test file operations
      */
     private static void printFileSystemInfo() {
         System.out.println("🔸 FILE SYSTEM TEST");
         System.out.println("   ────────────────");
-        
+
         File currentDir = new File(".");
         System.out.println("   Current Directory: " + currentDir.getAbsolutePath());
         System.out.println("   Directory is readable: " + currentDir.canRead());
         System.out.println("   Directory is writable: " + currentDir.canWrite());
-        
+
         // Test creating a temporary file
         try {
             File tempFile = File.createTempFile("java_test_", ".tmp");
@@ -308,7 +308,7 @@ public class EnvironmentTest {
         }
         System.out.println();
     }
-    
+
     /**
      * Display success message and next steps
      */
@@ -325,7 +325,7 @@ public class EnvironmentTest {
         System.out.println("║   • Start coding amazing Java applications!               ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
     }
-    
+
     /**
      * Helper method to format byte values in human-readable format
      */
@@ -333,7 +333,7 @@ public class EnvironmentTest {
         long kb = 1024;
         long mb = kb * 1024;
         long gb = mb * 1024;
-        
+
         if (bytes >= gb) {
             return String.format("%.2f GB", (double) bytes / gb);
         } else if (bytes >= mb) {
@@ -348,12 +348,12 @@ public class EnvironmentTest {
 
 /*
  * EXPECTED OUTPUT SAMPLE:
- * 
+ *
  * ╔════════════════════════════════════════════════════════════╗
  * ║               Java Environment Test Program                ║
  * ║                  Verifying Your Setup                     ║
  * ╚════════════════════════════════════════════════════════════╝
- * 
+ *
  * 🔸 JAVA VERSION INFORMATION
  *    ─────────────────────────
  *    Java Version: 17.0.2
@@ -362,7 +362,7 @@ public class EnvironmentTest {
  *    JVM Version:  17.0.2+8
  *    JVM Vendor:   Eclipse Adoptium
  *    JVM Name:     OpenJDK 64-Bit Server VM
- * 
+ *
  * 🔸 SYSTEM INFORMATION
  *    ──────────────────
  *    Operating System: Windows 10 10.0
@@ -372,7 +372,7 @@ public class EnvironmentTest {
  *    Working Directory: C:\\Projects\\JavaCourse
  *    File Separator: '\\'
  *    Path Separator: ';'
- * 
+ *
  * ... (additional output sections) ...
  */`,
     exercise: `
