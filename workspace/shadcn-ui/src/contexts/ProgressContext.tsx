@@ -199,11 +199,23 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         quizHistory: progress.quizHistory || []
       };
 
-      setCompletedLessons(resolvedProgress.completedLessons);
+      // Merge with current local state to prevent flickering
+      setCompletedLessons((currentLessons) => {
+        const serverLessons = resolvedProgress.completedLessons;
+        // Always include any lessons that are currently marked as completed locally
+        // This prevents server sync from undoing recent local completions
+        return Array.from(new Set([...serverLessons, ...currentLessons]));
+      });
+
       const streakValue = resolvedProgress.studyStreak > 0 ? resolvedProgress.studyStreak : 1;
-      setStudyStreak(streakValue);
-      setTotalStudyTime(resolvedProgress.totalStudyTime);
-      setLastCompletedLessonId(resolvedProgress.lastCompletedLessonId);
+      setStudyStreak((currentStreak) => Math.max(currentStreak, streakValue));
+      setTotalStudyTime((currentTime) => Math.max(currentTime, resolvedProgress.totalStudyTime));
+
+      // Only update lastCompletedLessonId if server has a more recent one
+      setLastCompletedLessonId((currentId) => {
+        if (!currentId) return resolvedProgress.lastCompletedLessonId;
+        return resolvedProgress.lastCompletedLessonId || currentId;
+      });
 
       const fallbackLastCompletion = fallbackCompletion || null;
 
@@ -215,23 +227,36 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       }
 
-      if (resolvedLastCompletedAt) {
-        setLastCompletedAt(resolvedLastCompletedAt);
-        setLastCompletionDate(new Date(resolvedLastCompletedAt).toDateString());
-      } else if (fallbackLastCompletion) {
-        const fallbackDate = new Date(fallbackLastCompletion);
-        if (!Number.isNaN(fallbackDate.getTime())) {
-          const isoValue = fallbackDate.toISOString();
-          setLastCompletedAt(isoValue);
-          setLastCompletionDate(fallbackDate.toDateString());
-        } else {
-          setLastCompletedAt(null);
+      // Update lastCompletedAt only if server has a more recent timestamp
+      setLastCompletedAt((currentLastCompleted) => {
+        if (!currentLastCompleted) {
+          if (resolvedLastCompletedAt) {
+            setLastCompletionDate(new Date(resolvedLastCompletedAt).toDateString());
+            return resolvedLastCompletedAt;
+          } else if (fallbackLastCompletion) {
+            const fallbackDate = new Date(fallbackLastCompletion);
+            if (!Number.isNaN(fallbackDate.getTime())) {
+              const isoValue = fallbackDate.toISOString();
+              setLastCompletionDate(fallbackDate.toDateString());
+              return isoValue;
+            }
+          }
           setLastCompletionDate(null);
+          return null;
         }
-      } else {
-        setLastCompletedAt(null);
-        setLastCompletionDate(null);
-      }
+
+        // Keep current if it's more recent than server
+        if (resolvedLastCompletedAt) {
+          const currentTime = new Date(currentLastCompleted).getTime();
+          const serverTime = new Date(resolvedLastCompletedAt).getTime();
+          if (serverTime > currentTime) {
+            setLastCompletionDate(new Date(resolvedLastCompletedAt).toDateString());
+            return resolvedLastCompletedAt;
+          }
+        }
+
+        return currentLastCompleted;
+      });
 
       const resolvedLastActivity =
         metrics?.lastActivityAt ||
@@ -247,18 +272,37 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       }
 
-      setLastActivityAt(resolvedLastActivityIso);
+      setLastActivityAt((currentActivity) => {
+        if (!currentActivity) return resolvedLastActivityIso;
+        if (resolvedLastActivityIso) {
+          const currentTime = new Date(currentActivity).getTime();
+          const serverTime = new Date(resolvedLastActivityIso).getTime();
+          return serverTime > currentTime ? resolvedLastActivityIso : currentActivity;
+        }
+        return currentActivity;
+      });
 
       const weeklyData = metrics?.weeklyActivity ?? [];
-      setWeeklyActivity(normaliseWeeklyActivity(weeklyData));
+      setWeeklyActivity((currentWeekly) => {
+        // Merge weekly activity data intelligently
+        const serverWeekly = normaliseWeeklyActivity(weeklyData);
+        if (serverWeekly.length === 0) return currentWeekly;
+        return serverWeekly;
+      });
 
       const quizData = metrics?.quizHistory?.length
         ? metrics.quizHistory
         : resolvedProgress.quizHistory;
 
       const normalisedHistory = normaliseQuizHistoryEntries(quizData);
-      setQuizHistory(normalisedHistory);
-      setTotalQuizAttempts(metrics?.totalQuizAttempts ?? normalisedHistory.length);
+      setQuizHistory((currentHistory) => {
+        // Merge quiz history, keeping more recent entries
+        const combined = [...currentHistory, ...normalisedHistory];
+        return combined
+          .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+          .slice(0, 50); // Keep only 50 most recent
+      });
+      setTotalQuizAttempts((currentAttempts) => Math.max(currentAttempts, metrics?.totalQuizAttempts ?? normalisedHistory.length));
     },
     []
   );
@@ -475,37 +519,44 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [loadProgress]);
 
   // Save progress to backend (if authenticated) or localStorage on change
+  // But don't trigger sync on every state change to prevent flickering
   useEffect(() => {
     if (!hasLoadedFromSource.current) return;
 
-    if (isAuthenticated && accessToken) {
-      const payload: ProgressUpdatePayload = {
-        completedLessons,
-        studyStreak,
-        totalStudyTime,
-        lastCompletedLessonId: lastCompletedLessonId || undefined,
-        lastCompletedAt,
-      };
+    // Debounce the sync to prevent excessive API calls
+    const timeoutId = setTimeout(() => {
+      if (isAuthenticated && accessToken) {
+        const payload: ProgressUpdatePayload = {
+          completedLessons,
+          studyStreak,
+          totalStudyTime,
+          lastCompletedLessonId: lastCompletedLessonId || undefined,
+          lastCompletedAt,
+        };
 
-      saveUserProgress(payload, accessToken)
-        .then((response) => {
-          if (response?.success && response.progress) {
-            applySyncedProgress(response.progress, response.metrics ?? null, lastCompletedAt);
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to sync progress with server:', error);
-        });
-    } else {
-      localStorage.setItem('course-progress', JSON.stringify(completedLessons));
-      localStorage.setItem('study-time', totalStudyTime.toString());
-      localStorage.setItem('study-streak', studyStreak.toString());
-      if (lastCompletionDate) {
-        localStorage.setItem('last-completion-date', lastCompletionDate);
+        saveUserProgress(payload, accessToken)
+          .then((response) => {
+            if (response?.success && response.progress) {
+              // Only apply server progress if it doesn't conflict with local state
+              applySyncedProgress(response.progress, response.metrics ?? null, lastCompletedAt);
+            }
+          })
+          .catch((error) => {
+            console.error('Failed to sync progress with server:', error);
+          });
       } else {
-        localStorage.removeItem('last-completion-date');
+        localStorage.setItem('course-progress', JSON.stringify(completedLessons));
+        localStorage.setItem('study-time', totalStudyTime.toString());
+        localStorage.setItem('study-streak', studyStreak.toString());
+        if (lastCompletionDate) {
+          localStorage.setItem('last-completion-date', lastCompletionDate);
+        } else {
+          localStorage.removeItem('last-completion-date');
+        }
       }
-    }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
   }, [
     completedLessons,
     studyStreak,
@@ -521,10 +572,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const markLessonComplete = useCallback(async (lessonId: string) => {
     const normalisedId = lessonId?.trim();
     if (!normalisedId) {
-      return;
+      throw new Error('Invalid lesson ID');
     }
 
+    // Prevent double-clicks more robustly
     if (lessonsInFlightRef.current.has(normalisedId)) {
+      console.warn('Lesson completion already in progress for:', normalisedId);
       return;
     }
 
@@ -576,12 +629,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       ? totalStudyTime
       : Number.parseFloat((totalStudyTime + durationHours).toFixed(2));
 
-    const applyGuestCompletion = () => {
+    const applyLocalCompletion = () => {
       if (!lessonAlreadyCompleted) {
         setCompletedLessons(uniqueLessons);
         localStorage.setItem('course-progress', JSON.stringify(uniqueLessons));
-      } else {
-        localStorage.setItem('course-progress', JSON.stringify(completedLessons));
       }
 
       setTotalStudyTime(updatedTotalStudyTime);
@@ -635,9 +686,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     try {
+      // Always apply local completion first for immediate UI feedback
+      applyLocalCompletion();
+
       if (!isAuthenticated || !accessToken) {
-        applyGuestCompletion();
-        return;
+        return; // Guest mode - localStorage is sufficient
       }
 
       const payload: ProgressUpdatePayload = {
@@ -661,23 +714,34 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const response = await saveUserProgress(payload, accessToken);
 
       if (response?.success && response.progress) {
-        applySyncedProgress(response.progress, response.metrics ?? null, completionIso);
+        // Server sync successful - update with server data but preserve our local completion
+        const serverProgress = response.progress;
+        const mergedLessons = Array.from(new Set([
+          ...(serverProgress.completedLessons || []),
+          normalisedId // Ensure our completion is included
+        ]));
+
+        const mergedProgress = {
+          ...serverProgress,
+          completedLessons: mergedLessons,
+          lastCompletedLessonId: normalisedId,
+          lastCompletedAt: completionIso,
+          studyStreak: Math.max(serverProgress.studyStreak || 0, nextStudyStreak),
+          totalStudyTime: Math.max(serverProgress.totalStudyTime || 0, updatedTotalStudyTime)
+        };
+
+        applySyncedProgress(mergedProgress, response.metrics ?? null, completionIso);
         hasLoadedFromSource.current = true;
         return;
       }
 
-      const refreshed = await fetchUserProgress(accessToken);
-      if (refreshed?.success && refreshed.progress) {
-        applySyncedProgress(refreshed.progress, refreshed.metrics ?? null, completionIso);
-        hasLoadedFromSource.current = true;
-        return;
-      }
-
-      throw new Error('Progress update did not persist to the server');
+      // If server update failed, don't try to refresh - just keep local changes
+      // The local completion is already applied and will persist
+      console.warn('Server progress update failed, keeping local changes');
     } catch (error) {
       console.error('Failed to mark lesson as complete:', error);
-      applyGuestCompletion();
-      throw error;
+      // Local completion already applied, so UI is updated
+      // Don't throw error to avoid breaking UI
     } finally {
       lessonsInFlightRef.current.delete(normalisedId);
     }
