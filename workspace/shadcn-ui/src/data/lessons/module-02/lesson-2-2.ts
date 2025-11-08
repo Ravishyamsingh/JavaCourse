@@ -252,311 +252,66 @@ export const lesson_2_2: LessonContent = {
         </section>
       </div>
     `,
-    codeExample: `/**
- * SwitchStatementsDemo.java
- * 
- * This comprehensive example demonstrates various switch statement features in Java:
- * - Traditional switch statements with break
- * - Switch statements with fall-through behavior
- * - Switch with String values
- * - Modern switch expressions (Java 14+)
- * - Switch with enums
- * - Best practices for switch statement usage
- * 
- * Run this program to see how different switch structures work in practice.
- */
-
-// Enum for demonstration
-enum Day {
-    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
-}
-
-enum Grade {
-    A, B, C, D, F
-}
-
-public class SwitchStatementsDemo {
-    
+    codeExample: `public class SwitchStatements {
     public static void main(String[] args) {
-        printHeader();
-        
-        // Demonstrate traditional switch statement
-        demonstrateTraditionalSwitch();
-        
-        // Demonstrate switch with fall-through
-        demonstrateFallThrough();
-        
-        // Demonstrate switch with strings
-        demonstrateStringSwitch();
-        
-        // Demonstrate switch with enums
-        demonstrateEnumSwitch();
-        
-        // Demonstrate modern switch expressions (if Java 14+ is available)
-        demonstrateModernSwitch();
-        
-        printFooter();
-    }
-    
-    private static void printHeader() {
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                  SWITCH STATEMENTS DEMO                      ║");
-        System.out.println("║         Multi-way branching with clean code                  ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
-        System.out.println();
-    }
-    
-    private static void demonstrateTraditionalSwitch() {
-        System.out.println("🔸 TRADITIONAL SWITCH STATEMENT");
-        System.out.println("   ─────────────────────────────");
-        
-        int month = 8; // August
-        String season;
-        
-        switch (month) {
-            case 12:
+        // Switch with int
+        int day = 3;
+        switch (day) {
             case 1:
+                System.out.println("Monday");
+                break;
             case 2:
-                season = "Winter";
+                System.out.println("Tuesday");
                 break;
             case 3:
+                System.out.println("Wednesday");
+                break;
             case 4:
+                System.out.println("Thursday");
+                break;
             case 5:
-                season = "Spring";
-                break;
-            case 6:
-            case 7:
-            case 8:
-                season = "Summer";
-                break;
-            case 9:
-            case 10:
-            case 11:
-                season = "Autumn";
+                System.out.println("Friday");
                 break;
             default:
-                season = "Invalid month";
+                System.out.println("Weekend");
                 break;
         }
-        
-        System.out.println("   Month: " + month);
-        System.out.println("   Season: " + season);
-        System.out.println();
-    }
-    
-    private static void demonstrateFallThrough() {
-        System.out.println("🔸 SWITCH WITH FALL-THROUGH");
-        System.out.println("   ────────────────────────");
-        
+
+        // Switch with String
+        String fruit = "Apple";
+        switch (fruit) {
+            case "Apple":
+                System.out.println("Red fruit");
+                break;
+            case "Banana":
+                System.out.println("Yellow fruit");
+                break;
+            case "Orange":
+                System.out.println("Orange fruit");
+                break;
+            default:
+                System.out.println("Unknown fruit");
+                break;
+        }
+
+        // Switch with char
         char grade = 'B';
-        System.out.println("   Student grade: " + grade);
-        
         switch (grade) {
             case 'A':
-                System.out.println("   Excellent work!");
+                System.out.println("Excellent");
+                break;
             case 'B':
-                System.out.println("   Good job!");
+                System.out.println("Good");
+                break;
             case 'C':
-                System.out.println("   Satisfactory performance");
-                break;
-            case 'D':
-                System.out.println("   Needs improvement");
-                break;
-            case 'F':
-                System.out.println("   Failed - must retake course");
+                System.out.println("Average");
                 break;
             default:
-                System.out.println("   Invalid grade");
+                System.out.println("Needs improvement");
                 break;
         }
-        
-        System.out.println("   (Notice how messages accumulate due to fall-through)");
-        System.out.println();
     }
-    
-    private static void demonstrateStringSwitch() {
-        System.out.println("🔸 SWITCH WITH STRINGS");
-        System.out.println("   ───────────────────");
-        
-        String browser = "Chrome";
-        System.out.println("   Browser: " + browser);
-        
-        switch (browser) {
-            case "Chrome":
-                System.out.println("   Using Google Chrome browser");
-                System.out.println("   Features: Fast, secure, developer tools");
-                break;
-            case "Firefox":
-                System.out.println("   Using Mozilla Firefox browser");
-                System.out.println("   Features: Privacy-focused, open-source");
-                break;
-            case "Safari":
-                System.out.println("   Using Apple Safari browser");
-                System.out.println("   Features: Integrated with macOS, energy efficient");
-                break;
-            case "Edge":
-                System.out.println("   Using Microsoft Edge browser");
-                System.out.println("   Features: Chromium-based, integrated with Windows");
-                break;
-            default:
-                System.out.println("   Using an unsupported browser");
-                System.out.println("   Recommendation: Use Chrome, Firefox, Safari, or Edge");
-                break;
-        }
-        
-        System.out.println();
-    }
-    
-    private static void demonstrateEnumSwitch() {
-        System.out.println("🔸 SWITCH WITH ENUMS");
-        System.out.println("   ─────────────────");
-        
-        Day today = Day.WEDNESDAY;
-        System.out.println("   Today is: " + today);
-        
-        switch (today) {
-            case MONDAY:
-                System.out.println("   Beginning of the work week");
-                break;
-            case TUESDAY:
-            case WEDNESDAY:
-            case THURSDAY:
-                System.out.println("   Mid-week day");
-                break;
-            case FRIDAY:
-                System.out.println("   Almost weekend!");
-                break;
-            case SATURDAY:
-            case SUNDAY:
-                System.out.println("   Enjoy your weekend!");
-                break;
-        }
-        
-        // Another enum example
-        Grade studentGrade = Grade.A;
-        System.out.println("   Student grade: " + studentGrade);
-        
-        switch (studentGrade) {
-            case A:
-                System.out.println("   Outstanding achievement!");
-                break;
-            case B:
-                System.out.println("   Above average performance");
-                break;
-            case C:
-                System.out.println("   Meets requirements");
-                break;
-            case D:
-                System.out.println("   Below average - needs improvement");
-                break;
-            case F:
-                System.out.println("   Failed - requires remediation");
-                break;
-        }
-        
-        System.out.println();
-    }
-    
-    private static void demonstrateModernSwitch() {
-        System.out.println("🔸 MODERN SWITCH EXPRESSIONS (Java 14+)");
-        System.out.println("   ─────────────────────────────────────");
-        
-        // Note: This syntax requires Java 14 or later
-        Day favoriteDay = Day.FRIDAY;
-        System.out.println("   Favorite day: " + favoriteDay);
-        
-        // Modern switch expression with arrow syntax
-        String dayType = switch (favoriteDay) {
-            case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY -> "Weekday";
-            case SATURDAY, SUNDAY -> "Weekend";
-        };
-        
-        System.out.println("   Day type: " + dayType);
-        
-        // Modern switch with code blocks and yield
-        int dayNumber = switch (favoriteDay) {
-            case MONDAY -> 1;
-            case TUESDAY -> 2;
-            case WEDNESDAY -> 3;
-            case THURSDAY -> 4;
-            case FRIDAY -> {
-                System.out.println("   It's Friday! Weekend is coming!");
-                yield 5;
-            }
-            case SATURDAY -> 6;
-            case SUNDAY -> 7;
-        };
-        
-        System.out.println("   Day number: " + dayNumber);
-        System.out.println();
-    }
-    
-    private static void printFooter() {
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                    🎉 DEMONSTRATION COMPLETE! 🎉           ║");
-        System.out.println("║                                                              ║");
-        System.out.println("║  You've learned about:                                       ║");
-        System.out.println("║  • Traditional switch statements with break                  ║");
-        System.out.println("║  • Fall-through behavior and when it's useful                ║");
-        System.out.println("║  • Switch statements with String values                      ║");
-        System.out.println("║  • Switch statements with enum types                         ║");
-        System.out.println("║  • Modern switch expressions (Java 14+)                      ║");
-        System.out.println("║  • When to use switch vs if-else statements                  ║");
-        System.out.println("║  • Best practices for switch statement implementation        ║");
-        System.out.println("║                                                              ║");
-        System.out.println("║  Remember to:                                                ║");
-        System.out.println("║  • Always include a default case for safety                  ║");
-        System.out.println("║  • Use break statements unless fall-through is intentional   ║");
-        System.out.println("║  • Consider using enums for type-safe switch values          ║");
-        System.out.println("║  • Use modern switch expressions for cleaner code (Java 14+) ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
-    }
-}
-
-/*
- * SAMPLE OUTPUT:
- * 
- * ╔══════════════════════════════════════════════════════════════╗
- * ║                  SWITCH STATEMENTS DEMO                      ║
- * ║         Multi-way branching with clean code                  ║
- * ╚══════════════════════════════════════════════════════════════╝
- * 
- * 🔸 TRADITIONAL SWITCH STATEMENT
- *    ─────────────────────────────
- *    Month: 8
- *    Season: Summer
- * 
- * 🔸 SWITCH WITH FALL-THROUGH
- *    ────────────────────────
- *    Student grade: B
- *    Good job!
- *    Satisfactory performance
- *    (Notice how messages accumulate due to fall-through)
- * 
- * 🔸 SWITCH WITH STRINGS
- *    ───────────────────
- *    Browser: Chrome
- *    Using Google Chrome browser
- *    Features: Fast, secure, developer tools
- * 
- * 🔸 SWITCH WITH ENUMS
- *    ─────────────────
- *    Today is: WEDNESDAY
- *    Mid-week day
- *    Student grade: A
- *    Outstanding achievement!
- * 
- * 🔸 MODERN SWITCH EXPRESSIONS (Java 14+)
- *    ─────────────────────────────────────
- *    Favorite day: FRIDAY
- *    It's Friday! Weekend is coming!
- *    Day type: Weekday
- *    Day number: 5
- * 
- * ╔══════════════════════════════════════════════════════════════╗
- * ║                    🎉 DEMONSTRATION COMPLETE! 🎉           ║
- * ╚══════════════════════════════════════════════════════════════╝
- */`,
+}`,
     exercise: `
       **🎯 Switch Statements Practice Exercise**
 
