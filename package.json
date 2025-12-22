@@ -2,6 +2,6 @@
   "name": "java-course",
   "private": true,
   "scripts": {
-    "build": "npm install --prefix workspace/shadcn-ui && npm run build --prefix workspace/shadcn-ui && node scripts/copy-dist.js"
+    "build": "cd workspace/shadcn-ui && npm install && npm run build"
   }
 }
