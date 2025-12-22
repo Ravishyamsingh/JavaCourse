@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "ROOT_DIR=$(git rev-parse --show-toplevel) && npm install --prefix \"$ROOT_DIR/workspace/shadcn-ui\" && npm run build --prefix \"$ROOT_DIR/workspace/shadcn-ui\" && node \"$ROOT_DIR/scripts/copy-dist.js\"",
-  "outputDirectory": "dist",
+  "buildCommand": "cd workspace/shadcn-ui && npm install && npm run build",
+  "outputDirectory": "workspace/shadcn-ui/dist",
   "framework": "vite",
   "rewrites": [
     {
