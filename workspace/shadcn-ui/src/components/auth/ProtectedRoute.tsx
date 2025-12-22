@@ -80,6 +80,9 @@ const getRoleBasedRedirect = (role?: UserRole): string => {
   }
 };
 
+// Export for use in other components
+export { getRoleBasedRedirect };
+
 // Access Denied Component
 interface AccessDeniedProps {
   requiredRole: UserRole | UserRole[];

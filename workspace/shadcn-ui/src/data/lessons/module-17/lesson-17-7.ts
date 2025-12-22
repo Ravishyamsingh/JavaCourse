@@ -635,109 +635,11 @@ jobs:
         kubectl set image deployment/user-service user-service=myregistry/user-service:\${{ github.sha }}
     `,
     exercise: `
-      <div class="bg-gradient-to-r from-green-600 to-teal-600 text-white p-6 rounded-lg mb-8 shadow-2xl">
-        <h1 class="text-3xl font-bold m-0 flex items-center">
-          <span class="w-3 h-10 bg-white rounded mr-4"></span>
-          Exercise: Deploy Microservices to Multiple Cloud Platforms
-        </h1>
-        <p class="mt-3 text-green-100 text-lg">Create deployment configurations for AWS, Azure, and GCP with Kubernetes orchestration</p>
-      </div>
-
-      <div class="space-y-8">
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
-            Multi-Cloud Deployment Strategy
-          </h2>
-          
-          <div class="bg-green-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-green-800 mb-2">📋 Deployment Requirements</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-green-800 mb-2">Infrastructure</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• VPC/VNet creation</li>
-                  <li>• Kubernetes cluster setup</li>
-                  <li>• Load balancer configuration</li>
-                  <li>• Security group/firewall rules</li>
-                  <li>• Database service provisioning</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-green-800 mb-2">Application</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Container deployment</li>
-                  <li>• Service discovery setup</li>
-                  <li>• Auto-scaling policies</li>
-                  <li>• Health monitoring</li>
-                  <li>• Logging and metrics</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-gray-800 text-green-400 p-4 rounded-lg">
-            <h4 class="text-white mb-2">💡 Implementation Tasks</h4>
-            <pre class="text-sm">
-1. Create Kubernetes manifests for all microservices
-2. Implement IaC for AWS using CloudFormation
-3. Implement IaC for GCP using Terraform
-4. Implement ARM templates for Azure deployment
-5. Configure CI/CD pipeline for multi-cloud deployment
-6. Set up monitoring and alerting
-7. Implement security best practices
-8. Test failover and disaster recovery</pre>
-          </div>
-        </section>
-
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-teal-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
-            Cloud-Specific Configurations
-          </h2>
-          
-          <div class="bg-teal-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-teal-800 mb-2">🔧 Platform Configurations</h4>
-            <div class="grid md:grid-cols-3 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-teal-800 mb-2">AWS</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• ECS/EKS cluster</li>
-                  <li>• ALB configuration</li>
-                  <li>• RDS database</li>
-                  <li>• IAM roles/policies</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-teal-800 mb-2">Azure</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• AKS cluster</li>
-                  <li>• Application Gateway</li>
-                  <li>• Azure SQL Database</li>
-                  <li>• Azure AD integration</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-teal-800 mb-2">GCP</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• GKE cluster</li>
-                  <li>• Cloud Load Balancer</li>
-                  <li>• Cloud SQL database</li>
-                  <li>• IAM permissions</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-lg mt-8">
-          <h3 class="text-xl font-bold mb-2">🎯 Learning Outcomes</h3>
-          <p class="text-green-100">
-            After completing this exercise, you'll have deployed a complete microservices architecture 
-            to multiple cloud platforms with proper infrastructure, security, and monitoring configurations.
-          </p>
-        </div>
-      </div>
-    `
+1) Create a Kubernetes Deployment YAML with apiVersion, kind, metadata, and spec sections.
+2) Configure the Deployment spec with replicas, selector, and template for pod specifications.
+3) Add container specifications with name, image, ports, and resource limits in the template.
+4) Create a Kubernetes Service YAML to expose the deployment with ClusterIP type.
+5) Configure service selectors to match the deployment labels for proper routing.
+`
   }
 };

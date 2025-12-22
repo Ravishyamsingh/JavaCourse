@@ -42,6 +42,7 @@ export const useRoleChangeDetection = (config: Partial<RoleChangeConfig> = {}) =
     try {
       const response = await fetch('/api/auth/user/role-status', {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_access_token')}`,
           'Content-Type': 'application/json'

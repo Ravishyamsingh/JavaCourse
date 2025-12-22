@@ -453,100 +453,11 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
     `,
     exercise: `
-      <div class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6 rounded-lg mb-8 shadow-2xl">
-        <h1 class="text-3xl font-bold m-0 flex items-center">
-          <span class="w-3 h-10 bg-white rounded mr-4"></span>
-          Exercise: Containerize a Microservices Architecture
-        </h1>
-        <p class="mt-3 text-blue-100 text-lg">Create Docker images and Docker Compose configuration for a complete microservices system</p>
-      </div>
-
-      <div class="space-y-8">
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
-            System Architecture
-          </h2>
-          
-          <div class="bg-blue-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-blue-800 mb-2">📋 System Components</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-blue-800 mb-2">Microservices</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Eureka Server (Service Registry)</li>
-                  <li>• API Gateway (Spring Cloud Gateway)</li>
-                  <li>• User Service (User management)</li>
-                  <li>• Order Service (Order processing)</li>
-                  <li>• Product Service (Product catalog)</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-blue-800 mb-2">Infrastructure</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• PostgreSQL (Database)</li>
-                  <li>• Redis (Caching)</li>
-                  <li>• Zipkin (Distributed tracing)</li>
-                  <li>• Prometheus (Monitoring)</li>
-                  <li>• Grafana (Visualization)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-gray-800 text-green-400 p-4 rounded-lg">
-            <h4 class="text-white mb-2">💡 Implementation Tasks</h4>
-            <pre class="text-sm">
-1. Create optimized Dockerfiles for each service
-2. Implement multi-stage builds for smaller images
-3. Configure Docker Compose for local development
-4. Set up networking between services
-5. Configure health checks for all services
-6. Implement persistent volumes for databases
-7. Add security best practices (non-root users)
-8. Test container communication and service discovery</pre>
-          </div>
-        </section>
-
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-cyan-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-cyan-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
-            Docker Configuration Requirements
-          </h2>
-          
-          <div class="bg-cyan-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-cyan-800 mb-2">🔧 Configuration Elements</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-cyan-800 mb-2">Dockerfiles</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Multi-stage builds for efficiency</li>
-                  <li>• Proper base images selection</li>
-                  <li>• Security hardening measures</li>
-                  <li>• Health check implementations</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-cyan-800 mb-2">Docker Compose</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Service dependencies</li>
-                  <li>• Environment variables</li>
-                  <li>• Network configurations</li>
-                  <li>• Volume management</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-lg mt-8">
-          <h3 class="text-xl font-bold mb-2">🎯 Learning Outcomes</h3>
-          <p class="text-blue-100">
-            After completing this exercise, you'll have containerized a complete microservices 
-            architecture with proper networking, security, and monitoring configurations.
-          </p>
-        </div>
-      </div>
-    `
+1) Create a Dockerfile with FROM instruction to specify a base Java image for Spring Boot applications.
+2) Use COPY instruction to copy the JAR file from target directory to the container.
+3) Add EXPOSE instruction to expose the application port (typically 8080) in the container.
+4) Implement HEALTHCHECK instruction with curl command to check application health endpoint.
+5) Use ENTRYPOINT instruction to specify the command to run the Spring Boot application.
+`
   }
 };

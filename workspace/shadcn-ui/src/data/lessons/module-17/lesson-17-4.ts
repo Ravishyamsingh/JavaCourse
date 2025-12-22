@@ -338,102 +338,11 @@ public class FallbackController {
 }
     `,
     exercise: `
-      <div class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-6 rounded-lg mb-8 shadow-2xl">
-        <h1 class="text-3xl font-bold m-0 flex items-center">
-          <span class="w-3 h-10 bg-white rounded mr-4"></span>
-          Exercise: Build a Production-Ready API Gateway
-        </h1>
-        <p class="mt-3 text-indigo-100 text-lg">Create a comprehensive API Gateway with routing, security, rate limiting, and monitoring capabilities</p>
-      </div>
-
-      <div class="space-y-8">
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
-            Setup Spring Cloud Gateway
-          </h2>
-          
-          <div class="bg-blue-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-blue-800 mb-2">📋 Gateway Requirements</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-blue-800 mb-2">Core Features</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Dynamic routing to microservices</li>
-                  <li>• Load balancing with service discovery</li>
-                  <li>• Request/response filtering</li>
-                  <li>• Rate limiting and throttling</li>
-                  <li>• Circuit breaker integration</li>
-                  <li>• CORS configuration</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-blue-800 mb-2">Services to Route</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• User Service (/api/users/**)</li>
-                  <li>• Product Service (/api/products/**)</li>
-                  <li>• Order Service (/api/orders/**)</li>
-                  <li>• Payment Service (/api/payments/**)</li>
-                  <li>• Notification Service (/api/notifications/**)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-gray-800 text-green-400 p-4 rounded-lg">
-            <h4 class="text-white mb-2">💡 Implementation Tasks</h4>
-            <pre class="text-sm">
-1. Create Spring Boot application with Gateway dependencies
-2. Configure Eureka client for service discovery
-3. Define routes in application.yml
-4. Implement programmatic route configuration
-5. Add default filters for common functionality
-6. Configure CORS for cross-origin requests
-7. Set up actuator endpoints for monitoring</pre>
-          </div>
-        </section>
-
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
-            Implement Authentication and Authorization
-          </h2>
-          
-          <div class="bg-green-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-green-800 mb-2">🔐 Security Requirements</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-green-800 mb-2">Authentication</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• JWT token validation</li>
-                  <li>• Bearer token extraction</li>
-                  <li>• Token expiration checking</li>
-                  <li>• User information extraction</li>
-                  <li>• Public endpoint bypass</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-green-800 mb-2">Authorization</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Role-based access control</li>
-                  <li>• Path-based permissions</li>
-                  <li>• Method-level restrictions</li>
-                  <li>• Admin-only endpoints</li>
-                  <li>• User context propagation</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="bg-gradient-to-r from-indigo-500 to-blue-500 text-white p-6 rounded-lg mt-8">
-          <h3 class="text-xl font-bold mb-2">🎯 Learning Outcomes</h3>
-          <p class="text-indigo-100">
-            After completing this exercise, you'll have built a production-ready API Gateway with 
-            comprehensive routing, security, resilience patterns, and monitoring capabilities.
-          </p>
-        </div>
-      </div>
-    `
+1) Create a Spring Cloud Gateway application with @SpringBootApplication and @EnableEurekaClient annotations.
+2) Configure routing rules in application.yml to route requests to different microservices based on path patterns.
+3) Implement a custom GatewayFilter to add request headers for downstream services.
+4) Configure rate limiting using Redis for API protection against abuse.
+5) Set up CORS configuration in the gateway to allow cross-origin requests from specific domains.
+`
   }
 };

@@ -598,57 +598,9 @@ public class DataTypesComprehensive {
   }
 }`,
     exercise: `
-      **🔬 Variables and Data Types Comprehensive Exercise**
-
-      **Part 1: Personal Profile System**
-      Create a program called \`PersonalProfile.java\` that stores and displays information about a person:
-      - Store the person's first name and last name as Strings
-      - Store their age as an appropriate integer type
-      - Store their height in centimeters as a double
-      - Store their weight in kilograms as a float
-      - Store whether they are a student as a boolean
-      - Store their blood type as a char (e.g., 'A', 'B', 'O')
-      - Use appropriate constants for minimum and maximum values
-
-      **Part 2: Temperature Converter**
-      Create a program called \`TemperatureConverter.java\` that converts temperatures between different units:
-      - Accept temperature in Celsius as a double
-      - Convert to Fahrenheit and Kelvin
-      - Display all three temperatures with 2 decimal places
-      - Handle potential negative temperatures appropriately
-      - Include constants for absolute zero in different units
-
-      **Part 3: Financial Calculator**
-      Create a program called \`FinancialCalculator.java\` that performs basic financial calculations:
-      - Store principal amount, interest rate, and time period
-      - Calculate simple interest and compound interest
-      - Display results with proper currency formatting
-      - Use appropriate data types for monetary values
-      - Include constants for common financial rates
-
-      **Part 4: Scientific Calculator**
-      Create a program called \`ScientificCalculator.java\` that performs scientific calculations:
-      - Implement methods for common scientific functions (square root, power, logarithm)
-      - Use appropriate data types for precision
-      - Handle potential mathematical errors (negative square roots, etc.)
-      - Include constants for mathematical values (π, e)
-
-      **Part 5: Data Type Analysis**
-      Create a program called \`DataTypeAnalysis.java\` that demonstrates the properties of different data types:
-      - Display the range and size of each primitive data type
-      - Show default values for uninitialized variables
-      - Demonstrate overflow and underflow behavior
-      - Illustrate precision differences between float and double
-
-      **Deliverables:**
-      Submit the following files:
-      1. \`PersonalProfile.java\` - Personal information system
-      2. \`TemperatureConverter.java\` - Temperature conversion program
-      3. \`FinancialCalculator.java\` - Financial calculation program
-      4. \`ScientificCalculator.java\` - Scientific calculation program
-      5. \`DataTypeAnalysis.java\` - Data type properties demonstration
-      6. \`README.md\` - Documentation explaining each program
-      7. Screenshots of all programs running successfully
+      1) Declare an int variable and assign it a value, then print it.
+      2) Create a double variable for pi and print it with 2 decimal places.
+      3) Declare a boolean variable and use it in an if statement.
     `
   }
 };

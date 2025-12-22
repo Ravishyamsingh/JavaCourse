@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserRole, ROLE_DISPLAY } from '@/types/auth';
 import GoogleSignIn from '@/components/GoogleSignIn';
 import { toast } from 'sonner';
-import { storeAuthData } from '@/lib/auth';
+import { storeAuthData, getDefaultRoute, getCurrentUser } from '@/lib/auth';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -27,14 +27,23 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const redirectPath = '/';
+  
+  // Get role-based redirect path
+  const getRedirectPath = () => {
+    const storedUser = getCurrentUser();
+    if (storedUser?.role) {
+      return getDefaultRoute(storedUser.role);
+    }
+    return '/dashboard';
+  };
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
+      const redirectPath = getRedirectPath();
       navigate(redirectPath, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate, redirectPath]);
+  }, [isAuthenticated, authLoading, navigate]);
 
   // Handle URL parameters for OAuth callback
   useEffect(() => {
@@ -59,13 +68,14 @@ const Login: React.FC = () => {
         storeAuthData(tokens.accessToken, tokens.refreshToken, user);
 
         toast.success(`Welcome, ${user.firstName}!`);
-        navigate(redirectPath, { replace: true });
+        const roleBasedPath = getDefaultRoute(user.role);
+        navigate(roleBasedPath, { replace: true });
       } catch (error) {
         console.error('Failed to parse OAuth callback data:', error);
         toast.error('Authentication failed');
       }
     }
-  }, [location.search, navigate, redirectPath]);
+  }, [location.search, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

@@ -1,6 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import {
   BookOpen,
   Star,
@@ -11,14 +15,21 @@ import {
   Target,
   Zap,
   TrendingUp,
-  Settings
+  Settings,
+  Sparkles,
+  ListChecks,
+  AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/contexts/QuizContext';
 import { dynamicQuizGenerator } from '@/data/dynamicQuizGenerator';
+import { courseModules } from '@/data/courseStructure';
+import { QUIZ_RULES } from '@/services/localQuizService';
 import UserProfile from '@/components/UserProfile';
 import BackButton from '@/components/BackButton';
 import useScrollToTop from '@/hooks/useScrollToTop';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function QuizModuleSelection() {
   const navigate = useNavigate();
@@ -26,6 +37,13 @@ export default function QuizModuleSelection() {
   
   // Scroll to top when component mounts
   useScrollToTop();
+  
+  // Gemini AI quiz state
+  const [selectionMode, setSelectionMode] = useState<'range' | 'individual'>('range');
+  const [rangeFrom, setRangeFrom] = useState<string>('1');
+  const [rangeTo, setRangeTo] = useState<string>('5');
+  const [selectedModules, setSelectedModules] = useState<number[]>([]);
+  const [questionCount, setQuestionCount] = useState<string>('15');
   
   // Get available modules from dynamic quiz generator
   const availableModules = dynamicQuizGenerator.getAvailableModules();
@@ -43,6 +61,57 @@ export default function QuizModuleSelection() {
       difficulty: stats.byDifficulty
     };
   });
+
+  // Handle module checkbox toggle with 5-module limit
+  const toggleModuleSelection = (moduleNumber: number) => {
+    setSelectedModules(prev => {
+      if (prev.includes(moduleNumber)) {
+        // Always allow removing
+        return prev.filter(m => m !== moduleNumber);
+      } else {
+        // Check if max reached
+        if (prev.length >= QUIZ_RULES.MAX_MODULES_PER_QUIZ) {
+          toast.warning(`Maximum ${QUIZ_RULES.MAX_MODULES_PER_QUIZ} modules allowed per quiz`);
+          return prev;
+        }
+        return [...prev, moduleNumber];
+      }
+    });
+  };
+
+  // Generate quiz with validation
+  const handleGenerateGeminiQuiz = () => {
+    const count = Math.min(parseInt(questionCount) || 15, QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ);
+    
+    if (selectionMode === 'range') {
+      const from = parseInt(rangeFrom) || 1;
+      const to = parseInt(rangeTo) || 5;
+      
+      // Validate range doesn't exceed 5 modules
+      const rangeSize = to - from + 1;
+      if (rangeSize > QUIZ_RULES.MAX_MODULES_PER_QUIZ) {
+        toast.error(`Range cannot exceed ${QUIZ_RULES.MAX_MODULES_PER_QUIZ} modules. Please select a smaller range.`);
+        return;
+      }
+      if (rangeSize < 1) {
+        toast.error('Invalid range. "From" must be less than or equal to "To".');
+        return;
+      }
+      
+      navigate(`/quiz?gemini=true&from=${from}&to=${to}&count=${count}`);
+    } else {
+      if (selectedModules.length === 0) {
+        toast.error('Please select at least one module');
+        return;
+      }
+      if (selectedModules.length > QUIZ_RULES.MAX_MODULES_PER_QUIZ) {
+        toast.error(`Maximum ${QUIZ_RULES.MAX_MODULES_PER_QUIZ} modules allowed`);
+        return;
+      }
+      const modulesList = selectedModules.sort((a, b) => a - b).join(',');
+      navigate(`/quiz?gemini=true&modules=${modulesList}&count=${count}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -256,6 +325,200 @@ export default function QuizModuleSelection() {
               ))}
             </div>
           </div>
+
+          {/* Gemini AI Quiz Generator */}
+          <Card className="mb-8 border-0 shadow-xl bg-gradient-to-r from-orange-50 via-pink-50 to-purple-50">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center space-x-3">
+                <div className="p-3 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 rounded-full">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-800">AI-Powered Quiz Generator</h3>
+                  <p className="text-sm text-gray-600 font-normal mt-1">
+                    Generate custom quizzes using Google Gemini AI
+                  </p>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Selection Mode Toggle */}
+              <div className="flex justify-center space-x-4">
+                <Button
+                  onClick={() => setSelectionMode('range')}
+                  variant={selectionMode === 'range' ? 'default' : 'outline'}
+                  className={selectionMode === 'range' ? 'bg-gradient-to-r from-orange-500 to-pink-500' : ''}
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  Module Range
+                </Button>
+                <Button
+                  onClick={() => setSelectionMode('individual')}
+                  variant={selectionMode === 'individual' ? 'default' : 'outline'}
+                  className={selectionMode === 'individual' ? 'bg-gradient-to-r from-orange-500 to-pink-500' : ''}
+                >
+                  <ListChecks className="h-4 w-4 mr-2" />
+                  Individual Modules
+                </Button>
+              </div>
+
+              <Separator />
+
+              {/* Range Selection Mode */}
+              {selectionMode === 'range' && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Select Module Range</h4>
+                    <p className="text-sm text-gray-600">Choose a range of modules (max {QUIZ_RULES.MAX_MODULES_PER_QUIZ} modules)</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
+                    <div className="space-y-2">
+                      <Label htmlFor="range-from" className="text-gray-700">From Module</Label>
+                      <Input
+                        id="range-from"
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={rangeFrom}
+                        onChange={(e) => setRangeFrom(e.target.value)}
+                        className="text-center font-semibold"
+                        placeholder="1"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="range-to" className="text-gray-700">To Module</Label>
+                      <Input
+                        id="range-to"
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={rangeTo}
+                        onChange={(e) => setRangeTo(e.target.value)}
+                        className="text-center font-semibold"
+                        placeholder="5"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-center max-w-md mx-auto">
+                    <Badge className="bg-blue-100 text-blue-800 text-sm">
+                      Generates questions from Module {rangeFrom || '1'} to Module {rangeTo || '5'}
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* Individual Selection Mode */}
+              {selectionMode === 'individual' && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Select Individual Modules</h4>
+                    <p className="text-sm text-gray-600">
+                      Choose up to {QUIZ_RULES.MAX_MODULES_PER_QUIZ} modules for quiz generation
+                    </p>
+                    <Badge className={`mt-2 ${
+                      selectedModules.length >= QUIZ_RULES.MAX_MODULES_PER_QUIZ 
+                        ? 'bg-orange-100 text-orange-800' 
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {selectedModules.length}/{QUIZ_RULES.MAX_MODULES_PER_QUIZ} modules selected
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 max-w-4xl mx-auto">
+                    {courseModules.map((module, index) => {
+                      const moduleNumber = index + 1;
+                      const isSelected = selectedModules.includes(moduleNumber);
+                      const isDisabled = !isSelected && selectedModules.length >= QUIZ_RULES.MAX_MODULES_PER_QUIZ;
+                      return (
+                        <div
+                          key={moduleNumber}
+                          className={`p-3 border-2 rounded-lg transition-all duration-200 ${
+                            isSelected
+                              ? 'border-pink-500 bg-pink-50 cursor-pointer'
+                              : isDisabled
+                              ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer'
+                          }`}
+                          onClick={() => !isDisabled && toggleModuleSelection(moduleNumber)}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={isSelected}
+                              disabled={isDisabled}
+                              onCheckedChange={() => !isDisabled && toggleModuleSelection(moduleNumber)}
+                              className="pointer-events-none"
+                            />
+                            <div className="text-sm">
+                              <div className="font-semibold text-gray-800">Module {moduleNumber}</div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {selectedModules.length > 0 && (
+                    <div className="text-center">
+                      <Badge className="bg-blue-100 text-blue-800 text-sm">
+                        {selectedModules.length} module{selectedModules.length !== 1 ? 's' : ''} selected: {selectedModules.sort((a, b) => a - b).join(', ')}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <Separator />
+
+              {/* Question Count */}
+              <div className="space-y-2 max-w-xs mx-auto">
+                <Label htmlFor="question-count" className="text-gray-700 text-center block">
+                  Number of Questions (max {QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ})
+                </Label>
+                <Input
+                  id="question-count"
+                  type="number"
+                  min="1"
+                  max={QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ}
+                  value={questionCount}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 0;
+                    if (val > QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ) {
+                      setQuestionCount(String(QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ));
+                      toast({
+                        title: "Maximum Limit",
+                        description: `Questions capped at ${QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ} per quiz`,
+                        variant: "default",
+                      });
+                    } else {
+                      setQuestionCount(e.target.value);
+                    }
+                  }}
+                  className="text-center font-semibold"
+                  placeholder="15"
+                />
+                <p className="text-xs text-gray-500 text-center">
+                  Recommended: 10-20 questions • Max: {QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ}
+                </p>
+              </div>
+
+              {/* Generate Button */}
+              <div className="flex justify-center pt-4">
+                <Button
+                  onClick={handleGenerateGeminiQuiz}
+                  size="lg"
+                  className="bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 text-white font-semibold px-8"
+                >
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Generate AI Quiz
+                </Button>
+              </div>
+
+              <div className="text-center text-xs text-gray-500 max-w-2xl mx-auto">
+                <p>
+                  🤖 Powered by Google Gemini AI - Generates unique, contextually relevant questions
+                  based on your selected modules and course content keywords.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Comprehensive Quiz Options */}
           <Card className="border-0 shadow-xl bg-gradient-to-r from-blue-50 to-purple-50">

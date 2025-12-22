@@ -77,10 +77,27 @@ export const RBACProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Map auth roles to CMS roles
+  const mapAuthRoleToCmsRole = (authRole: string): UserRole => {
+    switch (authRole) {
+      case 'superadmin':
+        return UserRole.SUPER_ADMIN;
+      case 'admin':
+        return UserRole.ADMIN;
+      case 'instructor':
+        return UserRole.INSTRUCTOR;
+      case 'user':
+      case 'guest':
+      default:
+        return UserRole.STUDENT;
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      // In a real app, this would come from the user object or API
-      const role = (user as any).role || UserRole.STUDENT;
+      // Map auth role to CMS role
+      const authRole = (user as any).role || 'user';
+      const role = mapAuthRoleToCmsRole(authRole);
       setUserRole(role);
       
       // Get permissions for the user's role and all lower roles

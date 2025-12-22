@@ -317,317 +317,41 @@ export const lesson_1_5: LessonContent = {
         </section>
       </div>
     `,
-    codeExample: `/**
- * OperatorsComprehensive.java
- * 
- * This comprehensive program demonstrates all Java operators with practical examples.
- * It shows:
- * - Arithmetic operators with different data types
- * - Comparison and logical operators with real-world scenarios
- * - Assignment and unary operators in context
- * - Operator precedence and associativity rules
- * - Bitwise operators and their applications
- * 
- * This example serves as a complete reference for Java operators
- * and demonstrates professional coding practices.
- */
+    codeExample: `public class OperatorsDemo {
+    public static void main(String[] args) {
+        // Arithmetic operators
+        int a = 10, b = 3;
+        System.out.println("Addition: " + (a + b));        // 13
+        System.out.println("Subtraction: " + (a - b));     // 7
+        System.out.println("Multiplication: " + (a * b));  // 30
+        System.out.println("Division: " + (a / b));        // 3 (integer division)
+        System.out.println("Modulus: " + (a % b));         // 1 (remainder)
 
-public class OperatorsComprehensive {
-  public static void main(String[] args) {
-    printProgramHeader();
-    demonstrateArithmeticOperators();
-    demonstrateComparisonOperators();
-    demonstrateLogicalOperators();
-    demonstrateAssignmentOperators();
-    demonstrateUnaryOperators();
-    demonstrateOperatorPrecedence();
-    demonstrateBitwiseOperators();
-    printProgramFooter();
-  }
+        // Comparison operators
+        System.out.println("a > b: " + (a > b));           // true
+        System.out.println("a == b: " + (a == b));         // false
 
-  /**
-   * Display program header with title and purpose
-   */
-  private static void printProgramHeader() {
-    System.out.println("╔══════════════════════════════════════════════════════════════╗");
-    System.out.println("║                                                              ║");
-    System.out.println("║           🔢 JAVA OPERATORS COMPREHENSIVE DEMO              ║");
-    System.out.println("║                Mastering Java Operations                     ║");
-    System.out.println("║                                                              ║");
-    System.out.println("╚══════════════════════════════════════════════════════════════╝");
-    System.out.println();
-  }
+        // Logical operators
+        boolean x = true, y = false;
+        System.out.println("x && y: " + (x && y));         // false
+        System.out.println("x || y: " + (x || y));         // true
 
-  /**
-   * Demonstrate arithmetic operators with practical examples
-   */
-  private static void demonstrateArithmeticOperators() {
-    System.out.println("➕ ARITHMETIC OPERATORS");
-    System.out.println("   ════════════════════");
+        // Assignment operators
+        int value = 5;
+        value += 3;  // equivalent to: value = value + 3
+        System.out.println("After += 3: " + value);        // 8
 
-    // Integer arithmetic
-    int a = 20, b = 7;
-    System.out.println("   Integer Operations:");
-    System.out.println("   └─ " + a + " + " + b + " = " + (a + b));
-    System.out.println("   └─ " + a + " - " + b + " = " + (a - b));
-    System.out.println("   └─ " + a + " * " + b + " = " + (a * b));
-    System.out.println("   └─ " + a + " / " + b + " = " + (a / b) + " (integer division)");
-    System.out.println("   └─ " + a + " % " + b + " = " + (a % b) + " (remainder)");
-
-    // Floating-point arithmetic
-    double x = 20.5, y = 7.2;
-    System.out.println();
-    System.out.println("   Floating-Point Operations:");
-    System.out.println("   └─ " + x + " + " + y + " = " + (x + y));
-    System.out.println("   └─ " + x + " - " + y + " = " + (x - y));
-    System.out.println("   └─ " + x + " * " + y + " = " + (x * y));
-    System.out.println("   └─ " + x + " / " + y + " = " + (x / y));
-    System.out.println("   └─ " + x + " % " + y + " = " + (x % y));
-
-    // String concatenation
-    String firstName = "John";
-    String lastName = "Doe";
-    System.out.println();
-    System.out.println("   String Concatenation:");
-    System.out.println("   └─ \"" + firstName + "\" + \"" + lastName + "\" = \"" + (firstName + lastName) + "\"");
-    System.out.println("   └─ \"Hello\" + \" \" + \"World\" = \"" + ("Hello" + " " + "World") + "\"");
-    System.out.println();
-  }
-
-  /**
-   * Demonstrate comparison operators with practical examples
-   */
-  private static void demonstrateComparisonOperators() {
-    System.out.println("🔍 COMPARISON OPERATORS");
-    System.out.println("   ═════════════════════");
-
-    int num1 = 10, num2 = 20;
-    System.out.println("   Comparing " + num1 + " and " + num2 + ":");
-    System.out.println("   └─ " + num1 + " == " + num2 + " : " + (num1 == num2));
-    System.out.println("   └─ " + num1 + " != " + num2 + " : " + (num1 != num2));
-    System.out.println("   └─ " + num1 + " > " + num2 + " : " + (num1 > num2));
-    System.out.println("   └─ " + num1 + " < " + num2 + " : " + (num1 < num2));
-    System.out.println("   └─ " + num1 + " >= " + num2 + " : " + (num1 >= num2));
-    System.out.println("   └─ " + num1 + " <= " + num2 + " : " + (num1 <= num2));
-
-    // String comparison
-    String str1 = "Hello";
-    String str2 = "Hello";
-    String str3 = new String("Hello");
-    System.out.println();
-    System.out.println("   String Comparisons:");
-    System.out.println("   └─ \"" + str1 + "\" == \"" + str2 + "\" : " + (str1 == str2));
-    System.out.println("   └─ \"" + str1 + "\".equals(\"" + str2 + "\") : " + (str1.equals(str2)));
-    System.out.println("   └─ \"" + str1 + "\" == \"" + str3 + "\" : " + (str1 == str3));
-    System.out.println("   └─ \"" + str1 + "\".equals(\"" + str3 + "\") : " + (str1.equals(str3)));
-    System.out.println();
-  }
-
-  /**
-   * Demonstrate logical operators with practical examples
-   */
-  private static void demonstrateLogicalOperators() {
-    System.out.println("🧠 LOGICAL OPERATORS");
-    System.out.println("   ══════════════════");
-
-    boolean isSunny = true;
-    boolean isWarm = false;
-    boolean hasUmbrella = true;
-
-    System.out.println("   Weather Conditions:");
-    System.out.println("   └─ Sunny: " + isSunny);
-    System.out.println("   └─ Warm: " + isWarm);
-    System.out.println("   └─ Has Umbrella: " + hasUmbrella);
-    System.out.println();
-    System.out.println("   Logical Operations:");
-    System.out.println("   └─ isSunny && isWarm : " + (isSunny && isWarm));
-    System.out.println("   └─ isSunny || isWarm : " + (isSunny || isWarm));
-    System.out.println("   └─ !isSunny : " + (!isSunny));
-    System.out.println("   └─ (isSunny || !isWarm) && hasUmbrella : " + ((isSunny || !isWarm) && hasUmbrella));
-
-    // Short-circuit evaluation demonstration
-    System.out.println();
-    System.out.println("   ⚡ Short-Circuit Evaluation:");
-    System.out.println("   └─ false && (expensiveOperation()) : " + (false && expensiveOperation()));
-    System.out.println("   └─ true || (expensiveOperation()) : " + (true || expensiveOperation()));
-    System.out.println();
-  }
-
-  /**
-   * Helper method to demonstrate short-circuit evaluation
-   */
-  private static boolean expensiveOperation() {
-    System.out.println("     → Expensive operation executed!");
-    return true;
-  }
-
-  /**
-   * Demonstrate assignment operators with practical examples
-   */
-  private static void demonstrateAssignmentOperators() {
-    System.out.println("📝 ASSIGNMENT OPERATORS");
-    System.out.println("   ════════════════════");
-
-    int value = 100;
-    System.out.println("   Initial value: " + value);
-    System.out.println("   └─ value += 10 : " + (value += 10) + " (value is now " + value + ")");
-    System.out.println("   └─ value -= 5 : " + (value -= 5) + " (value is now " + value + ")");
-    System.out.println("   └─ value *= 2 : " + (value *= 2) + " (value is now " + value + ")");
-    System.out.println("   └─ value /= 4 : " + (value /= 4) + " (value is now " + value + ")");
-    System.out.println("   └─ value %= 3 : " + (value %= 3) + " (value is now " + value + ")");
-    System.out.println();
-  }
-
-  /**
-   * Demonstrate unary operators with practical examples
-   */
-  private static void demonstrateUnaryOperators() {
-    System.out.println("🔄 UNARY OPERATORS");
-    System.out.println("   ════════════════");
-
-    int counter = 5;
-    System.out.println("   Initial counter: " + counter);
-    System.out.println("   └─ Pre-increment (++counter): " + (++counter) + " (counter is now " + counter + ")");
-    System.out.println("   └─ Post-increment (counter++): " + (counter++) + " (counter is now " + counter + ")");
-    System.out.println("   └─ Pre-decrement (--counter): " + (--counter) + " (counter is now " + counter + ")");
-    System.out.println("   └─ Post-decrement (counter--): " + (counter--) + " (counter is now " + counter + ")");
-    System.out.println("   └─ Unary minus (-counter): " + (-counter));
-    System.out.println("   └─ Logical complement (!true): " + (!true));
-    System.out.println();
-  }
-
-  /**
-   * Demonstrate operator precedence with practical examples
-   */
-  private static void demonstrateOperatorPrecedence() {
-    System.out.println("🎯 OPERATOR PRECEDENCE");
-    System.out.println("   ═══════════════════");
-
-    int a = 10, b = 5, c = 2;
-    System.out.println("   Expression: " + a + " + " + b + " * " + c);
-    System.out.println("   └─ Without parentheses: " + a + " + " + b + " * " + c + " = " + (a + b * c));
-    System.out.println("   └─ With parentheses: " + a + " + (" + b + " * " + c + ") = " + (a + (b * c)));
-    System.out.println("   └─ With different parentheses: (" + a + " + " + b + ") * " + c + " = " + ((a + b) * c));
-
-    // Complex expression
-    int result = a + b * c - a / b;
-    System.out.println();
-    System.out.println("   Complex Expression:");
-    System.out.println("   └─ " + a + " + " + b + " * " + c + " - " + a + " / " + b);
-    System.out.println("   └─ Step by step:");
-    System.out.println("      • " + b + " * " + c + " = " + (b * c));
-    System.out.println("      • " + a + " / " + b + " = " + (a / b));
-    System.out.println("      • " + a + " + " + (b * c) + " - " + (a / b) + " = " + result);
-    System.out.println();
-  }
-
-  /**
-   * Demonstrate bitwise operators with practical examples
-   */
-  private static void demonstrateBitwiseOperators() {
-    System.out.println("BitFields AND OPERATORS");
-    System.out.println("   ════════════════════");
-
-    int a = 5;  // Binary: 0101
-    int b = 3;  // Binary: 0011
-    System.out.println("   Binary Operations (a = " + a + ", b = " + b + "):");
-    System.out.println("   └─ a & b : " + (a & b) + " (Binary: " + Integer.toBinaryString(a & b) + ")");
-    System.out.println("   └─ a | b : " + (a | b) + " (Binary: " + Integer.toBinaryString(a | b) + ")");
-    System.out.println("   └─ a ^ b : " + (a ^ b) + " (Binary: " + Integer.toBinaryString(a ^ b) + ")");
-    System.out.println("   └─ ~a : " + (~a) + " (Binary: " + Integer.toBinaryString(~a) + ")");
-    System.out.println("   └─ a << 1 : " + (a << 1) + " (Binary: " + Integer.toBinaryString(a << 1) + ")");
-    System.out.println("   └─ a >> 1 : " + (a >> 1) + " (Binary: " + Integer.toBinaryString(a >> 1) + ")");
-
-    // Practical example: Bit flags
-    System.out.println();
-    System.out.println("   🏁 Bit Flags Example:");
-    final int READ_PERMISSION = 1;    // Binary: 0001
-    final int WRITE_PERMISSION = 2;   // Binary: 0010
-    final int EXECUTE_PERMISSION = 4; // Binary: 0100
-    int userPermissions = READ_PERMISSION | WRITE_PERMISSION; // Binary: 0011
-    System.out.println("   └─ Read permission: " + ((userPermissions & READ_PERMISSION) != 0));
-    System.out.println("   └─ Write permission: " + ((userPermissions & WRITE_PERMISSION) != 0));
-    System.out.println("   └─ Execute permission: " + ((userPermissions & EXECUTE_PERMISSION) != 0));
-    System.out.println("   └─ Adding execute permission: " + ((userPermissions |= EXECUTE_PERMISSION) != 0));
-    System.out.println();
-  }
-
-  /**
-   * Display program footer with summary
-   */
-  private static void printProgramFooter() {
-    System.out.println("╔══════════════════════════════════════════════════════════════╗");
-    System.out.println("║                    🎉 DEMONSTRATION COMPLETE! 🎉           ║");
-    System.out.println("║                                                              ║");
-    System.out.println("║  You've seen examples of:                                    ║");
-    System.out.println("║  • Arithmetic operators with integers and floating-point     ║");
-    System.out.println("║  • Comparison operators with numbers and strings             ║");
-    System.out.println("║  • Logical operators with short-circuit evaluation           ║");
-    System.out.println("║  • Assignment operators for concise code                     ║");
-    System.out.println("║  • Unary operators for increment/decrement operations        ║");
-    System.out.println("║  • Operator precedence with complex expressions              ║");
-    System.out.println("║  • Bitwise operators for system programming                  ║");
-    System.out.println("║                                                              ║");
-    System.out.println("║  Remember to:                                                ║");
-    System.out.println("║  • Use parentheses to make precedence explicit               ║");
-    System.out.println("║  • Understand short-circuit evaluation                       ║");
-    System.out.println("║  • Choose appropriate operators for your needs               ║");
-    System.out.println("║  • Follow Java naming conventions                            ║");
-    System.out.println("╚══════════════════════════════════════════════════════════════╝");
-  }
+        // Unary operators
+        int counter = 5;
+        System.out.println("Pre-increment: " + (++counter));  // 6
+        System.out.println("Post-increment: " + (counter++)); // 6, then counter becomes 7
+        System.out.println("Final counter: " + counter);      // 7
+    }
 }`,
     exercise: `
-      **🔬 Operators Comprehensive Exercise**
-
-      **Part 1: Calculator Application**
-      Create a program called \`CalculatorApp.java\` that implements a basic calculator:
-      - Implement methods for all arithmetic operations (+, -, *, /, %)
-      - Handle division by zero errors gracefully
-      - Support both integer and floating-point calculations
-      - Include exponentiation and square root operations
-      - Display results with appropriate formatting
-
-      **Part 2: Logical Expression Evaluator**
-      Create a program called \`LogicEvaluator.java\` that evaluates complex logical expressions:
-      - Accept boolean inputs from the user
-      - Evaluate expressions with multiple logical operators
-      - Demonstrate short-circuit evaluation behavior
-      - Show step-by-step evaluation process
-      - Handle nested parentheses in expressions
-
-      **Part 3: Bit Manipulation Toolkit**
-      Create a program called \`BitToolkit.java\` that performs bit manipulation operations:
-      - Implement methods for setting, clearing, and toggling individual bits
-      - Support bit shifting operations (left, right, unsigned right)
-      - Include bit masking and extraction operations
-      - Demonstrate bit counting and parity checking
-      - Show examples of bit flags usage
-
-      **Part 4: Operator Precedence Challenge**
-      Create a program called \`PrecedenceChallenge.java\` that tests understanding of operator precedence:
-      - Generate random expressions with multiple operators
-      - Ask user to predict the result
-      - Show step-by-step evaluation with parentheses
-      - Include expressions that demonstrate common precedence mistakes
-      - Track user's accuracy and provide feedback
-
-      **Part 5: Real-World Application**
-      Create a program called \`RealWorldOperators.java\` that demonstrates operators in practical scenarios:
-      - Implement a simple encryption algorithm using XOR
-      - Create a checksum calculator using bitwise operations
-      - Develop a date calculator using arithmetic operations
-      - Build a simple voting system with boolean logic
-      - Design a permissions system using bit flags
-
-      **Deliverables:**
-      Submit the following files:
-      1. \`CalculatorApp.java\` - Basic calculator implementation
-      2. \`LogicEvaluator.java\` - Logical expression evaluator
-      3. \`BitToolkit.java\` - Bit manipulation toolkit
-      4. \`PrecedenceChallenge.java\` - Operator precedence tester
-      5. \`RealWorldOperators.java\` - Practical applications
-      6. \`README.md\` - Documentation explaining each program
-      7. Screenshots of all programs running successfully
+      1) Write an expression that adds two numbers and multiplies by 3.
+      2) Use comparison operators to check if a number is between 10 and 20.
+      3) Demonstrate the difference between pre-increment and post-increment.
     `
   }
 };

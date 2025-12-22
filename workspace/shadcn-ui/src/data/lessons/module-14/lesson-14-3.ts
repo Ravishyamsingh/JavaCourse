@@ -594,52 +594,11 @@ when(userService.calculateAge(any(LocalDate.class)))
       </div>
     `,
     exercise: `
-      **🎯 Mockito Framework Exercises**
-
-      **Exercise 1: Basic Mocking Setup**
-      Create a BookService class that depends on BookRepository and NotificationService:
-      - BookService should have methods: findBook(id), saveBook(book), deleteBook(id)
-      - Write tests using @Mock, @InjectMocks annotations
-      - Practice basic stubbing with when().thenReturn()
-      - Verify method calls with verify()
-
-      **Exercise 2: Exception Testing with Mocks**
-      Extend your BookService tests to handle error scenarios:
-      - Test what happens when BookRepository throws DataAccessException
-      - Test what happens when NotificationService fails
-      - Use when().thenThrow() and doThrow().when() patterns
-      - Verify that appropriate exceptions are propagated or handled
-
-      **Exercise 3: Argument Captors and Matchers**
-      Create comprehensive tests using argument captors:
-      - Use @Captor to capture arguments passed to mocked methods
-      - Verify the captured arguments have correct values
-      - Practice with argument matchers: any(), eq(), anyString(), etc.
-      - Test methods that modify objects before saving
-
-      **Exercise 4: Spies and Partial Mocking**
-      Create tests using Mockito spies:
-      - Create a spy of a real ArrayList and stub specific methods
-      - Create a spy of your service class and stub only certain methods
-      - Understand the difference between mocks and spies
-      - Practice with @Spy annotation
-
-      **Exercise 5: Advanced Verification**
-      Implement complex verification scenarios:
-      - Verify method call order using InOrder
-      - Verify number of interactions with times(), never(), atLeast()
-      - Use verifyNoMoreInteractions() and verifyNoInteractions()
-      - Test timeout scenarios with timeout() verification
-
-      **Exercise 6: Custom Answer Implementation**
-      Create tests with custom Answer implementations:
-      - Use thenAnswer() to provide dynamic responses
-      - Implement Answer interface for complex stubbing
-      - Practice with lambda expressions in answers
-      - Handle multiple method calls with different responses
-
-      **Deliverable:**
-      Create a complete test suite demonstrating all Mockito features with proper test organization, clear naming, and comprehensive coverage of both happy path and error scenarios.
-    `
+1) Write a Mockito test that creates a mock UserRepository and stubs the findById method to return a User object.
+2) Create a test that uses @Mock and @InjectMocks annotations to test a service class with dependencies.
+3) Write a test that verifies method calls using Mockito's verify() method with specific arguments.
+4) Implement a test that uses argument matchers like anyString() and anyLong() for flexible verification.
+5) Create a test that uses ArgumentCaptor to capture and verify the arguments passed to a mocked method.
+`
   }
 };

@@ -92,88 +92,110 @@ export const GradingSystem: React.FC<GradingSystemProps> = ({
     pendingReview: 0,
   });
 
-  // Mock data - in real app, this would come from API
+  // Generate dummy submissions data
+  const generateDummySubmissions = (): Submission[] => {
+    const students = [
+      { id: 'STU001', name: 'Rajesh Kumar' },
+      { id: 'STU002', name: 'Priya Singh' },
+      { id: 'STU003', name: 'Amit Patel' },
+      { id: 'STU004', name: 'Neha Sharma' },
+      { id: 'STU005', name: 'Vikram Desai' },
+    ];
+
+    const submissionContents = [
+      'I implemented the ArrayList class with proper memory management and error handling. Used generics for type safety.',
+      'Created a binary search tree with insert, delete, and search operations. All methods are optimized for O(log n) complexity.',
+      'Implemented a hash map with collision resolution using chaining. Includes proper load factor management.',
+      'Built a graph data structure with DFS and BFS traversal algorithms. Tested with various graph configurations.',
+      'Developed a sorting algorithm using merge sort with O(n log n) time complexity. Includes detailed comments.',
+    ];
+
+    return students.map((student, index) => ({
+      id: `sub-${index + 1}`,
+      assignmentId: assignmentId || 'assignment-1',
+      studentId: student.id,
+      content: submissionContents[index],
+      attachments: [],
+      submittedAt: new Date(Date.now() - (5 - index) * 24 * 60 * 60 * 1000),
+      status: index < 2 ? SubmissionStatus.GRADED : SubmissionStatus.SUBMITTED,
+      score: index < 2 ? [85, 92][index] : undefined,
+      feedback: index < 2 ? ['Good implementation with proper error handling. Consider adding more comments.', 'Excellent work! Very well structured code.'][index] : undefined,
+      gradedBy: index < 2 ? 'auto-grader' : undefined,
+      gradedAt: index < 2 ? new Date(Date.now() - (5 - index) * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000) : undefined,
+      attempts: index + 1,
+    }));
+  };
+
+  // Load data on component mount
   useEffect(() => {
-    const mockSubmissions: Submission[] = [
-      {
-        id: 'sub-1',
-        assignmentId: assignmentId || 'assignment-1',
-        studentId: 'student-1',
-        content: 'This is my solution to the Java programming assignment. I implemented the required methods using object-oriented principles.',
-        attachments: [],
-        submittedAt: new Date('2024-01-20T10:00:00'),
-        status: SubmissionStatus.SUBMITTED,
-        attempts: 1,
-      },
-      {
-        id: 'sub-2',
-        assignmentId: assignmentId || 'assignment-1',
-        studentId: 'student-2',
-        content: 'Here is my Java code implementation with proper error handling and documentation.',
-        attachments: [],
-        submittedAt: new Date('2024-01-20T11:30:00'),
-        status: SubmissionStatus.GRADED,
-        score: 85,
-        feedback: 'Good implementation with proper error handling. Consider adding more comments.',
-        gradedBy: 'auto-grader',
-        gradedAt: new Date('2024-01-20T12:00:00'),
-        attempts: 1,
-      },
-    ];
-
-    const mockQuizAttempts: QuizAttempt[] = [
-      {
-        id: 'attempt-1',
-        quizId: quizId || 'quiz-1',
-        studentId: 'student-1',
-        answers: [
-          {
-            questionId: 'q1',
-            answer: 'public static void main(String[] args)',
-            isCorrect: true,
-            points: 10,
-          },
-        ],
-        score: 10,
-        maxScore: 10,
-        percentage: 100,
-        passed: true,
-        startedAt: new Date('2024-01-20T09:00:00'),
-        completedAt: new Date('2024-01-20T09:15:00'),
-        timeSpent: 900,
-        attemptNumber: 1,
-      },
-    ];
-
+    console.log('📊 Loading Grading System data...');
+    
+    const dummySubmissions = generateDummySubmissions();
+    
     const mockGradingRules: GradingRule[] = [
       {
         id: 'rule-1',
         type: 'keyword',
-        condition: 'class,method,variable',
-        points: 10,
-        feedback: 'Good use of Java terminology',
+        condition: 'class,method,variable,function',
+        points: 20,
+        feedback: 'Good use of Java terminology and OOP concepts',
         isActive: true,
       },
       {
         id: 'rule-2',
         type: 'length',
-        condition: 'min:100',
-        points: 5,
-        feedback: 'Adequate explanation length',
+        condition: 'min:150',
+        points: 15,
+        feedback: 'Adequate explanation length and detail',
+        isActive: true,
+      },
+      {
+        id: 'rule-3',
+        type: 'pattern',
+        condition: 'public|private|protected',
+        points: 15,
+        feedback: 'Proper access modifiers used',
+        isActive: true,
+      },
+      {
+        id: 'rule-4',
+        type: 'keyword',
+        condition: 'error,exception,try,catch',
+        points: 20,
+        feedback: 'Good error handling implementation',
+        isActive: true,
+      },
+      {
+        id: 'rule-5',
+        type: 'keyword',
+        condition: 'algorithm,complexity,optimization',
+        points: 30,
+        feedback: 'Excellent algorithmic thinking and optimization',
         isActive: true,
       },
     ];
 
-    setSubmissions(mockSubmissions);
-    setQuizAttempts(mockQuizAttempts);
+    setSubmissions(dummySubmissions);
     setGradingRules(mockGradingRules);
 
-    // Calculate stats
+    // Calculate stats from actual data
+    const gradedCount = dummySubmissions.filter(s => s.status === SubmissionStatus.GRADED).length;
+    const totalScore = dummySubmissions.reduce((acc, s) => acc + (s.score || 0), 0);
+    const avgScore = gradedCount > 0 ? totalScore / gradedCount : 0;
+    const pendingCount = dummySubmissions.filter(s => s.status === SubmissionStatus.SUBMITTED).length;
+
     setGradingStats({
-      totalSubmissions: mockSubmissions.length,
-      gradedSubmissions: mockSubmissions.filter(s => s.status === SubmissionStatus.GRADED).length,
-      averageScore: mockSubmissions.reduce((acc, s) => acc + (s.score || 0), 0) / mockSubmissions.length,
-      pendingReview: mockSubmissions.filter(s => s.status === SubmissionStatus.SUBMITTED).length,
+      totalSubmissions: dummySubmissions.length,
+      gradedSubmissions: gradedCount,
+      averageScore: avgScore,
+      pendingReview: pendingCount,
+    });
+
+    console.log('✅ Grading System data loaded:', {
+      total: dummySubmissions.length,
+      graded: gradedCount,
+      pending: pendingCount,
+      avgScore: avgScore.toFixed(1),
     });
   }, [assignmentId, quizId]);
 
@@ -326,6 +348,58 @@ export const GradingSystem: React.FC<GradingSystemProps> = ({
     setGradingRules(prev => prev.filter(rule => rule.id !== ruleId));
   };
 
+  const handleExportResults = () => {
+    try {
+      console.log('📥 Exporting grading results...');
+      
+      // Prepare data for export
+      const exportData = submissions.map(submission => ({
+        'Student ID': submission.studentId,
+        'Submission ID': submission.id,
+        'Status': submission.status,
+        'Score': submission.score || 'N/A',
+        'Feedback': submission.feedback || 'No feedback',
+        'Graded By': submission.gradedBy || 'Not graded',
+        'Graded At': submission.gradedAt ? new Date(submission.gradedAt).toLocaleString() : 'N/A',
+        'Submitted At': new Date(submission.submittedAt).toLocaleString(),
+        'Attempts': submission.attempts || 1,
+      }));
+
+      // Convert to CSV
+      const headers = Object.keys(exportData[0] || {});
+      const csvContent = [
+        headers.join(','),
+        ...exportData.map(row =>
+          headers.map(header => {
+            const value = row[header as keyof typeof row];
+            // Escape quotes and wrap in quotes if contains comma
+            const stringValue = String(value);
+            return stringValue.includes(',') ? `"${stringValue.replace(/"/g, '""')}"` : stringValue;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `grading-results-${Date.now()}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      console.log('✅ Export completed successfully');
+      toast.success(`Exported ${exportData.length} grading results`);
+    } catch (error) {
+      console.error('❌ Export failed:', error);
+      toast.error('Failed to export grading results');
+    }
+  };
+
   const renderSubmissions = () => (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -390,7 +464,7 @@ export const GradingSystem: React.FC<GradingSystemProps> = ({
             <Bot className="h-4 w-4 mr-2" />
             {isGrading ? 'Auto-Grading...' : 'Auto-Grade All'}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => handleExportResults()}>
             <Download className="h-4 w-4 mr-2" />
             Export Results
           </Button>

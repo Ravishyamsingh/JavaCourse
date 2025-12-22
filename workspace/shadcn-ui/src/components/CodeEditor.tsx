@@ -1,76 +1,192 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import Editor, { OnMount } from '@monaco-editor/react';
+import type { editor as MonacoEditor } from 'monaco-editor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Play, 
-  Copy, 
-  RotateCcw, 
-  CheckCircle2, 
+import {
+  Play,
+  Copy,
+  RotateCcw,
+  CheckCircle2,
   AlertCircle,
   Terminal,
-  Code
+  Code,
+  Keyboard
 } from 'lucide-react';
+import { CompilerClientError, runJavaCode, type RunJavaResponse } from '@/services/compiler';
 
 interface CodeEditorProps {
   initialCode?: string;
   title?: string;
   description?: string;
   readonly?: boolean;
+  lessonId?: string;
+  sampleInput?: string;
+  onChange?: (code: string) => void;
+  onRunComplete?: (result: RunJavaResponse) => void;
+  height?: string;
 }
 
-export default function CodeEditor({ 
-  initialCode = "", 
-  title = "Java Code Editor", 
-  description = "Write and run your Java code",
-  readonly = false 
+export default function CodeEditor({
+  initialCode = '',
+  title = 'Java Code Editor',
+  description = 'Write and run your Java code',
+  readonly = false,
+  lessonId,
+  sampleInput = '',
+  onChange,
+  onRunComplete,
+  height = '420px'
 }: CodeEditorProps) {
   const [code, setCode] = useState(initialCode);
+  const [stdin, setStdin] = useState(sampleInput);
   const [output, setOutput] = useState('');
+  const [diagnostics, setDiagnostics] = useState('');
+  const [stats, setStats] = useState<{ compileTimeMs: number; runTimeMs: number } | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'queued' | 'success' | 'error'>('idle');
+  const [jobMeta, setJobMeta] = useState<{ exitCode?: number | string | null; memory?: number | string | null; status?: string } | null>(null);
+  const editorRef = useRef<import('monaco-editor').editor.IStandaloneCodeEditor | null>(null);
+  const runCodeRef = useRef<() => void>();
 
-  const runCode = async () => {
+  const editorOptions = useMemo<MonacoEditor.IStandaloneEditorConstructionOptions>(() => ({
+    fontSize: 14,
+    fontFamily: 'JetBrains Mono, Fira Code, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    minimap: { enabled: false },
+    padding: { top: 16, bottom: 8 },
+    smoothScrolling: true,
+    cursorBlinking: 'smooth',
+    scrollBeyondLastLine: false,
+    automaticLayout: true,
+    tabSize: 4,
+    insertSpaces: true,
+    detectIndentation: false,
+    stickyTabStops: true,
+    useTabStops: true,
+    autoIndent: 'full',
+    autoClosingBrackets: 'always',
+    autoClosingQuotes: 'always',
+    autoSurround: 'languageDefined',
+    acceptSuggestionOnEnter: 'smart',
+    suggestOnTriggerCharacters: true,
+    formatOnType: true,
+    formatOnPaste: true,
+    quickSuggestions: true,
+    wordWrap: 'on',
+    contextmenu: true,
+    renderWhitespace: 'selection',
+    bracketPairColorization: { enabled: true },
+    guides: { indentation: true, highlightActiveIndentGuide: true },
+    unicodeHighlight: { ambiguousCharacters: false },
+    readOnly: readonly,
+  }), [readonly]);
+
+  const runCode = useCallback(async () => {
+    if (!code.trim()) {
+      setOutput('Please write some Java code first.');
+      setDiagnostics('');
+      setHasError(true);
+      setStatus('error');
+      return;
+    }
+
     setIsRunning(true);
-    setOutput('Compiling and running...');
+    setStatus('queued');
+    setOutput('Running code in the browser...');
+    setDiagnostics('');
+    setStats(null);
     setHasError(false);
+    setJobMeta(null);
 
-    // Simulate compilation and execution
-    setTimeout(() => {
+    try {
+      const response = await runJavaCode({ code, input: stdin, lessonId });
+
+      setOutput(response.output || 'Program finished without output.');
+      setDiagnostics(response.diagnostics || '');
+      setStats(response.stats ?? null);
+      setHasError(!response.success || Boolean(response.diagnostics));
+      setStatus(response.success ? 'success' : 'error');
+      setJobMeta({
+        exitCode: response.raw?.exit_code ?? null,
+        memory: response.raw?.memory ?? null,
+        status: response.raw?.status ?? response.raw?.result
+      });
+
+      // Notify parent about run completion
       try {
-        // Simple simulation of Java code execution
-        if (code.includes('System.out.println')) {
-          const matches = code.match(/System\.out\.println\s*\(\s*"([^"]*)"\s*\)/g);
-          if (matches) {
-            const outputs = matches.map(match => {
-              const text = match.match(/"([^"]*)"/)?.[1] || '';
-              return text;
-            });
-            setOutput(`Compilation successful!\n\nOutput:\n${outputs.join('\n')}`);
-          } else {
-            setOutput('Compilation successful!\n\nProgram executed successfully (no output)');
-          }
-        } else if (code.includes('public static void main')) {
-          setOutput('Compilation successful!\n\nProgram executed successfully');
-        } else if (code.trim() === '') {
-          setOutput('Please write some Java code first');
-          setHasError(true);
-        } else {
-          setOutput('Compilation successful!\n\nCode compiled without errors');
-        }
-      } catch (error) {
-        setOutput(`Compilation Error:\n${error}`);
-        setHasError(true);
+        onRunComplete?.(response);
+      } catch {}
+    } catch (error) {
+      let message = 'Unable to run code right now.';
+      let detail = '';
+
+      if (error instanceof CompilerClientError) {
+        message = error.message;
+        detail = typeof error.details === 'string'
+          ? error.details
+          : error.details
+            ? JSON.stringify(error.details, null, 2)
+            : '';
+      } else if (error instanceof Error) {
+        message = error.message;
       }
+
+      setOutput(message);
+      setDiagnostics(detail);
+      setHasError(true);
+      setStatus('error');
+
+      // Inform parent about failure in a normalized shape
+      try {
+        const resp: RunJavaResponse = {
+          success: false,
+          output: message,
+          diagnostics: detail || undefined,
+          stats: null,
+          raw: { error: String(message) }
+        };
+        onRunComplete?.(resp);
+      } catch {}
+    } finally {
       setIsRunning(false);
-    }, 1500);
-  };
+    }
+  }, [code, stdin, lessonId]);
+
+  runCodeRef.current = runCode;
+
+  const handleEditorMount: OnMount = useCallback((editor, monaco) => {
+    editorRef.current = editor;
+    editor.focus();
+
+    // Run code on Ctrl/Cmd+Enter and Shift+Enter
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      runCodeRef.current?.();
+    });
+    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
+      runCodeRef.current?.();
+    });
+
+    // Ensure Tab indents selection and Shift+Tab outdents
+    editor.addCommand(monaco.KeyCode.Tab, () => {
+      editor.trigger('keyboard', 'editor.action.indentLines', undefined);
+    });
+    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Tab, () => {
+      editor.trigger('keyboard', 'editor.action.outdentLines', undefined);
+    });
+  }, []);
 
   const resetCode = () => {
     setCode(initialCode);
+    setStdin(sampleInput);
     setOutput('');
+    setDiagnostics('');
+    setStats(null);
     setHasError(false);
+    setStatus('idle');
+    setJobMeta(null);
   };
 
   const copyCode = () => {
@@ -122,21 +238,22 @@ export default function CodeEditor({
                 )}
               </div>
             </div>
-            <div className="relative">
-              <Textarea
+            <div className="relative min-h-[420px] bg-gray-900">
+              <Editor
+                height={height}
+                language="java"
+                theme="vs-dark"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="min-h-[400px] border-0 rounded-none font-mono text-sm bg-gray-900 text-gray-100 resize-none focus:ring-0"
-                placeholder={`// Write your Java code here
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}`}
-                readOnly={readonly}
+                onChange={(value) => {
+                  const v = value || '';
+                  setCode(v);
+                  try { onChange?.(v); } catch {}
+                }}
+                options={editorOptions}
+                onMount={handleEditorMount}
               />
               {!readonly && (
-                <div className="absolute bottom-4 right-4">
+                <div className="absolute bottom-4 right-4 flex items-center gap-3">
                   <Button
                     onClick={runCode}
                     disabled={isRunning}
@@ -144,7 +261,7 @@ public class Main {
                   >
                     {isRunning ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                         Running...
                       </>
                     ) : (
@@ -157,6 +274,23 @@ public class Main {
                 </div>
               )}
             </div>
+            {!readonly && (
+              <div className="border-t border-gray-800 bg-gray-900 p-4 space-y-2">
+                <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400">
+                  <span className="flex items-center gap-2">
+                    <Keyboard className="h-3 w-3" /> Custom Input (stdin)
+                  </span>
+                  <span className="text-gray-500">{stdin.length} / 8000</span>
+                </div>
+                <Textarea
+                  value={stdin}
+                  onChange={(e) => setStdin(e.target.value)}
+                  className="h-28 bg-gray-950 border-gray-800 text-gray-100 font-mono text-sm"
+                  placeholder={`Optional input passed to System.in\nExample:\n5 10`}
+                />
+                <p className="text-xs text-gray-500">This text is piped to your program via standard input.</p>
+              </div>
+            )}
           </div>
 
           {/* Output Console */}
@@ -166,26 +300,40 @@ public class Main {
                 <Terminal className="h-4 w-4 mr-2" />
                 Console Output
               </span>
-              {output && !hasError && (
+              {output && !hasError ? (
                 <CheckCircle2 className="h-4 w-4 text-green-400" />
-              )}
+              ) : null}
               {hasError && (
                 <AlertCircle className="h-4 w-4 text-red-400" />
               )}
             </div>
-            <div className="p-4">
+            <div className="p-4 space-y-4">
               {output ? (
-                <div className={`font-mono text-sm whitespace-pre-wrap p-3 rounded ${
-                  hasError 
-                    ? 'bg-red-50 text-red-800 border border-red-200' 
-                    : 'bg-green-50 text-green-800 border border-green-200'
-                }`}>
+                <div
+                  className={`font-mono text-sm whitespace-pre-wrap p-3 rounded ${
+                    hasError
+                      ? 'bg-red-50 text-red-800 border border-red-200'
+                      : 'bg-green-50 text-green-800 border border-green-200'
+                  }`}
+                >
                   {output}
                 </div>
               ) : (
-                <div className="text-gray-500 italic">
-                  Click "Run Code" to see the output here
+                <div className="text-gray-500 italic">Click "Run Code" to see the output here</div>
+              )}
+
+              {diagnostics && (
+                <div className="font-mono text-sm whitespace-pre-wrap p-3 rounded bg-yellow-50 text-yellow-800 border border-yellow-200">
+                  {diagnostics}
                 </div>
+              )}
+
+              {false && jobMeta && (
+                <div className="hidden" />
+              )}
+
+              {false && stats && (
+                <div className="hidden" />
               )}
             </div>
           </div>

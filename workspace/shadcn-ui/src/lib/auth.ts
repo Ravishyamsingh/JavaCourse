@@ -160,14 +160,15 @@ export const hasPermission = (resource: string, action: string): boolean => {
 export const getDefaultRoute = (userRole: string): string => {
   switch (userRole) {
     case 'superadmin':
-      return '/super-admin';
+      return '/super-admin-panel';
     case 'admin':
-      return '/admin';
+      return '/admin-panel';
     case 'user':
       return '/dashboard';
     case 'guest':
+      return '/guest-dashboard';
     default:
-      return '/';
+      return '/dashboard';
   }
 };
 

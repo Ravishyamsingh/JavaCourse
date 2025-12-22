@@ -190,7 +190,8 @@ export const login = async (req, res) => {
         });
       }
 
-      // Check if user signed up with Google
+      // Check if user signed up with Google and has no password
+      // Allow login if user has a password set (even if originally from Google)
       if (user.provider === 'google' && !user.password) {
         await comparePassword(password, dummyHash); // Constant time operation
         return res.status(401).json({

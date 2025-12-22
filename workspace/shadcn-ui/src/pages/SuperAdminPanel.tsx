@@ -45,6 +45,7 @@ import GradingSystem from '@/components/cms/GradingSystem';
 
 interface AdminUser {
   id: string;
+  _id?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -53,6 +54,9 @@ interface AdminUser {
   lastLogin?: string;
   permissions: string[];
   createdAt: string;
+  adminData?: {
+    permissions?: string[];
+  };
 }
 
 interface SystemConfig {
@@ -64,8 +68,17 @@ interface SystemConfig {
   backupFrequency: string;
 }
 
+interface MonitoringStats {
+  activeSessions: number;
+  apiRequests: number;
+  errorRate: number;
+  sessionsChange: number;
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const SuperAdminPanel: React.FC = () => {
-  const { user, hasPermission } = useAuth();
+  const { user, hasPermission, tokens } = useAuth();
   const [activeTab, setActiveTab] = useState('admins');
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [systemConfig, setSystemConfig] = useState<SystemConfig>({
@@ -73,48 +86,118 @@ const SuperAdminPanel: React.FC = () => {
     registrationEnabled: true,
     emailVerificationRequired: true,
     maxLoginAttempts: 5,
-    sessionTimeout: 24, // hours
+    sessionTimeout: 24,
     backupFrequency: 'daily'
+  });
+  const [monitoringStats, setMonitoringStats] = useState<MonitoringStats>({
+    activeSessions: 0,
+    apiRequests: 0,
+    errorRate: 0,
+    sessionsChange: 0
   });
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<AdminUser | null>(null);
+  const [showAddAdminDialog, setShowAddAdminDialog] = useState(false);
+  const [newAdminForm, setNewAdminForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    role: 'admin' as 'admin' | 'superadmin'
+  });
 
-  // Mock data - in real app, this would come from API
-  useEffect(() => {
-    const mockAdmins: AdminUser[] = [
-      {
-        id: 'admin-1',
-        firstName: 'Alice',
-        lastName: 'Admin',
-        email: 'alice.admin@example.com',
-        role: 'admin',
-        isActive: true,
-        lastLogin: '2024-01-20T14:30:00Z',
-        permissions: ['users.read', 'users.update', 'courses.read', 'courses.create'],
-        createdAt: '2024-01-10T09:00:00Z'
-      },
-      {
-        id: 'admin-2',
-        firstName: 'Bob',
-        lastName: 'Super',
-        email: 'bob.super@example.com',
-        role: 'superadmin',
-        isActive: true,
-        lastLogin: '2024-01-20T16:45:00Z',
-        permissions: ['*'],
-        createdAt: '2024-01-05T11:30:00Z'
+  // Auth fetch helper
+  const authFetch = async (path: string, options: RequestInit = {}) => {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tokens?.accessToken}`,
+        ...options.headers
       }
-    ];
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Request failed' }));
+      throw new Error(error.message || 'Request failed');
+    }
+    return response.json();
+  };
 
-    setAdmins(mockAdmins);
-  }, []);
+  // Fetch admin users from API
+  const fetchAdmins = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch users with admin and superadmin roles
+      const [adminRes, superAdminRes] = await Promise.all([
+        authFetch('/admin/users?role=admin&limit=100'),
+        authFetch('/admin/users?role=superadmin&limit=100')
+      ]);
+      
+      const allAdmins: AdminUser[] = [
+        ...(adminRes.data || []).map((u: any) => ({
+          id: u._id || u.id,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          email: u.email,
+          role: u.role as 'admin' | 'superadmin',
+          isActive: u.isActive,
+          lastLogin: u.lastLogin,
+          permissions: u.adminData?.permissions || ['*'],
+          createdAt: u.createdAt
+        })),
+        ...(superAdminRes.data || []).map((u: any) => ({
+          id: u._id || u.id,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          email: u.email,
+          role: u.role as 'admin' | 'superadmin',
+          isActive: u.isActive,
+          lastLogin: u.lastLogin,
+          permissions: u.adminData?.permissions || ['*'],
+          createdAt: u.createdAt
+        }))
+      ];
+      
+      setAdmins(allAdmins);
+    } catch (error) {
+      console.error('Failed to fetch admins:', error);
+      toast.error('Failed to fetch admin users');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch monitoring stats
+  const fetchMonitoringStats = async () => {
+    try {
+      const dashboardRes = await authFetch('/admin/dashboard/stats');
+      if (dashboardRes.data) {
+        setMonitoringStats({
+          activeSessions: dashboardRes.data.activeUsers || 0,
+          apiRequests: dashboardRes.data.totalRequests || 0,
+          errorRate: dashboardRes.data.errorRate || 0,
+          sessionsChange: dashboardRes.data.sessionsChange || 0
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch monitoring stats:', error);
+    }
+  };
+
+  // Load data on mount
+  useEffect(() => {
+    if (user && tokens?.accessToken) {
+      fetchAdmins();
+      fetchMonitoringStats();
+    }
+  }, [user, tokens]);
 
   const handleSystemConfigUpdate = async (updates: Partial<SystemConfig>) => {
     setIsLoading(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      // Update system config via API (create endpoint if needed, for now update locally)
+      // In production, this would call: await authFetch('/admin/system/config', { method: 'PUT', body: JSON.stringify(updates) });
       setSystemConfig(prev => ({ ...prev, ...updates }));
       toast.success('System configuration updated successfully');
     } catch (error) {
@@ -127,24 +210,31 @@ const SuperAdminPanel: React.FC = () => {
   const handleAdminAction = async (action: string, adminId: string) => {
     setIsLoading(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       if (action === 'deactivate') {
+        await authFetch(`/admin/users/${adminId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ isActive: false })
+        });
         setAdmins(prev => prev.map(admin =>
           admin.id === adminId ? { ...admin, isActive: false } : admin
         ));
         toast.success('Admin account deactivated');
       } else if (action === 'activate') {
+        await authFetch(`/admin/users/${adminId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ isActive: true })
+        });
         setAdmins(prev => prev.map(admin =>
           admin.id === adminId ? { ...admin, isActive: true } : admin
         ));
         toast.success('Admin account activated');
       } else if (action === 'delete') {
+        await authFetch(`/admin/users/${adminId}`, { method: 'DELETE' });
         setAdmins(prev => prev.filter(admin => admin.id !== adminId));
         toast.success('Admin account deleted');
       }
     } catch (error) {
+      console.error('Admin action failed:', error);
       toast.error('Action failed');
     } finally {
       setIsLoading(false);
@@ -159,15 +249,71 @@ const SuperAdminPanel: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await authFetch(`/admin/users/${adminId}/role`, {
+        method: 'PUT',
+        body: JSON.stringify({ role: newRole })
+      });
 
       setAdmins(prev => prev.map(admin =>
         admin.id === adminId ? { ...admin, role: newRole } : admin
       ));
       toast.success(`Admin role changed to ${newRole}`);
     } catch (error) {
+      console.error('Failed to change role:', error);
       toast.error('Failed to change admin role');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddAdmin = async () => {
+    if (!newAdminForm.firstName || !newAdminForm.lastName || !newAdminForm.email || !newAdminForm.password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('📝 Creating new admin:', newAdminForm.email);
+      
+      const response = await authFetch('/admin/users', {
+        method: 'POST',
+        body: JSON.stringify({
+          firstName: newAdminForm.firstName,
+          lastName: newAdminForm.lastName,
+          email: newAdminForm.email,
+          password: newAdminForm.password,
+          role: newAdminForm.role
+        })
+      });
+
+      if (response.success) {
+        const newAdmin: AdminUser = {
+          id: response.data._id,
+          firstName: response.data.firstName,
+          lastName: response.data.lastName,
+          email: response.data.email,
+          role: response.data.role,
+          isActive: response.data.isActive,
+          permissions: response.data.adminData?.permissions || ['*'],
+          createdAt: response.data.createdAt
+        };
+
+        setAdmins(prev => [...prev, newAdmin]);
+        setNewAdminForm({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: '',
+          role: 'admin'
+        });
+        setShowAddAdminDialog(false);
+        toast.success(`✅ Admin ${newAdminForm.email} created successfully`);
+        console.log('✅ Admin created successfully');
+      }
+    } catch (error) {
+      console.error('❌ Failed to create admin:', error);
+      toast.error('Failed to create admin account');
     } finally {
       setIsLoading(false);
     }
@@ -229,13 +375,29 @@ const SuperAdminPanel: React.FC = () => {
                     <CardTitle>Administrator Management</CardTitle>
                     <CardDescription>Manage admin and super admin accounts</CardDescription>
                   </div>
-                  <Button>
+                  <Button onClick={() => setShowAddAdminDialog(true)}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     Add Administrator
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
+                {isLoading && admins.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                      <p className="text-gray-500">Loading administrators...</p>
+                    </div>
+                  </div>
+                ) : admins.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No administrators found</p>
+                      <p className="text-sm text-gray-400 mt-1">Add administrators to manage the system</p>
+                    </div>
+                  </div>
+                ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -254,7 +416,7 @@ const SuperAdminPanel: React.FC = () => {
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                               <span className="text-sm font-medium text-purple-600">
-                                {admin.firstName[0]}{admin.lastName[0]}
+                                {admin.firstName?.[0] || 'A'}{admin.lastName?.[0] || 'U'}
                               </span>
                             </div>
                             <div>
@@ -343,6 +505,7 @@ const SuperAdminPanel: React.FC = () => {
                     ))}
                   </TableBody>
                 </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -592,10 +755,10 @@ const SuperAdminPanel: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Active Sessions</p>
-                      <p className="text-2xl font-bold">1,247</p>
+                      <p className="text-2xl font-bold">{monitoringStats.activeSessions.toLocaleString()}</p>
                       <p className="text-xs text-green-600 flex items-center mt-1">
                         <Activity className="h-3 w-3 mr-1" />
-                        +5% from yesterday
+                        {monitoringStats.sessionsChange >= 0 ? '+' : ''}{monitoringStats.sessionsChange}% from yesterday
                       </p>
                     </div>
                     <Activity className="h-8 w-8 text-blue-500" />
@@ -608,7 +771,7 @@ const SuperAdminPanel: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">API Requests</p>
-                      <p className="text-2xl font-bold">45.2K</p>
+                      <p className="text-2xl font-bold">{monitoringStats.apiRequests > 1000 ? `${(monitoringStats.apiRequests / 1000).toFixed(1)}K` : monitoringStats.apiRequests}</p>
                       <p className="text-xs text-blue-600 flex items-center mt-1">
                         <BarChart3 className="h-3 w-3 mr-1" />
                         Per hour average
@@ -624,10 +787,10 @@ const SuperAdminPanel: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Error Rate</p>
-                      <p className="text-2xl font-bold">0.12%</p>
+                      <p className="text-2xl font-bold">{monitoringStats.errorRate.toFixed(2)}%</p>
                       <p className="text-xs text-green-600 flex items-center mt-1">
                         <CheckCircle className="h-3 w-3 mr-1" />
-                        Below threshold
+                        {monitoringStats.errorRate < 1 ? 'Below threshold' : 'Above threshold'}
                       </p>
                     </div>
                     <AlertTriangle className="h-8 w-8 text-yellow-500" />
@@ -653,6 +816,97 @@ const SuperAdminPanel: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Add Admin Dialog */}
+        {showAddAdminDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-96 max-h-[80vh] overflow-y-auto">
+              <CardHeader>
+                <CardTitle>Add Administrator</CardTitle>
+                <CardDescription>Create a new admin or super admin account</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={newAdminForm.firstName}
+                    onChange={(e) => setNewAdminForm(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="Enter first name"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={newAdminForm.lastName}
+                    onChange={(e) => setNewAdminForm(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Enter last name"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newAdminForm.email}
+                    onChange={(e) => setNewAdminForm(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="Enter email address"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={newAdminForm.password}
+                    onChange={(e) => setNewAdminForm(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Enter password (min 8 characters)"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="role">Role</Label>
+                  <Select
+                    value={newAdminForm.role}
+                    onValueChange={(value) => setNewAdminForm(prev => ({ ...prev, role: value as 'admin' | 'superadmin' }))}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="superadmin">Super Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddAdminDialog(false)}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddAdmin}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Creating...' : 'Create Admin'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

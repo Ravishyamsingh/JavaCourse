@@ -422,35 +422,12 @@ export const lesson_14_1: LessonContent = {
         }<br/>
       </div>
     `,
-    exercise: 'Create a comprehensive unit testing suite for a simple banking system. Your task is to implement and test a BankAccount class with proper unit testing practices.\n\n' +
-      '**Requirements:**\n\n' +
-      '1. **BankAccount Class Implementation:**\n' +
-      '   - Properties: accountNumber, balance, accountHolder\n' +
-      '   - Methods: deposit(), withdraw(), getBalance(), transfer()\n' +
-      '   - Validation: Prevent negative deposits/withdrawals, insufficient funds\n' +
-      '   - Exception handling for invalid operations\n\n' +
-      '2. **Unit Test Suite:**\n' +
-      '   - Test all public methods with various scenarios\n' +
-      '   - Include edge cases and boundary conditions\n' +
-      '   - Test exception handling and error conditions\n' +
-      '   - Use descriptive test names following conventions\n' +
-      '   - Apply AAA pattern (Arrange-Act-Assert)\n\n' +
-      '3. **Test Categories:**\n' +
-      '   - **Happy Path Tests:** Normal operations with valid inputs\n' +
-      '   - **Edge Case Tests:** Boundary values, zero amounts, etc.\n' +
-      '   - **Error Condition Tests:** Invalid inputs, insufficient funds\n' +
-      '   - **State Verification Tests:** Ensure object state changes correctly\n\n' +
-      '4. **Testing Best Practices:**\n' +
-      '   - One assertion per test (when possible)\n' +
-      '   - Independent tests that don\'t rely on each other\n' +
-      '   - Clear, descriptive test names\n' +
-      '   - Proper setup and teardown\n' +
-      '   - Meaningful assertion messages\n\n' +
-      '**Learning Objectives:**\n' +
-      '- Practice writing comprehensive unit tests\n' +
-      '- Apply testing best practices and conventions\n' +
-      '- Understand the importance of testing edge cases\n' +
-      '- Learn to structure tests using the AAA pattern\n' +
-      '- Experience test-driven development principles'
+    exercise: `
+1) Write a unit test for a Calculator class add() method that follows the AAA pattern.
+2) Create a unit test that verifies the divide() method throws an exception when dividing by zero.
+3) Write a test for the isPrime() method that checks both prime and non-prime numbers.
+4) Implement a unit test for a method that calculates the factorial of a number.
+5) Create a test that validates a method which finds the maximum value in an array of integers.
+`
   }
 };

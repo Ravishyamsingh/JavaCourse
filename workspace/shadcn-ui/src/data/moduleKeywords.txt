@@ -1,0 +1,62 @@
+MODULE KEYWORDS FOR QUIZ GENERATION
+====================================
+
+Module 1: Java Fundamentals
+Keywords: Java, JVM, bytecode, platform independent, object-oriented, class, main method, variables, data types, operators, primitive types, reference types, type casting, constants, naming conventions
+
+Module 2: Control Flow and Loops
+Keywords: if, else, switch, for, while, do-while, break, continue, conditional statements, loop control, nested loops, ternary operator, default case, loop iteration, loop termination
+
+Module 3: Object-Oriented Programming
+Keywords: class, object, inheritance, polymorphism, encapsulation, abstraction, constructor, method, instance variable, static, final, access modifiers, super, this, method overriding, method overloading
+
+Module 4: Arrays and Collections
+Keywords: array, ArrayList, LinkedList, HashMap, HashSet, TreeMap, TreeSet, Queue, Stack, List, Set, Map, Collection, Iterator, multidimensional array, array indexing, collection framework
+
+Module 5: String Manipulation and Regular Expressions
+Keywords: String, StringBuilder, StringBuffer, regex, pattern matching, string methods, charAt, substring, indexOf, split, replace, trim, toUpperCase, toLowerCase, regular expression, matcher
+
+Module 6: Exception Handling and Debugging
+Keywords: try, catch, finally, throw, throws, exception, error, checked exception, unchecked exception, custom exception, exception hierarchy, debugging, breakpoint, stack trace, logging
+
+Module 7: File I/O and Serialization
+Keywords: File, FileInputStream, FileOutputStream, BufferedReader, BufferedWriter, serialization, deserialization, ObjectInputStream, ObjectOutputStream, directory, path, stream, reader, writer
+
+Module 8: Generics and Type Safety
+Keywords: generic, type parameter, bounded type parameter, wildcard, type erasure, generic class, generic method, type safety, raw type, generic collection, extends, super
+
+Module 9: Concurrency and Multithreading
+Keywords: thread, Thread, Runnable, synchronized, volatile, concurrent, lock, mutex, deadlock, race condition, thread pool, executor, callable, future, atomic
+
+Module 10: Lambda Expressions and Functional Programming
+Keywords: lambda, functional interface, method reference, stream, filter, map, reduce, collect, Optional, functional programming, arrow operator, SAM interface, stream pipeline
+
+Module 11: Database Connectivity (JDBC)
+Keywords: JDBC, Connection, Statement, PreparedStatement, ResultSet, SQL, query, database, driver, connection pooling, transaction, commit, rollback, metadata, batch processing
+
+Module 12: Advanced Java Features
+Keywords: annotation, reflection, module, JPMS, JVM, memory management, garbage collection, performance tuning, security, JMX, monitoring, JNI, native code, bytecode
+
+Module 13: Design Patterns
+Keywords: design pattern, singleton, factory, builder, adapter, decorator, facade, observer, strategy, command, MVC, MVP, dependency injection, creational, structural, behavioral
+
+Module 14: Testing and Quality Assurance
+Keywords: unit test, JUnit, Mockito, mock, stub, integration test, test-driven development, TDD, code coverage, assertion, test case, test suite, quality assurance
+
+Module 15: Build Tools and Project Management
+Keywords: Maven, Gradle, POM, build, dependency, plugin, repository, artifact, multi-module, build automation, CI/CD, continuous integration, continuous deployment
+
+Module 16: Web Development with Java
+Keywords: servlet, JSP, Spring, Spring Boot, REST, RESTful, web service, HTTP, request, response, controller, model, view, Spring Data, persistence, ORM
+
+Module 17: Microservices and Cloud
+Keywords: microservice, architecture, Spring Boot, service discovery, API gateway, load balancing, message queue, event streaming, Docker, container, cloud, AWS, Azure, GCP
+
+Module 18: Advanced Topics and Best Practices
+Keywords: code review, JavaDoc, documentation, internationalization, i18n, performance optimization, security, scalability, architecture, best practice, standard, convention
+
+Module 19: Project Development
+Keywords: project, planning, design, console application, GUI, web application, database integration, REST API, full-stack, development, implementation, testing, deployment
+
+Module 20: Career and Advanced Learning
+Keywords: certification, career, Java developer, open source, framework, evolution, portfolio, interview, technical skill, professional development, learning path

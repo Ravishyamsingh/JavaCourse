@@ -24,9 +24,11 @@ export const lesson_4_7: LessonContent = {
     `,
     codeExample: `// Advanced Collections examples will be added later`,
     exercise: `
-      **🎯 Advanced Collections Practice Exercise**
-      
-      Create programs to practice TreeMap, TreeSet, and Queue operations.
-    `
+1. Create a TreeMap to store names and ages, then print them in sorted order.
+2. Create a TreeSet and add elements to demonstrate automatic sorting.
+3. Write a program to use a Queue (LinkedList) for FIFO operations.
+4. Create a program to find the first and last elements in a TreeSet.
+5. Write a program to iterate through a TreeMap in reverse order.
+`
   }
 };

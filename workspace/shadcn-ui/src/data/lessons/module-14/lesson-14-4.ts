@@ -713,52 +713,11 @@ class IntegrationEnvironmentTest {
       </div>
     `,
     exercise: `
-      **🎯 Integration Testing Exercises**
-
-      **Exercise 1: Database Integration Testing**
-      Create a Spring Boot application with User entity and UserRepository:
-      - Implement integration tests using H2 in-memory database
-      - Test CRUD operations with TestEntityManager
-      - Use @DataJpaTest for repository-focused tests
-      - Verify data integrity constraints
-
-      **Exercise 2: Service Layer Integration Testing**
-      Create a UserService that depends on UserRepository and EmailService:
-      - Write integration tests using @SpringBootTest
-      - Mock external services (EmailService) with @MockBean
-      - Test service methods that involve multiple components
-      - Verify transactional behavior
-
-      **Exercise 3: REST API Integration Testing**
-      Create a UserController with endpoints for user management:
-      - Test API endpoints using MockMvc
-      - Verify HTTP status codes and response bodies
-      - Test both success and error scenarios
-      - Validate request and response JSON structures
-
-      **Exercise 4: External Service Integration Testing**
-      Create a PaymentService that integrates with an external payment gateway:
-      - Use WireMock to mock the external service
-      - Test different response scenarios (success, failure, timeout)
-      - Verify request payloads sent to external service
-      - Handle and test error responses
-
-      **Exercise 5: Testcontainers Integration Testing**
-      Set up Testcontainers for realistic database testing:
-      - Configure PostgreSQL Testcontainer
-      - Test with a real database instead of in-memory
-      - Verify database-specific features and constraints
-      - Test database migration scripts
-
-      **Exercise 6: Configuration and Profiles**
-      Implement different configurations for testing environments:
-      - Create separate configuration files for test and integration
-      - Use @ActiveProfiles to switch between configurations
-      - Test environment-specific behavior
-      - Implement conditional bean creation for tests
-
-      **Deliverable:**
-      Create a comprehensive integration test suite that covers database interactions, service layer integration, REST API endpoints, and external service integration. Ensure tests are well-organized, properly isolated, and cover both happy path and error scenarios.
-    `
+1) Write an integration test using @SpringBootTest that tests a service method with database operations.
+2) Create a test using MockMvc to test a REST controller endpoint that creates a new resource.
+3) Implement an integration test that uses Testcontainers to test with a real PostgreSQL database.
+4) Write a test that verifies the interaction between a service and its repository using @Autowired.
+5) Create an integration test that tests error handling when an external service fails.
+`
   }
 };

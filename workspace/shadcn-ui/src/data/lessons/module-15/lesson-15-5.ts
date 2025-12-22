@@ -848,82 +848,11 @@ Build Pipeline Stages:
       </div>
     `,
     exercise: `
-      **🎯 Build Automation and Plugins Exercises**
-
-      **Exercise 1: Maven Plugin Configuration**
-      Set up comprehensive Maven build automation:
-      - Configure Maven Compiler plugin with custom options
-      - Add Surefire plugin for unit tests with custom includes/excludes
-      - Set up Failsafe plugin for integration tests
-      - Configure JaCoCo plugin for code coverage with thresholds
-      - Add Checkstyle plugin with custom rules
-      - Test all plugins and verify their outputs
-
-      **Exercise 2: Gradle Plugin Ecosystem**
-      Explore and configure essential Gradle plugins:
-      - Apply and configure core Java plugins
-      - Add code quality plugins (Checkstyle, PMD, SpotBugs)
-      - Set up JaCoCo for coverage reporting
-      - Configure test retry plugin for flaky tests
-      - Add Docker plugin for containerization
-      - Create custom tasks that depend on plugin tasks
-
-      **Exercise 3: Code Quality Automation**
-      Implement comprehensive code quality checks:
-      - Set up Checkstyle with custom configuration file
-      - Configure PMD with project-specific rules
-      - Add SpotBugs for static analysis
-      - Set up JaCoCo with coverage thresholds
-      - Create a quality gate that fails builds on violations
-      - Generate and analyze quality reports
-
-      **Exercise 4: Custom Plugin Development**
-      Create a custom Gradle plugin:
-      - Develop a plugin that generates project documentation
-      - Create custom tasks with input/output annotations
-      - Add configuration extension for plugin customization
-      - Implement proper task dependencies and ordering
-      - Test the plugin in a sample project
-      - Package and distribute the plugin
-
-      **Exercise 5: Multi-Stage Build Pipeline**
-      Design and implement a comprehensive build pipeline:
-      - Create separate tasks for unit tests, integration tests, and performance tests
-      - Add security scanning with OWASP dependency check
-      - Implement Docker image building and pushing
-      - Set up proper task ordering and dependencies
-      - Add parallel execution where possible
-      - Create a single command to run the entire pipeline
-
-      **Exercise 6: Performance Optimization**
-      Optimize build performance through automation:
-      - Enable parallel test execution
-      - Configure build caching for faster builds
-      - Implement incremental compilation
-      - Set up daemon processes for Gradle
-      - Profile build performance and identify bottlenecks
-      - Compare build times before and after optimizations
-
-      **Exercise 7: CI/CD Integration Preparation**
-      Prepare builds for continuous integration:
-      - Configure builds to work in headless environments
-      - Set up proper test reporting for CI systems
-      - Add build notifications and status reporting
-      - Create different build profiles for different environments
-      - Implement artifact publishing to repositories
-      - Document the complete build process
-
-      **Exercise 8: Advanced Automation Scenarios**
-      Implement complex automation workflows:
-      - Set up conditional task execution based on changed files
-      - Create environment-specific build configurations
-      - Implement automatic version bumping
-      - Add license checking and dependency vulnerability scanning
-      - Create build health monitoring and reporting
-      - Set up automated cleanup of old artifacts
-
-      **Deliverable:**
-      Create a fully automated build system demonstrating all learned concepts: comprehensive plugin configuration, custom plugin development, multi-stage pipeline, performance optimization, and CI/CD readiness. Include documentation of the automation strategy and performance benchmarks.
-    `
+1) Configure JaCoCo plugin in a Maven project to generate code coverage reports.
+2) Set up Checkstyle and PMD plugins in Maven for code quality checks.
+3) Create a custom Gradle task that generates project documentation.
+4) Configure Maven Surefire and Failsafe plugins for unit and integration testing.
+5) Set up a multi-stage build pipeline using Gradle tasks with proper dependencies.
+`
   }
 };

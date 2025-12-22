@@ -713,50 +713,11 @@ public class SpringWebApplication {
 }
     `,
     exercise: `
-      **🎯 Spring Framework Basics Exercises**
-
-      **Exercise 1: Basic Spring Configuration**
-      Create a simple Spring application with the following requirements:
-      - Define a configuration class using @Configuration annotation
-      - Create beans for UserRepository, UserService, and EmailService
-      - Use constructor injection to wire dependencies
-      - Implement component scanning with @ComponentScan
-      - Test the configuration using ApplicationContext
-
-      **Exercise 2: Component Stereotypes**
-      Build a layered application demonstrating different component stereotypes:
-      - Create a @Repository component for data access
-      - Create a @Service component for business logic
-      - Create a @Controller component for web layer
-      - Use appropriate annotations for each layer
-      - Implement proper dependency injection between layers
-
-      **Exercise 3: Lifecycle Management**
-      Implement comprehensive lifecycle management:
-      - Create beans with initialization and destruction callbacks
-      - Use @PostConstruct and @PreDestroy annotations
-      - Implement InitializingBean and DisposableBean interfaces
-      - Test lifecycle methods with proper logging
-      - Verify initialization and cleanup order
-
-      **Exercise 4: AOP Implementation**
-      Create aspects for cross-cutting concerns:
-      - Implement logging aspect with before/after advice
-      - Create performance monitoring aspect with around advice
-      - Implement exception handling aspect with after-throwing advice
-      - Define pointcuts for service layer methods
-      - Test aspect functionality with sample service calls
-
-      **Exercise 5: Profile-based Configuration**
-      Set up environment-specific configurations:
-      - Create configuration classes for different profiles (dev, test, prod)
-      - Define profile-specific beans (e.g., different data sources)
-      - Use @Profile annotation to activate configurations
-      - Test profile activation with different runtime environments
-      - Implement conditional bean creation based on profiles
-
-      **Deliverable:**
-      Create a complete Spring-based application that demonstrates understanding of IoC, DI, AOP, lifecycle management, and configuration best practices. Include proper separation of concerns, appropriate component stereotypes, and comprehensive testing of Spring features.
-    `
+1) Create a Spring configuration class with @Configuration annotation that defines beans for UserService and EmailService using constructor injection.
+2) Implement a @Service class that uses @Autowired to inject a UserRepository dependency and implements a method to create new users.
+3) Create a Spring bean with @PostConstruct and @PreDestroy lifecycle callbacks that manages database connections.
+4) Write an AOP aspect using @Before advice to log method calls in a service layer class.
+5) Configure a Spring application with @ComponentScan to automatically detect and register @Component annotated classes.
+`
   }
 };

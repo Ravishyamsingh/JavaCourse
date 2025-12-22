@@ -1,5 +1,6 @@
 // backend/src/controllers/progressController.js
 import { User } from '../models.js';
+import { cacheService } from '../services/cacheService.js';
 
 const defaultProgressState = {
   completedLessons: [],
@@ -145,6 +146,14 @@ const formatQuizHistory = (history = [], limit = 10) =>
 
 export const getUserProgress = async (req, res) => {
   try {
+    const userId = req.user._id.toString();
+    
+    // Try to get from Redis cache first
+    const cachedProgress = await cacheService.getUserProgress(userId);
+    if (cachedProgress) {
+      return res.json(cachedProgress);
+    }
+
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -185,7 +194,7 @@ export const getUserProgress = async (req, res) => {
     const weeklyActivity = computeWeeklyActivity(activityLog);
     const recentQuizHistory = formatQuizHistory(quizHistory, 10);
 
-    res.json({
+    const responseData = {
       success: true,
       progress: responseProgress,
       achievements: responseProgress.achievements || [],
@@ -196,7 +205,12 @@ export const getUserProgress = async (req, res) => {
         totalLessonsCompleted: responseProgress.completedLessons?.length || 0,
         totalQuizAttempts: quizHistory.length
       }
-    });
+    };
+
+    // Cache the response in Redis (5 minute TTL)
+    await cacheService.setUserProgress(userId, responseData);
+
+    res.json(responseData);
   } catch (error) {
     console.error('Progress fetch error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch progress' });
@@ -319,7 +333,12 @@ export const updateUserProgress = async (req, res) => {
       lastSyncedAt: new Date()
     };
 
+    // Save progress synchronously to MongoDB (primary storage)
     await user.save();
+    
+    // Invalidate the user progress cache immediately after database save
+    // This ensures cache consistency before responding
+    await cacheService.invalidateUserProgress(req.user._id.toString());
 
     const savedProgress = user.progress?.toObject ? user.progress.toObject() : user.progress;
     const responseActivityLog = normaliseActivityLog(savedProgress.activityLog);

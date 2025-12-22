@@ -481,52 +481,11 @@ export const lesson_16_2: LessonContent = {
 </html>
     `,
     exercise: `
-      **🎯 JSP (JavaServer Pages) Exercises**
-
-      **Exercise 1: Basic JSP Page**
-      Create a JSP page with the following features:
-      - Use page directives to set content type and import necessary classes
-      - Display current date and time using JSP expressions
-      - Accept a "username" parameter and display a personalized greeting
-      - Use JSP scriptlets to implement simple logic
-      - Include proper HTML structure and basic styling
-
-      **Exercise 2: JSP with JSTL**
-      Build a product listing page using JSTL:
-      - Use JSTL core tags for conditional logic and loops
-      - Create a list of products with name, price, and availability
-      - Display products using c:forEach loop
-      - Use c:if and c:choose for conditional display
-      - Format prices using fmt:formatNumber
-      - Implement proper error handling
-
-      **Exercise 3: JSP with JavaBeans**
-      Create a user management system:
-      - Create a User JavaBean with properties (name, email, age)
-      - Use jsp:useBean to instantiate the bean
-      - Create a form to collect user information
-      - Use jsp:setProperty and jsp:getProperty for data binding
-      - Display user information after form submission
-      - Implement form validation
-
-      **Exercise 4: JSP Include and Forward**
-      Build a multi-page application:
-      - Create header.jsp and footer.jsp as reusable components
-      - Use jsp:include to include header and footer in main pages
-      - Implement navigation between pages
-      - Use jsp:forward for conditional page routing
-      - Pass parameters between pages using jsp:param
-
-      **Exercise 5: Error Handling**
-      Implement comprehensive error handling:
-      - Create a custom error page using isErrorPage directive
-      - Handle different types of exceptions
-      - Display user-friendly error messages
-      - Implement logging for debugging purposes
-      - Test error scenarios and recovery
-
-      **Deliverable:**
-      Create a complete JSP-based web application that demonstrates understanding of JSP syntax, JSTL usage, JavaBean integration, page composition, and error handling. Include proper separation of concerns and follow JSP best practices.
-    `
+1) Create a basic JSP page that displays current date/time and accepts user input via URL parameters.
+2) Build a JSP page using JSTL tags to display a list of items with conditional formatting.
+3) Implement a JSP form that uses JavaBeans for data binding and validation.
+4) Create reusable JSP components using jsp:include and jsp:forward actions.
+5) Set up JSP error handling with custom error pages and exception management.
+`
   }
 };

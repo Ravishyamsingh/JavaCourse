@@ -1,9 +1,7 @@
 import { OAuth2Client } from 'google-auth-library';
-import dotenv from "dotenv";
+import config from '../config.js';
 
-dotenv.config();
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(config.GOOGLE_CLIENT_ID);
 
 /**
  * Verify Google OAuth token and extract user information
@@ -14,7 +12,7 @@ export const verifyGoogleToken = async (token) => {
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+  audience: config.GOOGLE_CLIENT_ID,
     });
     
     const payload = ticket.getPayload();
@@ -41,8 +39,8 @@ export const getGoogleAuthURL = () => {
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
   
   const options = {
-  redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`,
-    client_id: process.env.GOOGLE_CLIENT_ID,
+  redirect_uri: `${config.BACKEND_URL}/api/auth/google/callback`,
+    client_id: config.GOOGLE_CLIENT_ID,
     access_type: 'offline',
     response_type: 'code',
     prompt: 'consent',

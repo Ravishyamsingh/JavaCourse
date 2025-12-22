@@ -1,5 +1,6 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import config from '../config.js';
 
 const SALT_ROUNDS = 12; // Increased from 10 for better security
 const TOKEN_EXPIRY = '15m'; // Reduced from 7d for better security
@@ -7,23 +8,17 @@ const TOKEN_EXPIRY = '15m'; // Reduced from 7d for better security
 // Validate required environment variables at startup
 const validateEnvironment = () => {
   // In production, require a strong JWT_SECRET. In development, allow a fallback
-  if (process.env.NODE_ENV === 'production') {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET environment variable is required in production');
+  if (config.NODE_ENV === 'production') {
+    if (!config.JWT_ACCESS_SECRET) {
+      throw new Error('JWT_ACCESS_SECRET environment variable is required in production');
     }
-    if (process.env.JWT_SECRET.length < 32) {
-      throw new Error('JWT_SECRET must be at least 32 characters long in production');
+    if (config.JWT_ACCESS_SECRET.length < 32) {
+      throw new Error('JWT_ACCESS_SECRET must be at least 32 characters long in production');
     }
   } else {
-    // Development: if JWT_SECRET is missing, try falling back to access secret or set a dev default.
-    if (!process.env.JWT_SECRET) {
-      if (process.env.JWT_ACCESS_SECRET) {
-        process.env.JWT_SECRET = process.env.JWT_ACCESS_SECRET;
-        console.warn('⚠️ JWT_SECRET not found; falling back to JWT_ACCESS_SECRET for development');
-      } else {
-        process.env.JWT_SECRET = 'dev-jwt-secret-change-this-in-local';
-        console.warn('⚠️ JWT_SECRET not set — using a weak development default. Do NOT use in production.');
-      }
+    // Development: if JWT_ACCESS_SECRET is missing, try falling back or set a dev default.
+    if (!config.JWT_ACCESS_SECRET) {
+      console.warn('⚠️ JWT_ACCESS_SECRET not set — using a weak development default. Do NOT use in production.');
     }
   }
 };
@@ -37,7 +32,7 @@ export const hashPassword = async (password) => {
     throw new Error('Password must be at least 6 characters long');
   }
   
-  const saltRounds = Number(process.env.SALT_ROUNDS || process.env.BCRYPT_SALT_ROUNDS) || SALT_ROUNDS;
+  const saltRounds = config.BCRYPT_SALT_ROUNDS || SALT_ROUNDS;
   const salt = await bcrypt.genSalt(saltRounds);
   return await bcrypt.hash(password, salt);
 };

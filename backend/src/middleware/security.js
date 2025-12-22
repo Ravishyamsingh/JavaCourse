@@ -18,6 +18,7 @@ const googleOAuthRetryLabel = (() => {
   return googleOAuthRetryMinutes === 1 ? '1 minute' : `${googleOAuthRetryMinutes} minutes`;
 })();
 
+
 // Store for tracking failed attempts per IP/email combination
 const failedAttempts = new Map();
 
