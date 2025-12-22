@@ -271,7 +271,7 @@ export const updateUserProgress = async (req, res) => {
       updates.lastCompletedLessonId = lastCompletedLessonId.trim();
     }
 
-    if (lastCompletedAt) {
+    if (lastCompletedAt !== undefined && lastCompletedAt !== null) {
       const completedAtDate = new Date(lastCompletedAt);
       if (!Number.isNaN(completedAtDate.getTime())) {
         updates.lastCompletedAt = completedAtDate;

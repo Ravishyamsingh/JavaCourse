@@ -113,8 +113,7 @@ const Signup: React.FC = () => {
 
     try {
       // Get API URL from environment variables
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      console.log('📍 Using API URL for signup:', API_URL);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       
       // Call signup API directly
       const response = await fetch(`${API_URL}/auth/signup`, {
@@ -215,11 +214,10 @@ const Signup: React.FC = () => {
             {/* Google Sign-Up Button */}
             <GoogleSignIn
               onSuccess={(user) => {
-                console.log('Google sign-up successful:', user);
                 navigate('/dashboard', { replace: true });
               }}
               onError={(error) => {
-                console.error('Google sign-up failed:', error);
+                // Error is handled by the component
               }}
               disabled={isLoading}
             />

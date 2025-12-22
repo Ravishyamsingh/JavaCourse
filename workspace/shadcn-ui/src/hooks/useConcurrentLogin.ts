@@ -68,6 +68,7 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
     if (!user || !isAuthenticated) return;
 
     try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const sessionData = {
         sessionId: sessionId.current,
         userId: user.id,
@@ -76,7 +77,7 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
         timestamp: new Date().toISOString()
       };
 
-      const response = await fetch('/api/auth/sessions/register', {
+      const response = await fetch(`${API_URL}/auth/sessions/register`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -106,7 +107,8 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
     if (!user || !isAuthenticated) return;
 
     try {
-      const response = await fetch('/api/auth/sessions/check', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/auth/sessions/check`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -182,7 +184,8 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
   // Terminate other sessions
   const terminateOtherSessions = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/sessions/terminate-others', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/auth/sessions/terminate-others`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -230,7 +233,8 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
     if (!user || !isAuthenticated) return;
 
     try {
-      await fetch('/api/auth/sessions/activity', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      await fetch(`${API_URL}/auth/sessions/activity`, {
         method: 'PUT',
         credentials: 'include',
         headers: {

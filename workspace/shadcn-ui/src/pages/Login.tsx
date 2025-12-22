@@ -6,10 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Mail, Lock, Eye, EyeOff, Chrome, AlertCircle, User } from 'lucide-react';
+import { Loader2, Mail, Lock, Eye, EyeOff, Chrome, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserRole, ROLE_DISPLAY } from '@/types/auth';
 import GoogleSignIn from '@/components/GoogleSignIn';
 import { toast } from 'sonner';
 import { storeAuthData, getDefaultRoute, getCurrentUser } from '@/lib/auth';
@@ -23,7 +21,6 @@ const Login: React.FC = () => {
     email: '',
     password: '',
   });
-  const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.USER);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -101,7 +98,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password, selectedRole);
+      await login(formData.email, formData.password);
 
       // Success is handled in the auth context
       // Navigation will happen via useEffect when isAuthenticated becomes true
@@ -110,14 +107,6 @@ const Login: React.FC = () => {
       console.error('Login error:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await loginWithGoogle();
-    } catch (error) {
-      console.error('Google login error:', error);
     }
   };
 
@@ -169,11 +158,10 @@ const Login: React.FC = () => {
             {/* Google Sign-In Button */}
             <GoogleSignIn
               onSuccess={(user) => {
-                console.log('Google sign-in successful:', user);
                 // Navigation will be handled by the auth context
               }}
               onError={(error) => {
-                console.error('Google sign-in failed:', error);
+                // Error is handled by the component
               }}
               disabled={isLoading}
             />
@@ -234,33 +222,6 @@ const Login: React.FC = () => {
                     )}
                   </button>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="role">Select Role</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
-                    <SelectTrigger className="pl-10 h-12">
-                      <SelectValue placeholder="Choose your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(UserRole).map((role) => (
-                        <SelectItem key={role} value={role}>
-                          <div className="flex items-center space-x-2">
-                            <span>{ROLE_DISPLAY[role].name}</span>
-                            <span className={`text-xs px-2 py-1 rounded-full ${ROLE_DISPLAY[role].bgColor} ${ROLE_DISPLAY[role].color}`}>
-                              {role}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <p className="text-xs text-gray-500">
-                  Select the role you want to log in with. Your actual permissions will be determined by your account.
-                </p>
               </div>
 
               <div className="flex items-center justify-between">

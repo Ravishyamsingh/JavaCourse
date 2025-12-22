@@ -106,6 +106,10 @@ const config = {
   EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
   EMAIL_FROM: process.env.EMAIL_FROM || `Java Course <${process.env.EMAIL_USER}>`,
 
+  // Admin Email Configuration
+  ADMIN_EMAILS: (process.env.ADMIN_EMAILS || '').split(',').filter(email => email.trim()),
+  ADMIN_EMAIL_DOMAINS: (process.env.ADMIN_EMAIL_DOMAINS || '').split(',').filter(domain => domain.trim()),
+
   // Legacy Configuration (for backward compatibility)
   MONGODB_URI: process.env.MONGODB_URI || process.env.MONGO_URL,
   SALT: parseInt(process.env.SALT) || 12,

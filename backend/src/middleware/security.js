@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import helmet from 'helmet';
 import { body, validationResult } from 'express-validator';
 import crypto from 'crypto';
@@ -22,7 +22,7 @@ const googleOAuthRetryLabel = (() => {
 // Store for tracking failed attempts per IP/email combination
 const failedAttempts = new Map();
 
-const getAttemptKey = (req) => `${req.ip}:${req.body?.email || req.user?.email || 'unknown'}`;
+const getAttemptKey = (req) => `${ipKeyGenerator(req)}:${req.body?.email || req.user?.email || 'unknown'}`;
 const getFailedAttemptCount = (req) => failedAttempts.get(getAttemptKey(req)) || 0;
 const calculateWaitTime = (attempts) => Math.min(15 * Math.pow(2, Math.floor(attempts / 3)), 60);
 
@@ -72,7 +72,7 @@ export const googleAuthRateLimit = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
-    return req.ip + ':google_oauth';
+    return ipKeyGenerator(req) + ':google_oauth';
   }
 });
 
@@ -99,7 +99,7 @@ export const adminRateLimit = rateLimit({
     code: 'ADMIN_RATE_LIMITED'
   },
   keyGenerator: (req) => {
-    return req.user?.id || req.ip;
+    return req.user?.id || ipKeyGenerator(req);
   }
 });
 

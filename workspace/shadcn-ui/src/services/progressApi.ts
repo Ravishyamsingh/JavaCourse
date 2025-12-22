@@ -115,6 +115,20 @@ export async function fetchUserProgress(token?: string): Promise<ProgressApiResp
 }
 
 export async function saveUserProgress(payload: ProgressUpdatePayload, token?: string): Promise<ProgressApiResponse> {
+  // Sanitize payload to ensure proper date serialization
+  const sanitizedPayload = {
+    ...payload,
+    lastCompletedAt: payload.lastCompletedAt ? new Date(payload.lastCompletedAt).toISOString() : undefined,
+    activityEntry: payload.activityEntry ? {
+      ...payload.activityEntry,
+      date: payload.activityEntry.date ? new Date(payload.activityEntry.date).toISOString() : undefined
+    } : undefined,
+    quizAttempt: payload.quizAttempt ? {
+      ...payload.quizAttempt,
+      completedAt: payload.quizAttempt.completedAt ? new Date(payload.quizAttempt.completedAt).toISOString() : undefined
+    } : undefined
+  };
+
   const res = await fetch(`${API_URL}/user/progress`, {
     method: 'POST',
     headers: {
@@ -122,8 +136,11 @@ export async function saveUserProgress(payload: ProgressUpdatePayload, token?: s
       ...getAuthHeaders(token)
     },
     credentials: 'include',
-    body: JSON.stringify(payload),
+    body: JSON.stringify(sanitizedPayload),
   });
-  if (!res.ok) throw new Error('Failed to save user progress');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to save user progress: ${res.status}`);
+  }
   return res.json();
 }

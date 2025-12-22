@@ -13,6 +13,7 @@ import {
   gracefulShutdown,
   logger
 } from "./middleware/production.js";
+import { sanitizeRequestMiddleware, preventClickjacking } from "./middleware/securityAdvanced.js";
 
 const app = express();
 
@@ -120,6 +121,10 @@ app.use(cors({
 // Body parsing middleware with size limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Security middleware
+app.use(sanitizeRequestMiddleware);
+app.use(preventClickjacking);
 
 // Basic health check (before router to avoid 404)
 app.get("/api/health", (req, res) => {
