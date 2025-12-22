@@ -161,6 +161,7 @@ export const login = async (req, res) => {
     }
 
     const { email, password } = sanitizedBody;
+    // Note: selectedRole is ignored - role is determined by user's account in database
 
     // Always perform password hashing to prevent timing attacks
     const dummyHash = '$2b$12$dummyhashtopreventtimingattacksanduserenum';

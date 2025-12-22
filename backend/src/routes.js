@@ -1,5 +1,5 @@
 import express from "express";
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { User } from "./models.js";
 import { signup, login, getProfile, getCourses, googleAuth as legacyGoogleAuth } from "./controllers.js";
 import {
@@ -105,7 +105,7 @@ const progressRateLimit = rateLimit({
     retryAfter: 15 * 60
   },
   keyGenerator: (req) => {
-    return req.user?._id || req.ip;
+    return req.user?._id || ipKeyGenerator(req);
   },
   standardHeaders: true,
   legacyHeaders: false

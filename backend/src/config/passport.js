@@ -45,11 +45,17 @@ passport.use(
         });
 
         if (existingUser) {
-          console.log('⚠️  Email already exists with different provider');
-          return done(null, false, {
-            message: 'An account with this email already exists. Please login with your existing account.',
-            code: 'EMAIL_EXISTS_DIFFERENT_PROVIDER'
-          });
+          // Link the Google account to the existing local account
+          console.log('🔗 Linking Google account to existing local account:', existingUser.email);
+          
+          existingUser.googleId = profile.id;
+          existingUser.avatar = profile.photos?.[0]?.value || existingUser.avatar;
+          existingUser.isEmailVerified = true; // Google verified the email
+          existingUser.lastLogin = new Date();
+          await existingUser.save();
+          
+          console.log('✅ Account linked successfully');
+          return done(null, existingUser);
         }
 
         // Create new user from Google profile

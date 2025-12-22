@@ -1,159 +1,171 @@
 /**
- * Logger utility for controlled console output
- * Disables console logs in production and prevents sensitive data exposure
+ * Secure Logger Utility
+ * Sanitizes sensitive data before logging to console
+ * Only logs in development mode
  */
 
-const isDevelopment = import.meta.env.DEV;
-const isProduction = import.meta.env.PROD;
-
-// Sensitive patterns to redact
-const SENSITIVE_PATTERNS = [
-  /Bearer\s+[a-zA-Z0-9._-]+/gi,
-  /token['":\s]+[a-zA-Z0-9._-]+/gi,
-  /password['":\s]+[^,}"\n]+/gi,
-  /email['":\s]+[^\s,}"\n]+/gi,
-  /refreshToken['":\s]+[a-zA-Z0-9._-]+/gi,
-  /accessToken['":\s]+[a-zA-Z0-9._-]+/gi,
+const SENSITIVE_KEYS = [
+  'password',
+  'token',
+  'accessToken',
+  'refreshToken',
+  'email',
+  'phone',
+  'ssn',
+  'creditCard',
+  'apiKey',
+  'secret',
+  'authorization',
+  'cookie',
+  'session',
+  'user',
+  'credential',
+  'jwt',
+  'bearer'
 ];
 
-/**
- * Redact sensitive information from strings
- */
-function redactSensitiveData(data: any): any {
-  if (typeof data === 'string') {
-    let redacted = data;
-    SENSITIVE_PATTERNS.forEach(pattern => {
-      redacted = redacted.replace(pattern, '[REDACTED]');
-    });
-    return redacted;
-  }
+const SENSITIVE_PATTERNS = [
+  /password["\s:=]+([^\s,}]+)/gi,
+  /token["\s:=]+([^\s,}]+)/gi,
+  /email["\s:=]+([^\s,}@]+@[^\s,}]+)/gi,
+  /Bearer\s+([^\s,}]+)/gi,
+  /Authorization["\s:=]+([^\s,}]+)/gi
+];
 
-  if (typeof data === 'object' && data !== null) {
-    if (Array.isArray(data)) {
-      return data.map(item => redactSensitiveData(item));
-    }
-
-    const redacted: any = {};
-    for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        const value = data[key];
-        // Redact sensitive keys
-        if (
-          key.toLowerCase().includes('token') ||
-          key.toLowerCase().includes('password') ||
-          key.toLowerCase().includes('secret') ||
-          key.toLowerCase().includes('key')
-        ) {
-          redacted[key] = '[REDACTED]';
-        } else if (typeof value === 'object') {
-          redacted[key] = redactSensitiveData(value);
-        } else {
-          redacted[key] = value;
-        }
-      }
-    }
-    return redacted;
-  }
-
-  return data;
+interface LogContext {
+  level: 'log' | 'error' | 'warn' | 'info' | 'debug';
+  message: string;
+  data?: any;
+  isDevelopment?: boolean;
 }
 
 /**
- * Logger object with controlled output
+ * Sanitize sensitive data from objects
+ */
+function sanitizeData(data: any, depth = 0): any {
+  if (depth > 5) return '[Circular Reference]';
+  if (data === null || data === undefined) return data;
+  if (typeof data !== 'object') return sanitizeString(String(data));
+
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeData(item, depth + 1));
+  }
+
+  const sanitized: any = {};
+  for (const [key, value] of Object.entries(data)) {
+    const lowerKey = key.toLowerCase();
+    
+    if (SENSITIVE_KEYS.some(sensitiveKey => lowerKey.includes(sensitiveKey))) {
+      sanitized[key] = '[REDACTED]';
+    } else if (typeof value === 'object') {
+      sanitized[key] = sanitizeData(value, depth + 1);
+    } else {
+      sanitized[key] = sanitizeString(String(value));
+    }
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitize sensitive patterns from strings
+ */
+function sanitizeString(str: string): string {
+  if (typeof str !== 'string') return str;
+  
+  let sanitized = str;
+  for (const pattern of SENSITIVE_PATTERNS) {
+    sanitized = sanitized.replace(pattern, (match, group) => {
+      if (group && group.length > 0) {
+        return match.replace(group, '[REDACTED]');
+      }
+      return '[REDACTED]';
+    });
+  }
+  return sanitized;
+}
+
+/**
+ * Format log message
+ */
+function formatMessage(message: string, data?: any): string {
+  if (!data) return message;
+  
+  try {
+    const sanitized = sanitizeData(data);
+    return `${message} ${JSON.stringify(sanitized)}`;
+  } catch (error) {
+    return message;
+  }
+}
+
+/**
+ * Main logger object
  */
 export const logger = {
   /**
-   * Log debug information (development only)
+   * Log message (only in development)
    */
-  debug: (...args: any[]) => {
-    if (isDevelopment) {
-      const redacted = args.map(arg => redactSensitiveData(arg));
-      console.debug('[DEBUG]', ...redacted);
+  log: (message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      const formatted = formatMessage(message, data);
+      console.log(formatted);
     }
   },
 
   /**
-   * Log general information (development only)
+   * Log error (only in development)
    */
-  info: (...args: any[]) => {
-    if (isDevelopment) {
-      const redacted = args.map(arg => redactSensitiveData(arg));
-      console.info('[INFO]', ...redacted);
+  error: (message: string, error?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      let errorData = error;
+      if (error instanceof Error) {
+        errorData = {
+          message: error.message,
+          name: error.name
+          // Don't include stack trace in console
+        };
+      }
+      const formatted = formatMessage(message, errorData);
+      console.error(formatted);
     }
   },
 
   /**
-   * Log warnings (development only)
+   * Log warning (only in development)
    */
-  warn: (...args: any[]) => {
-    if (isDevelopment) {
-      const redacted = args.map(arg => redactSensitiveData(arg));
-      console.warn('[WARN]', ...redacted);
+  warn: (message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      const formatted = formatMessage(message, data);
+      console.warn(formatted);
     }
   },
 
   /**
-   * Log errors (always, but redacted)
+   * Log info (only in development)
    */
-  error: (...args: any[]) => {
-    const redacted = args.map(arg => redactSensitiveData(arg));
-    if (isDevelopment) {
-      console.error('[ERROR]', ...redacted);
-    } else if (isProduction) {
-      // In production, only log to error tracking service
-      // Example: Sentry.captureException(redacted[0]);
-      console.error('[ERROR]', ...redacted);
+  info: (message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      const formatted = formatMessage(message, data);
+      console.info(formatted);
     }
   },
 
   /**
-   * Log API calls (development only, with redaction)
+   * Log debug (only in development)
    */
-  api: (method: string, url: string, status?: number, data?: any) => {
-    if (isDevelopment) {
-      const redactedData = redactSensitiveData(data);
-      const statusColor = status && status >= 400 ? '❌' : '✅';
-      console.log(`${statusColor} [API] ${method} ${url}${status ? ` (${status})` : ''}`, redactedData);
+  debug: (message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      const formatted = formatMessage(message, data);
+      console.debug(formatted);
     }
   },
 
   /**
-   * Log authentication events (development only, with redaction)
+   * Sanitize data for safe logging
    */
-  auth: (event: string, data?: any) => {
-    if (isDevelopment) {
-      const redactedData = redactSensitiveData(data);
-      console.log(`🔐 [AUTH] ${event}`, redactedData);
-    }
-  },
-
-  /**
-   * Log performance metrics
-   */
-  performance: (label: string, duration: number) => {
-    if (isDevelopment) {
-      console.log(`⏱️ [PERF] ${label}: ${duration}ms`);
-    }
-  },
-
-  /**
-   * Disable all console output (useful for testing)
-   */
-  disable: () => {
-    console.log = () => {};
-    console.info = () => {};
-    console.warn = () => {};
-    console.error = () => {};
-    console.debug = () => {};
-  },
-
-  /**
-   * Enable all console output
-   */
-  enable: () => {
-    // Re-enable by reloading or using original console methods
-    window.location.reload();
-  },
+  sanitize: (data: any): any => {
+    return sanitizeData(data);
+  }
 };
 
 export default logger;

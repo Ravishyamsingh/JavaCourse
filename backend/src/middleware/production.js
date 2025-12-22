@@ -1,6 +1,6 @@
 import helmet from 'helmet';
 import compression from 'compression';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import responseTime from 'response-time';
 import winston from 'winston';
 import config from '../config.js';
@@ -29,11 +29,14 @@ export const securityHeaders = helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
-      scriptSrc: ["'self'", "https://accounts.google.com", "https://apis.google.com"],
+      scriptSrc: ["'self'", "https://accounts.google.com", "https://apis.google.com", "https://accounts.google.com/gsi/client"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://accounts.google.com"],
+      connectSrc: ["'self'", "https://accounts.google.com", "https://apis.google.com", "https://generativelanguage.googleapis.com"],
       frameSrc: ["https://accounts.google.com"],
       objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
     }
   },
@@ -44,7 +47,16 @@ export const securityHeaders = helmet({
   },
   noSniff: true,
   xssFilter: true,
-  referrerPolicy: { policy: 'same-origin' }
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  permissionsPolicy: {
+    camera: [],
+    microphone: [],
+    geolocation: [],
+    usb: [],
+    magnetometer: [],
+    gyroscope: [],
+    accelerometer: []
+  }
 });
 
 // Response Compression
@@ -85,7 +97,7 @@ export const authRateLimit = rateLimit({
     retryAfter: 15 * 60
   },
   keyGenerator: (req) => {
-    return req.ip + ':' + (req.body?.email || 'unknown');
+    return ipKeyGenerator(req) + ':' + (req.body?.email || 'unknown');
   }
 });
 

@@ -67,11 +67,7 @@ export const loginSchema = Joi.object({
     .messages({
       'string.min': 'Password is required',
       'string.max': 'Password is too long'
-    }),
-  
-  selectedRole: Joi.string()
-    .valid('guest', 'user', 'admin', 'superadmin')
-    .optional()
+    })
 });
 
 export const profileUpdateSchema = Joi.object({

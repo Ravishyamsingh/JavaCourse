@@ -40,7 +40,8 @@ export const useRoleChangeDetection = (config: Partial<RoleChangeConfig> = {}) =
     if (!user || !isAuthenticated) return;
 
     try {
-      const response = await fetch('/api/auth/user/role-status', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/auth/user/role-status`, {
         method: 'GET',
         credentials: 'include',
         headers: {

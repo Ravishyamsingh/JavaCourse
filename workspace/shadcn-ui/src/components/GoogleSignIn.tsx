@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Chrome, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-
-import { storeAuthData } from '@/lib/auth';
+import { logger } from '@/utils/logger';
+import { storeAuthDataSecurely, safeLog, sanitizeInput } from '@/utils/secureAuth';
 import { useNavigate } from 'react-router-dom';
 
 // Import centralized Google types
@@ -47,26 +47,25 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
   const checkGoogleScript = useCallback(() => {
     if (scriptLoaded.current) return;
 
-    console.log('🔍 Checking for Google Sign-In script...');
-    console.log('🌐 Browser:', navigator.userAgent);
+    safeLog.info('🔍 Checking for Google Sign-In script...');
 
     // Check if Google Identity Services is available
     if (window.google?.accounts?.id) {
-      console.log('✅ Google Sign-In script already loaded from HTML');
+      safeLog.info('✅ Google Sign-In script already loaded from HTML');
       scriptLoaded.current = true;
       initializeGoogleSignIn();
       return;
     }
 
     // If not available, wait a bit and try again
-    console.log('⏳ Waiting for Google Sign-In script to load...');
+    safeLog.info('⏳ Waiting for Google Sign-In script to load...');
     setTimeout(() => {
       if (window.google?.accounts?.id) {
-        console.log('✅ Google Sign-In script loaded successfully');
+        safeLog.info('✅ Google Sign-In script loaded successfully');
         scriptLoaded.current = true;
         initializeGoogleSignIn();
       } else {
-        console.error('❌ Google Sign-In script failed to load');
+        safeLog.error('❌ Google Sign-In script failed to load');
         toast.error('Failed to load Google authentication. Please refresh the page and try again.');
       }
     }, 2000); // Wait 2 seconds for script to load
@@ -76,16 +75,15 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
   const initializeGoogleSignIn = useCallback(() => {
     // Check if Google Identity Services is available
     if (!window.google?.accounts?.id) {
-      console.error('❌ Google Identity Services not available');
-      console.log('🔍 Checking if script loaded properly...');
+      safeLog.error('❌ Google Identity Services not available');
 
       // Try to reload script if not available
       setTimeout(() => {
         if (!window.google?.accounts?.id) {
-          console.error('❌ Google Identity Services still not available after retry');
+          safeLog.error('❌ Google Identity Services still not available after retry');
           toast.error('Google authentication is not available. Please refresh the page and try again.');
         } else {
-          console.log('✅ Google Identity Services became available');
+          safeLog.info('✅ Google Identity Services became available');
           initializeGoogleSignIn();
         }
       }, 2000);
@@ -95,24 +93,18 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
     if (!clientId) {
-      console.error('❌ Google Client ID not configured properly');
-      console.log('📝 Please set VITE_GOOGLE_CLIENT_ID in .env file');
+      safeLog.error('❌ Google Client ID not configured properly');
       toast.error('Google authentication is not properly configured');
       return;
     }
 
-    console.log('🔑 Initializing Google Sign-In with Client ID:', clientId.substring(0, 20) + '...');
-    console.log('🌐 Browser User Agent:', navigator.userAgent);
+    safeLog.info('🔑 Initializing Google Sign-In');
 
     try {
       // Browser-specific configuration
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-      console.log('📱 Mobile device:', isMobile);
-      console.log('🦊 Firefox browser:', isFirefox);
-      console.log('🧭 Safari browser:', isSafari);
 
       window.google.accounts.id.initialize({
         client_id: clientId,
@@ -121,22 +113,10 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
         cancel_on_tap_outside: true
       });
 
-      console.log('✅ Google Sign-In initialized successfully');
-      console.log('🔧 Configuration:', {
-        context: isMobile ? 'signin' : 'signup',
-        ux_mode: isMobile ? 'redirect' : 'popup',
-        mobile: isMobile,
-        firefox: isFirefox,
-        safari: isSafari
-      });
+      safeLog.info('✅ Google Sign-In initialized successfully');
 
     } catch (error) {
-      console.error('❌ Failed to initialize Google Sign-In:', error);
-      console.error('🔍 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        browser: navigator.userAgent
-      });
+      safeLog.error('❌ Failed to initialize Google Sign-In:', error);
       toast.error('Failed to initialize Google authentication. Please try a different browser or refresh the page.');
     }
   }, []);
@@ -153,12 +133,10 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
   const handleGoogleResponse = async (response: GoogleCredentialResponse) => {
     setIsLoading(true);
     try {
-      console.log('🔐 Google Sign-In response received');
-      console.log('🔑 Credential token length:', response.credential?.length);
+      safeLog.info('🔐 Google Sign-In response received');
 
       // Get API URL from environment variables
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      console.log('📍 Using API URL:', API_URL);
 
       // Send the credential token to our backend
       const apiResponse = await fetch(`${API_URL}/auth/google`, {
@@ -173,7 +151,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
 
       if (!apiResponse.ok) {
         const errorText = await apiResponse.text();
-        console.error('❌ Google auth API error:', apiResponse.status, errorText);
+        safeLog.error('❌ Google auth API error:', apiResponse.status);
         throw new Error(`Authentication failed (${apiResponse.status})`);
       }
 
@@ -184,10 +162,9 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
         const accessToken = data.accessToken || data.token;
         const refreshToken = data.refreshToken || '';
 
-        storeAuthData(accessToken, refreshToken, data.user);
+        storeAuthDataSecurely(accessToken, refreshToken, data.user);
 
-        console.log('✅ Auth data stored successfully');
-        console.log('👤 User role:', data.user.role);
+        safeLog.info('✅ Auth data stored successfully');
 
         toast.success(`Welcome, ${data.user.firstName}!`);
 
@@ -202,29 +179,23 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
         const userRole = data.user.role;
         let redirectPath = '/dashboard'; // default
 
-        switch (userRole) {
-          case 'superadmin':
-            redirectPath = '/super-admin';
-            break;
-          case 'admin':
-            redirectPath = '/admin';
-            break;
-          case 'user':
-            redirectPath = '/dashboard';
-            break;
-          case 'guest':
-          default:
-            redirectPath = '/';
-            break;
+        if (userRole === 'superadmin') {
+          redirectPath = '/super-admin';
+        } else if (userRole === 'admin') {
+          redirectPath = '/admin';
+        } else if (userRole === 'user') {
+          redirectPath = '/dashboard';
+        } else if (userRole === 'guest') {
+          redirectPath = '/guest-dashboard';
         }
 
-        console.log('🔄 Redirecting to:', redirectPath);
+        safeLog.info('🔄 Redirecting to dashboard');
         navigate(redirectPath, { replace: true });
       } else {
         throw new Error(data.message || 'Google authentication failed');
       }
     } catch (error) {
-      console.error('❌ Google Sign-In error:', error);
+      safeLog.error('❌ Google Sign-In error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Google authentication failed';
       toast.error(errorMessage);
       
@@ -237,7 +208,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
   };
 
   const handleGoogleSignIn = () => {
-    console.log('🚀 Starting Google Sign-In process...');
+    safeLog.info('🚀 Starting Google Sign-In process...');
     
     // Use backend OAuth redirect to bypass CORS issues
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -247,23 +218,19 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
     try {
       // Check if Google script is available for frontend flow
       if (window.google?.accounts?.id) {
-        console.log('✅ Using frontend Google Sign-In flow');
+        safeLog.info('✅ Using frontend Google Sign-In flow');
         
         window.google.accounts.id.prompt((notification?: GooglePromptNotification) => {
-          console.log('📣 Google prompt notification:', notification?.getNotDisplayedReason?.() || 'Displayed');
-
           if (notification?.isNotDisplayed?.()) {
-            const reason = notification.getNotDisplayedReason?.();
-            console.log('⚠️ Frontend flow failed, falling back to backend redirect. Reason:', reason);
+            safeLog.warn('⚠️ Frontend flow failed, falling back to backend redirect');
             
             // Fallback to backend redirect
-            console.log('🔄 Redirecting to backend OAuth flow...');
             window.location.href = `${API_URL}/auth/google`;
             return;
           }
           
           if (notification?.isSkippedMoment?.()) {
-            console.log('⚠️ Sign-In prompt skipped, falling back to backend redirect');
+            safeLog.warn('⚠️ Sign-In prompt skipped, falling back to backend redirect');
             window.location.href = `${API_URL}/auth/google`;
             return;
           }
@@ -272,7 +239,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
         });
       } else {
         // No Google script available, use backend redirect
-        console.log('🔄 Google script not available, using backend OAuth redirect...');
+        safeLog.info('🔄 Google script not available, using backend OAuth redirect...');
         toast.info('Redirecting to Google Sign-In...', {
           description: 'You will be redirected to Google for authentication'
         });
@@ -283,7 +250,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
         }, 1000);
       }
     } catch (error) {
-      console.error('❌ Error with Google Sign-In, falling back to backend redirect:', error);
+      safeLog.error('❌ Error with Google Sign-In, falling back to backend redirect:', error);
       
       // Always fallback to backend redirect if frontend fails
       toast.info('Redirecting to Google Sign-In...', {

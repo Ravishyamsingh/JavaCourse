@@ -263,7 +263,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Login with email and password
-  const login = async (email: string, password: string, selectedRole?: UserRole): Promise<void> => {
+  const login = async (email: string, password: string): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
@@ -273,7 +273,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ email, password, selectedRole }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
@@ -383,8 +383,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Refresh token
   const refreshToken = async (): Promise<void> => {
     try {
-      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-      if (!refreshToken) {
+      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (!storedRefreshToken) {
         throw new Error('No refresh token available');
       }
 
@@ -394,7 +394,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refreshToken: storedRefreshToken }),
       });
 
       const data = await response.json();
@@ -406,7 +406,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const { accessToken, refreshToken: newRefreshToken } = data;
       const tokens = {
         accessToken,
-        refreshToken: newRefreshToken || refreshToken,
+        refreshToken: newRefreshToken || storedRefreshToken,
       };
 
       // Update stored tokens

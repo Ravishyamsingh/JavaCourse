@@ -276,6 +276,17 @@ export const googleAuthCallback = (req, res, next) => {
         return res.redirect(`${config.FRONTEND_URL}/login?error=${errorCode}`);
       }
 
+      // Check if user email is in admin list or matches admin domain
+      const isAdminEmail = config.ADMIN_EMAILS.includes(user.email) ||
+        config.ADMIN_EMAIL_DOMAINS.some(domain => user.email.endsWith(`@${domain}`));
+
+      // If admin email and user is not already admin, promote to admin
+      if (isAdminEmail && user.role === 'user') {
+        console.log('🔑 Admin email detected, promoting user to admin:', user.email);
+        user.role = 'admin';
+        await user.save();
+      }
+
       // Generate tokens for the authenticated user
       const tokens = await tokenManager.createTokenPair(user._id, 'google', [], {
         ip: req.ip,
@@ -288,7 +299,7 @@ export const googleAuthCallback = (req, res, next) => {
         $inc: { loginAttempts: 0 } // Reset login attempts on successful login
       });
 
-      console.log('✅ Google OAuth successful for user:', user.email);
+      console.log('✅ Google OAuth successful for user:', user.email, 'Role:', user.role);
 
       // Redirect to frontend with secure cookies
   const frontendUrl = config.FRONTEND_URL || 'http://localhost:5173';

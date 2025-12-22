@@ -11,13 +11,9 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('🔄 Processing OAuth callback...');
-        
         // Check for error parameters
         const error = searchParams.get('error');
         if (error) {
-          console.error('❌ OAuth error:', error);
-          
           let errorMessage = 'Authentication failed';
           switch (error) {
             case 'oauth_error':
@@ -45,7 +41,6 @@ const AuthCallback: React.FC = () => {
         if (accessToken && userParam) {
           try {
             const user = JSON.parse(userParam);
-            console.log('✅ OAuth callback received valid tokens for:', user.email);
 
             storeAuthData(accessToken, refreshToken, user);
 
@@ -63,7 +58,6 @@ const AuthCallback: React.FC = () => {
             navigate(redirectPath, { replace: true });
             return;
           } catch (parseError) {
-            console.error('❌ Error parsing OAuth user payload:', parseError);
             toast.error('Authentication data was corrupted. Please try again.');
             navigate('/login', { replace: true });
             return;
@@ -74,17 +68,14 @@ const AuthCallback: React.FC = () => {
         const provider = searchParams.get('provider');
 
         if (authSuccess === 'success' && provider === 'google') {
-          console.warn('⚠️ OAuth reported success but no tokens were received');
           toast.error('Authentication completed without session tokens. Please try logging in again.');
           navigate('/login', { replace: true });
           return;
         }
 
-        console.warn('⚠️ No authentication data found in callback');
         toast.error('No authentication data received');
         navigate('/login', { replace: true });
       } catch (callbackError) {
-        console.error('❌ Callback processing error:', callbackError);
         toast.error('Failed to process authentication callback');
         navigate('/login', { replace: true });
       }
