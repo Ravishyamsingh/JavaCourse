@@ -426,92 +426,12 @@ export const lesson_18_1: LessonContent = {
       '      env:\n' +
       '        SONAR_TOKEN: \\${{ secrets.SONAR_TOKEN }}\n' +
       '        SONAR_HOST_URL: \\${{ secrets.SONAR_HOST_URL }}\n',
-    exercise: '<div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg mb-8 shadow-2xl">' +
-      '<h1 class="text-3xl font-bold m-0 flex items-center">' +
-      '<span class="w-3 h-10 bg-white rounded mr-4"></span>' +
-      'Exercise: Implement a Comprehensive Code Review Process' +
-      '</h1>' +
-      '<p class="mt-3 text-blue-100 text-lg">Create a code review workflow with automated quality checks and team guidelines</p>' +
-      '</div>' +
-      '<div class="space-y-8">' +
-      '<section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500">' +
-      '<h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">' +
-      '<span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>' +
-      'Setup Code Quality Tools' +
-      '</h2>' +
-      '<div class="bg-blue-50 p-4 rounded-lg mb-4">' +
-      '<h4 class="font-bold text-blue-800 mb-2">📋 Tool Configuration</h4>' +
-      '<div class="grid md:grid-cols-2 gap-4">' +
-      '<div class="bg-white p-3 rounded border">' +
-      '<h5 class="font-bold text-blue-800 mb-2">Checkstyle</h5>' +
-      '<ul class="text-sm space-y-1">' +
-      '<li>• Configure coding standards</li>' +
-      '<li>• Integrate with build process</li>' +
-      '<li>• Set up IDE plugins</li>' +
-      '<li>• Define custom rules</li>' +
-      '</ul>' +
-      '</div>' +
-      '<div class="bg-white p-3 rounded border">' +
-      '<h5 class="font-bold text-blue-800 mb-2">SonarQube</h5>' +
-      '<ul class="text-sm space-y-1">' +
-      '<li>• Set up quality profiles</li>' +
-      '<li>• Configure quality gates</li>' +
-      '<li>• Integrate with CI/CD</li>' +
-      '<li>• Define metrics thresholds</li>' +
-      '</ul>' +
-      '</div>' +
-      '</div>' +
-      '</div>' +
-      '<div class="bg-gray-800 text-green-400 p-4 rounded-lg">' +
-      '<h4 class="text-white mb-2">💡 Implementation Tasks</h4>' +
-      '<pre class="text-sm">' +
-      '1. Create Checkstyle configuration file\n' +
-      '2. Set up SonarQube quality profiles\n' +
-      '3. Configure Maven/Gradle for static analysis\n' +
-      '4. Integrate tools with GitHub Actions\n' +
-      '5. Create code review guidelines document\n' +
-      '6. Set up pull request templates\n' +
-      '7. Define team review responsibilities\n' +
-      '8. Establish quality gate thresholds</pre>' +
-      '</div>' +
-      '</section>' +
-      '<section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-indigo-500">' +
-      '<h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">' +
-      '<span class="bg-indigo-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>' +
-      'Code Review Practice' +
-      '</h2>' +
-      '<div class="bg-indigo-50 p-4 rounded-lg mb-4">' +
-      '<h4 class="font-bold text-indigo-800 mb-2">🔍 Review Process</h4>' +
-      '<div class="grid md:grid-cols-2 gap-4">' +
-      '<div class="bg-white p-3 rounded border">' +
-      '<h5 class="font-bold text-indigo-800 mb-2">Review Checklist</h5>' +
-      '<ul class="text-sm space-y-1">' +
-      '<li>• Functionality correctness</li>' +
-      '<li>• Code readability</li>' +
-      '<li>• Performance considerations</li>' +
-      '<li>• Security implications</li>' +
-      '<li>• Test coverage adequacy</li>' +
-      '</ul>' +
-      '</div>' +
-      '<div class="bg-white p-3 rounded border">' +
-      '<h5 class="font-bold text-indigo-800 mb-2">Feedback Guidelines</h5>' +
-      '<ul class="text-sm space-y-1">' +
-      '<li>• Be specific and actionable</li>' +
-      '<li>• Explain the reasoning</li>' +
-      '<li>• Provide examples when possible</li>' +
-      '<li>• Balance criticism with praise</li>' +
-      '</ul>' +
-      '</div>' +
-      '</div>' +
-      '</div>' +
-      '</section>' +
-      '<div class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-6 rounded-lg mt-8">' +
-      '<h3 class="text-xl font-bold mb-2">🎯 Learning Outcomes</h3>' +
-      '<p class="text-blue-100">' +
-      'After completing this exercise, you\'ll have established a comprehensive code quality ' +
-      'process with automated checks and effective team review practices.' +
-      '</p>' +
-      '</div>' +
-      '</div>'
+    exercise: `
+1) Create a Checkstyle configuration file that enforces Java coding standards.
+2) Set up a SonarQube quality profile with custom rules for code analysis.
+3) Configure Maven to run static analysis tools during the build process.
+4) Create a GitHub Actions workflow that includes code quality checks.
+5) Implement a code review checklist for team members to follow.
+`
   }
 };

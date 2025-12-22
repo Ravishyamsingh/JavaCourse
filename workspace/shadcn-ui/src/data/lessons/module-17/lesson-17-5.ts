@@ -416,98 +416,11 @@ public class RabbitMQConfiguration {
 }
     `,
     exercise: `
-      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-lg mb-8 shadow-2xl">
-        <h1 class="text-3xl font-bold m-0 flex items-center">
-          <span class="w-3 h-10 bg-white rounded mr-4"></span>
-          Exercise: Build an Event-Driven Order Processing System
-        </h1>
-        <p class="mt-3 text-purple-100 text-lg">Create a complete event-driven architecture with multiple microservices communicating through message queues</p>
-      </div>
-
-      <div class="space-y-8">
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
-            System Architecture
-          </h2>
-          
-          <div class="bg-purple-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-purple-800 mb-2">📋 System Components</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-purple-800 mb-2">Order Service</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Create and manage orders</li>
-                  <li>• Publish order events</li>
-                  <li>• Handle order lifecycle</li>
-                  <li>• Communicate with inventory</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-purple-800 mb-2">Notification Service</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• Send email/SMS notifications</li>
-                  <li>• Process user events</li>
-                  <li>• Handle delivery updates</li>
-                  <li>• Manage notification templates</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-gray-800 text-green-400 p-4 rounded-lg">
-            <h4 class="text-white mb-2">💡 Implementation Tasks</h4>
-            <pre class="text-sm">
-1. Set up RabbitMQ/Kafka cluster
-2. Create Order Service with event publishing
-3. Implement Notification Service consumer
-4. Add Payment Service with event handling
-5. Configure dead letter queues
-6. Implement retry mechanisms
-7. Add monitoring and metrics
-8. Test event flow and error handling</pre>
-          </div>
-        </section>
-
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-indigo-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-indigo-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
-            Event Flow Requirements
-          </h2>
-          
-          <div class="bg-indigo-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-indigo-800 mb-2">🔄 Event Processing Flow</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-indigo-800 mb-2">Order Events</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• OrderCreatedEvent</li>
-                  <li>• OrderCancelledEvent</li>
-                  <li>• OrderUpdatedEvent</li>
-                  <li>• OrderShippedEvent</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-indigo-800 mb-2">Payment Events</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• PaymentProcessedEvent</li>
-                  <li>• PaymentFailedEvent</li>
-                  <li>• RefundInitiatedEvent</li>
-                  <li>• RefundCompletedEvent</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg mt-8">
-          <h3 class="text-xl font-bold mb-2">🎯 Learning Outcomes</h3>
-          <p class="text-purple-100">
-            After completing this exercise, you'll have built a robust event-driven system with 
-            proper error handling, retry mechanisms, and monitoring capabilities.
-          </p>
-        </div>
-      </div>
-    `
+1) Create a Spring Cloud Stream producer service with @EnableBinding(Source.class) annotation.
+2) Implement a message publisher using MessageChannel to send events to a message broker.
+3) Create a Spring Cloud Stream consumer service with @EnableBinding(Sink.class) annotation.
+4) Implement a message listener using @StreamListener to process incoming messages.
+5) Configure RabbitMQ connection properties in application.yml for message broker connectivity.
+`
   }
 };

@@ -454,82 +454,10 @@ public class AbstractClassesAndInterfacesDemo {
     }
 }`,
     exercise: `
-      **🏗️ Abstract Classes and Interfaces Implementation Challenge**
-      
-      This comprehensive exercise will help you master abstract classes and interfaces in Java. You'll design and implement a complete system that demonstrates the power of these OOP concepts.
-      
-      **Part 1: Abstract Class Implementation (30 minutes)**
-      
-      1. **Create a Vehicle Abstract Class:**
-         - Define abstract methods: startEngine(), stopEngine(), accelerate()
-         - Implement concrete methods: getFuelLevel(), refuel()
-         - Add protected fields: brand, model, fuelLevel
-         - Create appropriate constructors and getters
-      
-      2. **Implement Concrete Vehicle Classes:**
-         - Create Car class extending Vehicle
-         - Create Motorcycle class extending Vehicle
-         - Implement all abstract methods with appropriate behavior
-         - Add class-specific methods (e.g., openTrunk() for Car)
-      
-      **Part 2: Interface Design (25 minutes)**
-      
-      1. **Create Multiple Interfaces:**
-         - Drivable: with methods drive() and park()
-         - Maintainable: with methods performMaintenance() and checkStatus()
-         - Loadable: with methods loadCargo() and unloadCargo()
-      
-      2. **Implement Interface Methods:**
-         - Add default methods where appropriate
-         - Ensure all interface contracts are fulfilled
-      
-      **Part 3: System Integration (35 minutes)**
-      
-      1. **Create Complex Vehicle Classes:**
-         - Truck class that extends Vehicle and implements Loadable, Maintainable
-         - ElectricCar class that extends Vehicle and implements Drivable, Maintainable
-      
-      2. **Demonstrate Polymorphism:**
-         - Create arrays of abstract types and interface types
-         - Show how different objects respond to the same method calls
-         - Use instanceof to check types and cast appropriately
-      
-      **Part 4: Advanced Features (20 minutes)**
-      
-      1. **Implement Default Methods:**
-         - Add default implementations in interfaces
-         - Override default methods in implementing classes
-      
-      2. **Create Static Helper Methods:**
-         - Add static methods to interfaces for utility functions
-      
-      **📋 Deliverables:**
-      
-      Create a complete Java program with:
-      1. Vehicle abstract class with all required methods
-      2. Car, Motorcycle, Truck, and ElectricCar implementations
-      3. All required interfaces with appropriate methods
-      4. Main class demonstrating all features
-      5. Output showing polymorphic behavior
-      
-      **🎯 Success Criteria:**
-      
-      Your implementation should demonstrate:
-      - ✅ Proper abstract class design with abstract and concrete methods
-      - ✅ Correct interface implementation with all required methods
-      - ✅ Multiple interface implementation on single classes
-      - ✅ Polymorphic behavior with abstract classes and interfaces
-      - ✅ Default and static methods in interfaces
-      - ✅ Proper encapsulation and inheritance
-      
-      **💡 Bonus Challenges:**
-      
-      1. **Nested Interfaces:** Create interfaces within classes
-      2. **Marker Interfaces:** Implement empty interfaces for tagging
-      3. **Functional Interfaces:** Create interfaces for lambda expressions
-      4. **Interface Inheritance:** Extend interfaces from other interfaces
-      
-      This exercise will solidify your understanding of abstract classes and interfaces, preparing you for complex OOP designs in real-world applications!
-    `
+1. Create an abstract class Shape with an abstract method calculateArea().
+2. Create a Circle class that extends Shape and implements calculateArea().
+3. Create an interface Drawable with a method draw().
+4. Create a class that implements both an abstract class and an interface.
+`
   }
 };

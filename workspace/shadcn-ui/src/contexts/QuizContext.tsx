@@ -1,5 +1,14 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { DynamicQuizQuestion, dynamicQuizGenerator } from '@/data/dynamicQuizGenerator';
+// DEPRECATED: External API imports kept for reference but no longer used
+// import { generateQuizViaBackend, ModuleSelection } from '@/services/quizApi';
+import { localQuizService, QUIZ_RULES } from '@/services/localQuizService';
+
+type GeminiStatus = {
+  state: 'idle' | 'loading' | 'success' | 'error';
+  message?: string;
+  usedFallback?: boolean;
+};
 
 interface QuizResult {
   questionId: string;
@@ -44,9 +53,12 @@ interface QuizContextType {
   // Dynamic quiz generation
   generateQuiz: (options: {
     module?: string;
+    modulesRange?: { from: number; to: number };
+    modulesList?: number[];
     difficulty?: 'easy' | 'medium' | 'hard';
     count?: number;
     adaptive?: boolean;
+    useGemini?: boolean;
   }) => DynamicQuizQuestion[];
   
   // Session management
@@ -65,6 +77,9 @@ interface QuizContextType {
   // Quiz history
   getQuizHistory: () => QuizSession[];
   clearQuizHistory: () => void;
+
+  // Gemini status
+  geminiStatus: GeminiStatus;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -74,24 +89,77 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [currentQuestions, setCurrentQuestions] = useState<DynamicQuizQuestion[]>([]);
   const [currentSession, setCurrentSession] = useState<QuizSession | null>(null);
   const [quizHistory, setQuizHistory] = useState<QuizSession[]>([]);
+  const [geminiStatus, setGeminiStatus] = useState<GeminiStatus>({ state: 'idle' });
 
   // Load quiz history from localStorage on mount
   useEffect(() => {
-    const savedHistory = localStorage.getItem('quiz-history');
-    if (savedHistory) {
-      try {
+    try {
+      const savedHistory = localStorage.getItem('quiz-history');
+      if (savedHistory) {
         const parsed = JSON.parse(savedHistory);
-        setQuizHistory(parsed);
-      } catch (error) {
-        console.error('Error loading quiz history:', error);
+        if (Array.isArray(parsed)) {
+          setQuizHistory(parsed);
+        }
       }
+    } catch (error) {
+      console.error('Error loading quiz history:', error);
+      localStorage.removeItem('quiz-history');
     }
   }, []);
 
-  // Save quiz history to localStorage whenever it changes
+  // Save quiz history to localStorage whenever it changes (debounced)
   useEffect(() => {
-    localStorage.setItem('quiz-history', JSON.stringify(quizHistory));
+    if (quizHistory.length === 0) return;
+    
+    try {
+      const timeout = setTimeout(() => {
+        localStorage.setItem('quiz-history', JSON.stringify(quizHistory));
+      }, 500);
+      
+      return () => clearTimeout(timeout);
+    } catch (error) {
+      console.error('Error saving quiz history:', error);
+    }
   }, [quizHistory]);
+
+  // Auto-end quiz session when user navigates away or closes tab
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (currentSession) {
+        // Save the session before page unloads
+        const completedSession: QuizSession = {
+          ...currentSession,
+          endTime: new Date(),
+          correctAnswers: quizResults.filter(r => r.isCorrect).length,
+          results: [...quizResults]
+        };
+        
+        // Use synchronous storage to ensure it saves before unload
+        try {
+          const existingHistory = localStorage.getItem('quiz-history');
+          const history = existingHistory ? JSON.parse(existingHistory) : [];
+          localStorage.setItem('quiz-history', JSON.stringify([completedSession, ...history.slice(0, 49)]));
+        } catch (error) {
+          console.error('Error saving session on unload:', error);
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && currentSession) {
+        // End session when tab becomes hidden (user switched tabs or minimized)
+        endQuizSession();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [currentSession, quizResults]);
 
   const addQuizResult = (result: QuizResult) => {
     setQuizResults(prev => {
@@ -112,6 +180,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     setQuizResults([]);
     setCurrentQuestions([]);
     setCurrentSession(null);
+    setGeminiStatus({ state: 'idle' });
   };
 
   const getQuizScore = () => {
@@ -120,34 +189,119 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 
   const generateQuiz = (options: {
     module?: string;
+    modulesRange?: { from: number; to: number };
+    modulesList?: number[];
     difficulty?: 'easy' | 'medium' | 'hard';
     count?: number;
     adaptive?: boolean;
+    useGemini?: boolean;
   }) => {
-    const { module, difficulty, count = 10, adaptive = false } = options;
+    const { module, modulesRange, modulesList, difficulty, count = 10, adaptive = false, useGemini = false } = options;
 
-    let questions: DynamicQuizQuestion[];
+    // Always clear current questions at the start to prevent stale data
+    setCurrentQuestions([]);
 
-    if (adaptive) {
-      // Generate adaptive questions based on user performance
-      const modulePerformance = getModulePerformanceData();
-      questions = dynamicQuizGenerator.generateAdaptiveQuestions(modulePerformance, count);
-    } else if (module) {
-      // Generate questions for specific module
-      questions = dynamicQuizGenerator.generateQuestionsForModule(module, count);
-      if (difficulty) {
-        questions = questions.filter(q => q.difficulty === difficulty);
+    // Cap quiz count to MAX_QUESTIONS_PER_QUIZ (50)
+    const cappedCount = Math.min(Math.max(count, QUIZ_RULES.MIN_QUESTIONS_PER_QUIZ), QUIZ_RULES.MAX_QUESTIONS_PER_QUIZ);
+
+    let questions: DynamicQuizQuestion[] = [];
+
+    try {
+      // =============================================================
+      // PRIMARY DATA SOURCE: Local JSON Quiz Bank
+      // 
+      // QUIZ GENERATION RULES:
+      // 1. Total system contains 20 modules
+      // 2. User can select 1-5 modules per quiz (max 5)
+      // 3. Maximum 50 questions per quiz
+      // 4. Questions are randomly selected and mixed
+      // 5. Different pattern each time (randomized)
+      // 
+      // External APIs (Gemini, backend) are deprecated and ignored
+      // =============================================================
+
+      // Note: useGemini parameter is ignored - kept for backward compatibility
+      if (useGemini) {
+        console.warn('useGemini is deprecated. Using local quiz bank instead.');
       }
-    } else if (difficulty) {
-      // Generate questions by difficulty
-      questions = dynamicQuizGenerator.generateQuestionsByDifficulty(difficulty, count);
-    } else {
-      // Generate mixed questions
-      questions = dynamicQuizGenerator.generateMixedQuestions(count);
-    }
 
-    setCurrentQuestions(questions);
-    return questions;
+      if (adaptive) {
+        // DEPRECATED: Old adaptive logic - now uses local quiz bank
+        // Generate adaptive questions based on user performance
+        const modulePerformance = getModulePerformanceData();
+        questions = dynamicQuizGenerator.generateAdaptiveQuestions(modulePerformance, cappedCount);
+      } else if (modulesRange) {
+        // Generate from module range using local quiz bank
+        // Range will be limited to max 5 modules internally
+        const { from, to } = modulesRange;
+        questions = localQuizService.generateQuizFromRange(from, to, cappedCount, difficulty);
+      } else if (modulesList && modulesList.length > 0) {
+        // Generate from specific modules using local quiz bank
+        // Enforce max 5 modules rule
+        if (modulesList.length > QUIZ_RULES.MAX_MODULES_PER_QUIZ) {
+          console.warn(`Selection limited to ${QUIZ_RULES.MAX_MODULES_PER_QUIZ} modules. Using first ${QUIZ_RULES.MAX_MODULES_PER_QUIZ} of ${modulesList.length} selected.`);
+        }
+        questions = localQuizService.generateMixedQuiz(modulesList, cappedCount, difficulty);
+      } else if (module) {
+        // Try to parse module as number (e.g., "Module 1" -> 1, or "1" -> 1)
+        const moduleMatch = module.match(/\d+/);
+        const moduleId = moduleMatch ? parseInt(moduleMatch[0]) : null;
+        
+        if (moduleId) {
+          questions = localQuizService.generateQuiz(moduleId, cappedCount, difficulty);
+        } else {
+          // Fallback if module format is unexpected
+          console.warn(`Unable to parse module ID from "${module}". Using module 1.`);
+          questions = localQuizService.generateQuiz(1, cappedCount, difficulty);
+        }
+      } else if (difficulty) {
+        // Generate mixed questions with specific difficulty
+        // Use random selection of up to 5 modules for variety
+        const availableModules = localQuizService.getAvailableModules();
+        const shuffledModules = [...availableModules].sort(() => Math.random() - 0.5);
+        const selectedModules = shuffledModules.slice(0, QUIZ_RULES.MAX_MODULES_PER_QUIZ);
+        questions = localQuizService.generateMixedQuiz(selectedModules, cappedCount, difficulty);
+      } else {
+        // Generate mixed questions from random 5 modules for variety
+        const availableModules = localQuizService.getAvailableModules();
+        const shuffledModules = [...availableModules].sort(() => Math.random() - 0.5);
+        const selectedModules = shuffledModules.slice(0, QUIZ_RULES.MAX_MODULES_PER_QUIZ);
+        questions = localQuizService.generateMixedQuiz(selectedModules, cappedCount);
+      }
+
+      // Validate we got questions
+      if (!questions || questions.length === 0) {
+        throw new Error('No questions available for the selected criteria');
+      }
+
+      setCurrentQuestions(questions);
+      setGeminiStatus({ state: 'idle' }); // Always idle since we're not using external APIs
+      return questions;
+
+    } catch (error) {
+      console.error('Quiz generation error:', error);
+      
+      // Fallback: Try to get any questions from module 1
+      try {
+        questions = localQuizService.generateQuiz(1, cappedCount);
+        setCurrentQuestions(questions);
+        
+        setGeminiStatus({
+          state: 'error',
+          message: 'Some filters could not be applied. Showing available questions.',
+          usedFallback: true,
+        });
+      } catch (fallbackError) {
+        console.error('Fallback quiz generation failed:', fallbackError);
+        setGeminiStatus({
+          state: 'error',
+          message: 'Unable to load quiz questions. Please try again.',
+          usedFallback: true,
+        });
+      }
+      
+      return questions;
+    }
   };
 
   const startQuizSession = (questions: DynamicQuizQuestion[], options?: {
@@ -278,7 +432,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     
     // Quiz history
     getQuizHistory,
-    clearQuizHistory
+    clearQuizHistory,
+
+    // Gemini status
+    geminiStatus
   };
 
   return (

@@ -177,6 +177,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [totalQuizAttempts, setTotalQuizAttempts] = useState(0);
   const hasLoadedFromSource = useRef(false);
   const lessonsInFlightRef = useRef<Set<string>>(new Set());
+  const lastSyncedPayloadRef = useRef<string | null>(null);
   const { isAuthenticated, isLoading, tokens } = useAuth();
   const accessToken = tokens?.accessToken;
 
@@ -523,23 +524,33 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     if (!hasLoadedFromSource.current) return;
 
+    const payload: ProgressUpdatePayload = {
+      completedLessons,
+      studyStreak,
+      totalStudyTime,
+      lastCompletedLessonId: lastCompletedLessonId || undefined,
+      lastCompletedAt,
+    };
+
+    const payloadKey = JSON.stringify({
+      ...payload,
+      completedLessons: [...completedLessons].sort(),
+    });
+
+    if (payloadKey === lastSyncedPayloadRef.current) {
+      return;
+    }
+
     // Debounce the sync to prevent excessive API calls
     const timeoutId = setTimeout(() => {
       if (isAuthenticated && accessToken) {
-        const payload: ProgressUpdatePayload = {
-          completedLessons,
-          studyStreak,
-          totalStudyTime,
-          lastCompletedLessonId: lastCompletedLessonId || undefined,
-          lastCompletedAt,
-        };
-
         saveUserProgress(payload, accessToken)
           .then((response) => {
             if (response?.success && response.progress) {
               // Only apply server progress if it doesn't conflict with local state
               applySyncedProgress(response.progress, response.metrics ?? null, lastCompletedAt);
             }
+            lastSyncedPayloadRef.current = payloadKey;
           })
           .catch((error) => {
             console.error('Failed to sync progress with server:', error);
@@ -553,8 +564,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         } else {
           localStorage.removeItem('last-completion-date');
         }
+        lastSyncedPayloadRef.current = payloadKey;
       }
-    }, 1000); // 1 second debounce
+    }, 3000); // 3 second debounce to reduce API calls
 
     return () => clearTimeout(timeoutId);
   }, [

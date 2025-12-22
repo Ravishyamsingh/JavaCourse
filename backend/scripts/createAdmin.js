@@ -25,13 +25,13 @@ async function createAdminUser() {
       adminUser.isActive = true;
       adminUser.isEmailVerified = true;
       
-      // Update password if it's a local account
-      if (adminUser.provider === 'local') {
-        adminUser.password = await hashPassword(ADMIN_PASSWORD);
-      }
+      // Always set password so user can login with email/password
+      // This allows both Google OAuth and local login
+      adminUser.password = await hashPassword(ADMIN_PASSWORD);
       
       await adminUser.save();
       console.log('✅ Updated existing user to Super Admin:', ADMIN_EMAIL);
+      console.log('   Provider:', adminUser.provider, '(can also login with password)');
     } else {
       // Create new super admin user
       const hashedPassword = await hashPassword(ADMIN_PASSWORD);

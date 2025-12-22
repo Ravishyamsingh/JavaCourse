@@ -471,43 +471,11 @@ Stream<DynamicTest> testEvenNumbers() {
       </div>
     `,
     exercise: `
-      **🎯 JUnit Framework Exercises**
-
-      **Exercise 1: Basic JUnit Test Setup**
-      Create a simple Calculator class with methods for addition, subtraction, multiplication, and division. Write JUnit tests for each method using:
-      - @BeforeEach for setup
-      - @Test for each operation
-      - Appropriate assertions for each test case
-      - @DisplayName for readable test names
-
-      **Exercise 2: Parameterized Testing**
-      Extend your Calculator tests with parameterized tests:
-      - Test addition with multiple pairs of numbers using @ValueSource
-      - Test all operations with multiple data sets using @CsvSource
-      - Test edge cases like division by zero with different inputs
-
-      **Exercise 3: Nested and Conditional Tests**
-      Create nested test classes for different operations:
-      - Group all addition tests in an AdditionTests nested class
-      - Group all division tests in a DivisionTests nested class
-      - Add conditional tests that only run on specific environments
-      - Use @Disabled to temporarily skip a test and verify it's skipped
-
-      **Exercise 4: Exception Testing**
-      Write tests that verify exceptions are properly thrown:
-      - Test that division by zero throws ArithmeticException
-      - Test that square root of negative numbers throws IllegalArgumentException
-      - Use assertThrows with custom messages
-
-      **Exercise 5: Advanced Assertions**
-      Implement advanced assertion techniques:
-      - Test timeout behavior with @Timeout
-      - Use assumptions to conditionally run tests
-      - Create custom assertion methods for complex objects
-      - Test object equality with assertEquals vs assertSame
-
-      **Deliverable:**
-      Create a well-organized test suite with all the above exercises implemented. Ensure all tests pass and follow JUnit 5 best practices.
-    `
+1) Write a JUnit test using @Test annotation and assertEquals assertion for a Calculator add method.
+2) Create a test that uses @BeforeEach to set up a Calculator instance before each test.
+3) Write a test that verifies a method throws an exception using assertThrows.
+4) Implement a parameterized test that tests multiple input values for a multiplication method.
+5) Create a nested test class that groups related tests for a String utility class.
+`
   }
 };

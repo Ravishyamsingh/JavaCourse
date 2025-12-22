@@ -772,50 +772,11 @@ public class SpringBootWebApplication {
 }
     `,
     exercise: `
-      **🎯 Spring Boot Introduction Exercises**
-
-      **Exercise 1: Basic Spring Boot Application**
-      Create a simple Spring Boot application with the following features:
-      - Use @SpringBootApplication annotation on main class
-      - Create a REST controller with basic CRUD endpoints
-      - Implement service and repository layers
-      - Configure application properties for server port and logging
-      - Run the application and test endpoints with curl or Postman
-
-      **Exercise 2: Configuration Management**
-      Set up comprehensive configuration management:
-      - Create application.properties with database and server settings
-      - Implement @ConfigurationProperties for custom configuration
-      - Set up profile-specific configurations (dev, test, prod)
-      - Use environment variables for sensitive configuration
-      - Test configuration loading with different profiles
-
-      **Exercise 3: Exception Handling**
-      Implement global exception handling for a REST API:
-      - Create custom exception classes with appropriate HTTP status codes
-      - Implement @ControllerAdvice for global exception handling
-      - Create standardized error response format
-      - Handle validation exceptions and business logic exceptions
-      - Test exception scenarios with different HTTP clients
-
-      **Exercise 4: Data Persistence**
-      Build a complete data persistence layer:
-      - Create JPA entities with proper annotations
-      - Implement Spring Data JPA repositories
-      - Configure database connection with H2 for development
-      - Implement custom query methods
-      - Add transaction management with @Transactional
-
-      **Exercise 5: Actuator and Monitoring**
-      Enable and configure Spring Boot Actuator:
-      - Add spring-boot-starter-actuator dependency
-      - Configure actuator endpoints exposure
-      - Customize health indicators
-      - Implement custom metrics
-      - Test actuator endpoints and monitor application health
-
-      **Deliverable:**
-      Create a complete Spring Boot web application that demonstrates REST API development, data persistence, configuration management, exception handling, and production-ready features. Include proper project structure, comprehensive testing, and documentation.
-    `
+1) Create a Spring Boot main class with @SpringBootApplication annotation and implement a simple REST controller with a GET endpoint.
+2) Configure application.properties to set server.port to 8081 and add a custom property for application name.
+3) Create a @ConfigurationProperties class to bind custom configuration properties from application.yml.
+4) Implement a @RestController with @GetMapping, @PostMapping, and @PathVariable annotations for basic CRUD operations.
+5) Add spring-boot-starter-actuator dependency and configure actuator endpoints to expose health and info endpoints.
+`
   }
 };

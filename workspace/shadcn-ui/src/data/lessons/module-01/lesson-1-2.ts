@@ -172,209 +172,15 @@ export const lesson_1_2: LessonContent = {
         </section>
       </div>
     `,
-    codeExample: `/**
- * EnvironmentTest.java
- *
- * This comprehensive test program verifies your Java development environment
- * and displays detailed system information. It demonstrates:
- * - System property access
- * - Environment variable reading
- * - Runtime information
- * - Memory management details
- * - File system properties
- *
- * Run this program to ensure your Java setup is working correctly!
- */
-
-import java.io.File;
-import java.util.Properties;
-
-public class EnvironmentTest {
-
+    codeExample: `
+public class EnvironmentCheck {
     public static void main(String[] args) {
-        printWelcomeHeader();
-        printJavaVersionInfo();
-        printSystemProperties();
-        printEnvironmentInfo();
-        printMemoryInfo();
-        printFileSystemInfo();
-        printSuccessMessage();
-    }
-
-    /**
-     * Print a welcome header with formatting
-     */
-    private static void printWelcomeHeader() {
-        System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║               Java Environment Test Program                ║");
-        System.out.println("║                  Verifying Your Setup                     ║");
-        System.out.println("╚════════════════════════════════════════════════════════════╝");
-        System.out.println();
-    }
-
-    /**
-     * Display comprehensive Java version information
-     */
-    private static void printJavaVersionInfo() {
-        System.out.println("🔸 JAVA VERSION INFORMATION");
-        System.out.println("   ─────────────────────────");
-        System.out.println("   Java Version: " + System.getProperty("java.version"));
-        System.out.println("   Java Vendor:  " + System.getProperty("java.vendor"));
-        System.out.println("   Java Home:    " + System.getProperty("java.home"));
-        System.out.println("   JVM Version:  " + System.getProperty("java.vm.version"));
-        System.out.println("   JVM Vendor:   " + System.getProperty("java.vm.vendor"));
-        System.out.println("   JVM Name:     " + System.getProperty("java.vm.name"));
-        System.out.println();
-    }
-
-    /**
-     * Show operating system and runtime properties
-     */
-    private static void printSystemProperties() {
-        System.out.println("🔸 SYSTEM INFORMATION");
-        System.out.println("   ──────────────────");
-        System.out.println("   Operating System: " + System.getProperty("os.name") +
-                           " " + System.getProperty("os.version"));
-        System.out.println("   System Architecture: " + System.getProperty("os.arch"));
-        System.out.println("   User Name: " + System.getProperty("user.name"));
-        System.out.println("   User Home: " + System.getProperty("user.dir"));
-        System.out.println("   Working Directory: " + System.getProperty("user.dir"));
-        System.out.println("   File Separator: '" + System.getProperty("file.separator") + "'");
-        System.out.println("   Path Separator: '" + System.getProperty("path.separator") + "'");
-        System.out.println();
-    }
-
-    /**
-     * Display environment variables relevant to Java development
-     */
-    private static void printEnvironmentInfo() {
-        System.out.println("🔸 ENVIRONMENT VARIABLES");
-        System.out.println("   ─────────────────────");
-
+        System.out.println("Java version: " + System.getProperty("java.version"));
         String javaHome = System.getenv("JAVA_HOME");
-        if (javaHome != null) {
-            System.out.println("   JAVA_HOME: " + javaHome + " ✅");
-        } else {
-            System.out.println("   JAVA_HOME: Not set ⚠️  (Recommended to set this)");
-        }
-
-        String path = System.getenv("PATH");
-        if (path != null && path.contains("java")) {
-            System.out.println("   PATH: Contains Java ✅");
-        } else {
-            System.out.println("   PATH: Java may not be in PATH ⚠️");
-        }
-        System.out.println();
-    }
-
-    /**
-     * Show JVM memory information
-     */
-    private static void printMemoryInfo() {
-        Runtime runtime = Runtime.getRuntime();
-        long totalMemory = runtime.totalMemory();
-        long freeMemory = runtime.freeMemory();
-        long maxMemory = runtime.maxMemory();
-
-        System.out.println("🔸 JVM MEMORY INFORMATION");
-        System.out.println("   ──────────────────────");
-        System.out.println("   Total Memory:     " + formatBytes(totalMemory));
-        System.out.println("   Free Memory:      " + formatBytes(freeMemory));
-        System.out.println("   Used Memory:      " + formatBytes(totalMemory - freeMemory));
-        System.out.println("   Max Memory:       " + formatBytes(maxMemory));
-        System.out.println("   Available Processors: " + runtime.availableProcessors());
-        System.out.println();
-    }
-
-    /**
-     * Display file system information and test file operations
-     */
-    private static void printFileSystemInfo() {
-        System.out.println("🔸 FILE SYSTEM TEST");
-        System.out.println("   ────────────────");
-
-        File currentDir = new File(".");
-        System.out.println("   Current Directory: " + currentDir.getAbsolutePath());
-        System.out.println("   Directory is readable: " + currentDir.canRead());
-        System.out.println("   Directory is writable: " + currentDir.canWrite());
-
-        // Test creating a temporary file
-        try {
-            File tempFile = File.createTempFile("java_test_", ".tmp");
-            System.out.println("   Temp file creation: ✅ Success");
-            tempFile.delete(); // Clean up
-        } catch (Exception e) {
-            System.out.println("   Temp file creation: ❌ Failed - " + e.getMessage());
-        }
-        System.out.println();
-    }
-
-    /**
-     * Display success message and next steps
-     */
-    private static void printSuccessMessage() {
-        System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║                    🎉 SETUP VERIFICATION COMPLETE! 🎉     ║");
-        System.out.println("║                                                            ║");
-        System.out.println("║   Your Java development environment is properly configured ║");
-        System.out.println("║   and ready for Java programming!                         ║");
-        System.out.println("║                                                            ║");
-        System.out.println("║   Next Steps:                                              ║");
-        System.out.println("║   • Install your preferred IDE                            ║");
-        System.out.println("║   • Create your first Java project                        ║");
-        System.out.println("║   • Start coding amazing Java applications!               ║");
-        System.out.println("╚════════════════════════════════════════════════════════════╝");
-    }
-
-    /**
-     * Helper method to format byte values in human-readable format
-     */
-    private static String formatBytes(long bytes) {
-        long kb = 1024;
-        long mb = kb * 1024;
-        long gb = mb * 1024;
-
-        if (bytes >= gb) {
-            return String.format("%.2f GB", (double) bytes / gb);
-        } else if (bytes >= mb) {
-            return String.format("%.2f MB", (double) bytes / mb);
-        } else if (bytes >= kb) {
-            return String.format("%.2f KB", (double) bytes / kb);
-        } else {
-            return bytes + " bytes";
-        }
+        System.out.println("JAVA_HOME set: " + (javaHome != null));
     }
 }
-
-/*
- * EXPECTED OUTPUT SAMPLE:
- *
- * ╔════════════════════════════════════════════════════════════╗
- * ║               Java Environment Test Program                ║
- * ║                  Verifying Your Setup                     ║
- * ╚════════════════════════════════════════════════════════════╝
- *
- * 🔸 JAVA VERSION INFORMATION
- *    ─────────────────────────
- *    Java Version: 17.0.2
- *    Java Vendor:  Eclipse Adoptium
- *    Java Home:    C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.2.8-hotspot
- *    JVM Version:  17.0.2+8
- *    JVM Vendor:   Eclipse Adoptium
- *    JVM Name:     OpenJDK 64-Bit Server VM
- *
- * 🔸 SYSTEM INFORMATION
- *    ──────────────────
- *    Operating System: Windows 10 10.0
- *    System Architecture: amd64
- *    User Name: Developer
- *    User Home: C:\\Users\\Developer
- *    Working Directory: C:\\Projects\\JavaCourse
- *    File Separator: '\\'
- *    Path Separator: ';'
- *
- * ... (additional output sections) ...
- */`,
+`,
     exercise: `
       **🎯 Development Environment Setup Exercises**
 
@@ -382,7 +188,7 @@ public class EnvironmentTest {
       - Download and install JDK (recommend JDK 17 or 21 LTS)
       - Set JAVA_HOME and add JDK's bin to PATH
       - Verify with java -version and javac -version
-      - Run the EnvironmentTest.java program
+      - Run the EnvironmentCheck.java program
 
       **Exercise 2: IDE Installation and Configuration**
       - Choose between IntelliJ IDEA, VS Code, or Eclipse
@@ -411,7 +217,7 @@ public class EnvironmentTest {
 
       **Deliverables:**
       - Screenshots of successful java/javac commands
-      - Complete output from EnvironmentTest program
+      - Output from the EnvironmentCheck program
       - Screenshots of IDE with working Java project
       - Setup documentation/guide
       - Evidence of version control setup

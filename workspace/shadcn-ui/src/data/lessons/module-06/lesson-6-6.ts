@@ -352,32 +352,10 @@ export const lesson_6_6: LessonContent = {
       '        }\n' +
       '    }\n' +
       '}',
-    exercise: 'Build a comprehensive logging and error handling system for a library management application.\n\n' +
-      '**Requirements:**\n' +
-      '1. **Logging Framework:**\n' +
-      '   - Implement multi-level logging (ERROR, WARN, INFO, DEBUG)\n' +
-      '   - Create custom formatters for different output formats\n' +
-      '   - Configure file and console logging with rotation\n' +
-      '   - Add contextual information (user ID, session, timestamp)\n\n' +
-      '2. **Error Handling System:**\n' +
-      '   - Create custom exception hierarchy for different error types\n' +
-      '   - Implement error categorization and severity levels\n' +
-      '   - Add error recovery and retry mechanisms\n' +
-      '   - Include user-friendly error messages\n\n' +
-      '3. **Library Operations:**\n' +
-      '   - Book checkout/return with comprehensive logging\n' +
-      '   - User registration with validation and error handling\n' +
-      '   - Fine calculation with business rule validation\n' +
-      '   - Inventory management with audit trails\n\n' +
-      '4. **Monitoring and Alerting:**\n' +
-      '   - Error rate tracking and reporting\n' +
-      '   - Performance metrics logging\n' +
-      '   - Critical error alerting simulation\n' +
-      '   - Log analysis and reporting tools\n\n' +
-      '**Learning Objectives:**\n' +
-      '- Master logging framework configuration and usage\n' +
-      '- Design robust error handling strategies\n' +
-      '- Implement monitoring and alerting systems\n' +
-      '- Practice debugging through comprehensive logging'
+    exercise: `
+1) Create a logger that writes INFO level messages to both console and a file.
+2) Implement a custom exception class with error codes and user-friendly messages.
+3) Write a method that logs different levels of messages (INFO, WARN, ERROR) based on operation results.
+`
   }
 };

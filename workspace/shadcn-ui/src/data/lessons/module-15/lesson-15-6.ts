@@ -869,82 +869,11 @@ def getChangedProjects() {
       </div>
     `,
     exercise: `
-      **🎯 Multi-module Projects Exercises**
-
-      **Exercise 1: Design Multi-module Architecture**
-      Plan and design a multi-module project structure:
-      - Design a modular e-commerce application with separate modules for user management, product catalog, order processing, and payment
-      - Create a dependency graph showing relationships between modules
-      - Define clear interfaces and APIs for each module
-      - Document the rationale for module separation
-      - Identify shared components and utilities
-
-      **Exercise 2: Maven Multi-module Setup**
-      Create a complete Maven multi-module project:
-      - Set up parent POM with proper module declarations
-      - Create individual module POMs with appropriate dependencies
-      - Configure shared dependency management and plugin management
-      - Implement inter-module dependencies correctly
-      - Test the build process and verify module isolation
-
-      **Exercise 3: Gradle Multi-project Build**
-      Implement the same project structure using Gradle:
-      - Configure settings.gradle with all subprojects
-      - Create root build.gradle with shared configuration
-      - Set up individual module build scripts
-      - Configure project dependencies between modules
-      - Compare the complexity with Maven approach
-
-      **Exercise 4: Inter-module Communication**
-      Implement proper communication patterns between modules:
-      - Create shared interfaces in a common module
-      - Implement service layer communication
-      - Use dependency injection for loose coupling
-      - Implement event-driven communication where appropriate
-      - Test module interactions and integration points
-
-      **Exercise 5: Build Optimization**
-      Optimize the multi-module build for performance:
-      - Enable parallel builds and configure optimal settings
-      - Implement incremental compilation
-      - Set up build caching for faster builds
-      - Create custom tasks for building only changed modules
-      - Measure and document build performance improvements
-
-      **Exercise 6: Testing Strategy**
-      Implement comprehensive testing across modules:
-      - Create unit tests for each module
-      - Set up integration tests for module interactions
-      - Implement end-to-end tests in a separate module
-      - Configure test execution order and dependencies
-      - Set up test reporting and coverage across all modules
-
-      **Exercise 7: Dependency Management**
-      Master advanced dependency management techniques:
-      - Use BOM (Bill of Materials) for version management
-      - Implement version catalogs in Gradle
-      - Handle version conflicts between modules
-      - Set up dependency analysis and reporting
-      - Create policies for dependency updates
-
-      **Exercise 8: Advanced Multi-module Patterns**
-      Implement advanced multi-module scenarios:
-      - Create a plugin module that extends other modules
-      - Implement feature toggles across modules
-      - Set up module-specific configuration
-      - Create composite builds for development
-      - Implement module versioning and release strategies
-
-      **Exercise 9: CI/CD Integration**
-      Prepare multi-module project for continuous integration:
-      - Configure builds to work in CI environments
-      - Set up module-specific build triggers
-      - Implement parallel CI builds for different modules
-      - Create deployment strategies for individual modules
-      - Set up monitoring and alerting for module health
-
-      **Deliverable:**
-      Create a complete multi-module enterprise application demonstrating all learned concepts: proper architecture design, build optimization, comprehensive testing, advanced dependency management, and CI/CD readiness. Include documentation of the modular design decisions and performance benchmarks.
-    `
+1) Create a Maven multi-module project with parent POM and child modules.
+2) Set up inter-module dependencies in a Maven multi-module project.
+3) Configure a Gradle multi-project build with settings.gradle and subprojects.
+4) Implement parallel builds and incremental compilation in a multi-module setup.
+5) Set up shared build logic and plugin management across modules.
+`
   }
 };

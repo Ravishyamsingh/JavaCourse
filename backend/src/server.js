@@ -9,18 +9,15 @@ import routes from './routes.js';
 import { errorHandler } from './middleware/production.js';
 import { requestLogger } from './middleware/production.js';
 import winston from 'winston';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
+import config from './config.js';
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = config.PORT || 5000;
 
 // Configure Winston logger
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: config.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
@@ -33,7 +30,7 @@ const logger = winston.createLogger({
   ],
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (config.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize(),
@@ -61,7 +58,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "https://accounts.google.com", "https://www.googleapis.com"],
+  connectSrc: ["'self'", "https://accounts.google.com", "https://www.googleapis.com", config.FRONTEND_URL, config.BACKEND_URL].filter(Boolean),
     },
   },
   crossOriginEmbedderPolicy: false
@@ -71,7 +68,7 @@ app.use(helmet({
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      process.env.FRONTEND_URL,
+  config.FRONTEND_URL,
       'http://localhost:3000',
       'http://localhost:5173',
       'http://127.0.0.1:3000',
@@ -155,7 +152,7 @@ app.use(errorHandler);
 // Database connection
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/javacourse';
+  const mongoURI = config.MONGODB_URI || config.MONGO_URL || 'mongodb://localhost:27017/javacourse';
 
     const conn = await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
@@ -226,10 +223,10 @@ const startServer = async () => {
 
     // Start HTTP server
     const server = app.listen(PORT, () => {
-      logger.info(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-      logger.info(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-      logger.info(`🔐 JWT Secret configured: ${Boolean(process.env.JWT_ACCESS_SECRET)}`);
-      logger.info(`🔑 Google OAuth client configured: ${Boolean(process.env.GOOGLE_CLIENT_ID)}`);
+      logger.info(`🚀 Server running on port ${PORT} in ${config.NODE_ENV} mode`);
+      logger.info(`📱 Frontend URL: ${config.FRONTEND_URL}`);
+      logger.info(`🔐 JWT Secret configured: ${Boolean(config.JWT_ACCESS_SECRET)}`);
+      logger.info(`🔑 Google OAuth client configured: ${Boolean(config.GOOGLE_CLIENT_ID)}`);
     });
 
     // Handle server errors

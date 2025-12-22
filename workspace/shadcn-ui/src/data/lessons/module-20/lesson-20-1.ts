@@ -566,56 +566,12 @@ export const lesson_20_1: LessonContent = {
       '    public int getRequiredHours() { return requiredHours; }\n' +
       '    public int getStudyHours() { return studyHours; }\n' +
       '}',
-    exercise: 'Create a comprehensive Java certification preparation plan and practice system:\n\n' +
-      '**Project Requirements:**\n' +
-      '1. **Certification Path Analysis:**\n' +
-      '   - Research and document different Oracle Java certifications\n' +
-      '   - Create a decision matrix for choosing the right certification\n' +
-      '   - Analyze exam objectives and weightings\n' +
-      '   - Estimate study time requirements for each topic\n\n' +
-      '2. **Study Plan Generator:**\n' +
-      '   - Create a personalized study schedule based on available time\n' +
-      '   - Include milestone checkpoints and progress tracking\n' +
-      '   - Account for review periods and practice exam sessions\n' +
-      '   - Adjust timeline based on current skill level\n\n' +
-      '3. **Practice Question System:**\n' +
-      '   - Build a question bank with different difficulty levels\n' +
-      '   - Implement adaptive questioning based on performance\n' +
-      '   - Create detailed explanations for each answer\n' +
-      '   - Track performance analytics and weak areas\n\n' +
-      '4. **Mock Exam Simulator:**\n' +
-      '   - Replicate actual exam conditions and timing\n' +
-      '   - Generate random question sets from the question bank\n' +
-      '   - Provide detailed score analysis and recommendations\n' +
-      '   - Track improvement over multiple attempts\n\n' +
-      '5. **Study Resource Manager:**\n' +
-      '   - Organize study materials by topic and difficulty\n' +
-      '   - Create bookmarks for important concepts\n' +
-      '   - Generate summary notes and cheat sheets\n' +
-      '   - Link to official Oracle documentation\n\n' +
-      '6. **Progress Analytics:**\n' +
-      '   - Visual progress tracking with charts\n' +
-      '   - Performance trends and predictions\n' +
-      '   - Readiness assessment based on practice scores\n' +
-      '   - Recommendations for additional study areas\n\n' +
-      '**Deliverables:**\n' +
-      '- Comprehensive study plan with timeline\n' +
-      '- Practice question database (minimum 200 questions)\n' +
-      '- Mock exam simulator application\n' +
-      '- Progress tracking dashboard\n' +
-      '- Study resource organization system\n' +
-      '- Performance analytics and reporting\n\n' +
-      '**Key Features:**\n' +
-      '- **Question Categories:** OCA fundamentals, OCP advanced topics, code analysis\n' +
-      '- **Difficulty Levels:** Beginner, intermediate, advanced, expert\n' +
-      '- **Study Modes:** Topic-focused, mixed practice, timed exams\n' +
-      '- **Analytics:** Score trends, time per question, topic mastery\n' +
-      '- **Reminders:** Study schedule notifications, exam countdown\n\n' +
-      '**Success Metrics:**\n' +
-      '- Consistent 80%+ scores on practice exams\n' +
-      '- Complete coverage of all exam objectives\n' +
-      '- Improved time management (under 2 minutes per question)\n' +
-      '- Confidence in all major topic areas\n\n' +
-      '**Timeline:** 8-12 weeks depending on certification level and prior experience'
+    exercise: `
+1) Create a StudyProgressTracker class that tracks study hours for different Java certification topics.
+2) Implement a QuizQuestion class with methods to validate answers and provide explanations.
+3) Write a CertificationQuizGenerator that creates random practice questions from a question bank.
+4) Create a method that calculates study progress percentage based on completed topics.
+5) Implement a mock exam timer that simulates certification exam time constraints.
+`
   }
 };

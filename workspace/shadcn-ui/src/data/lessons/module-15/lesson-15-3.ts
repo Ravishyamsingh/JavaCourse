@@ -636,73 +636,11 @@ mvn versions:display-dependency-updates</pre>
       </div>
     `,
     exercise: `
-      **🎯 Maven Dependency Management Exercises**
-
-      **Exercise 1: Basic Dependency Declaration**
-      Set up a project with various dependency types and scopes:
-      - Add compile-time dependencies (Spring Core, Apache Commons)
-      - Include runtime dependencies (database drivers)
-      - Add test dependencies (JUnit, Mockito)
-      - Configure provided dependencies (servlet API)
-      - Test each scope by running different Maven phases
-      - Verify classpath inclusion for each scope
-
-      **Exercise 2: Dependency Tree Analysis**
-      Practice analyzing and understanding dependency relationships:
-      - Use "mvn dependency:tree" to visualize dependencies
-      - Identify transitive dependencies in your project
-      - Find version conflicts using verbose output
-      - Use "mvn dependency:analyze" to find unused dependencies
-      - Document the complete dependency graph
-      - Understand the impact of each dependency
-
-      **Exercise 3: Version Conflict Resolution**
-      Create and resolve dependency version conflicts:
-      - Intentionally create version conflicts between dependencies
-      - Use dependency tree to identify conflict resolution
-      - Practice excluding unwanted transitive dependencies
-      - Override versions using direct declarations
-      - Test different conflict resolution strategies
-      - Document the "nearest wins" principle in action
-
-      **Exercise 4: Dependency Management with BOM**
-      Implement centralized dependency management:
-      - Create a parent POM with dependencyManagement section
-      - Import Spring Boot BOM for version management
-      - Create child modules that inherit dependency versions
-      - Practice version overrides in child modules
-      - Use properties for custom dependency versions
-      - Test inheritance behavior across modules
-
-      **Exercise 5: Scope and Exclusion Mastery**
-      Work with advanced dependency configurations:
-      - Configure different scopes for the same library
-      - Practice excluding transitive dependencies
-      - Replace excluded dependencies with alternatives
-      - Use optional dependencies appropriately
-      - Test runtime behavior with different scope configurations
-      - Document when to use each scope type
-
-      **Exercise 6: Dependency Troubleshooting**
-      Practice common dependency problem-solving:
-      - Resolve ClassNotFoundException issues
-      - Fix NoSuchMethodError from version conflicts
-      - Handle missing transitive dependencies
-      - Debug classpath issues in different environments
-      - Use Maven commands for dependency debugging
-      - Create a troubleshooting checklist
-
-      **Exercise 7: Advanced Dependency Patterns**
-      Implement complex dependency management scenarios:
-      - Set up multi-module project with shared dependencies
-      - Configure different dependency sets for different profiles
-      - Use import scope with multiple BOMs
-      - Handle platform-specific dependencies
-      - Implement dependency convergence strategies
-      - Document dependency management best practices
-
-      **Deliverable:**
-      Create a comprehensive Maven project demonstrating all aspects of dependency management: proper scoping, version management, conflict resolution, BOM usage, and troubleshooting documentation. Include a dependency analysis report and best practices guide.
-    `
+1) Configure Maven dependencies with different scopes (compile, test, runtime, provided) and explain when to use each.
+2) Resolve a dependency conflict using Maven's dependency tree and exclusion mechanisms.
+3) Set up a BOM (Bill of Materials) in a Maven project and demonstrate version management.
+4) Use dependencyManagement to centralize version control across multiple modules.
+5) Analyze and fix a dependency resolution issue using Maven commands.
+`
   }
 };

@@ -78,6 +78,7 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
 
       const response = await fetch('/api/auth/sessions/register', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_access_token')}`
@@ -107,6 +108,7 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
     try {
       const response = await fetch('/api/auth/sessions/check', {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_access_token')}`,
           'X-Session-ID': sessionId.current
@@ -182,6 +184,7 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
     try {
       const response = await fetch('/api/auth/sessions/terminate-others', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_access_token')}`,
           'X-Session-ID': sessionId.current
@@ -229,6 +232,7 @@ export const useConcurrentLogin = (config: Partial<ConcurrentLoginConfig> = {}) 
     try {
       await fetch('/api/auth/sessions/activity', {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_access_token')}`,
           'X-Session-ID': sessionId.current

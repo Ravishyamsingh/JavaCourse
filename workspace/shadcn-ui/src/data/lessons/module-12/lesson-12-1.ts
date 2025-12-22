@@ -212,91 +212,11 @@ export const lesson_12_1: LessonContent = {
       </div>
     `,
     exercise: `
-      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-lg mb-8 shadow-2xl">
-        <h2 class="text-2xl font-bold mb-4 flex items-center">
-          <span class="w-3 h-8 bg-white rounded mr-3"></span>
-          Practice Exercise: Annotation-Driven Framework
-        </h2>
-        <p class="text-purple-100">Build a comprehensive annotation-driven framework with dependency injection and validation</p>
-      </div>
-
-      <div class="space-y-6">
-        <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">📋 Requirements</h3>
-          <div class="space-y-4">
-            <div class="bg-purple-50 p-4 rounded-lg">
-              <h4 class="font-bold text-purple-800 mb-2">1. Custom Annotations</h4>
-              <ul class="space-y-2 text-gray-700">
-                <li>• Create @Service, @Repository, @Controller annotations</li>
-                <li>• Implement @Inject for dependency injection</li>
-                <li>• Add @Validate for input validation</li>
-                <li>• Create @Cacheable for method caching</li>
-              </ul>
-            </div>
-            
-            <div class="bg-indigo-50 p-4 rounded-lg">
-              <h4 class="font-bold text-indigo-800 mb-2">2. Dependency Injection Container</h4>
-              <ul class="space-y-2 text-gray-700">
-                <li>• Implement component scanning and registration</li>
-                <li>• Create automatic dependency resolution</li>
-                <li>• Add singleton and prototype scope support</li>
-                <li>• Handle circular dependency detection</li>
-              </ul>
-            </div>
-            
-            <div class="bg-blue-50 p-4 rounded-lg">
-              <h4 class="font-bold text-blue-800 mb-2">3. Validation Framework</h4>
-              <ul class="space-y-2 text-gray-700">
-                <li>• Create @NotNull, @Size, @Email validators</li>
-                <li>• Implement method parameter validation</li>
-                <li>• Add custom validation annotation support</li>
-                <li>• Build validation error reporting system</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-500">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">✅ Success Criteria</h3>
-          <div class="grid md:grid-cols-2 gap-6">
-            <div class="space-y-3">
-              <div class="flex items-start space-x-3">
-                <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">1</div>
-                <div>
-                  <p class="font-semibold text-gray-800">Annotation Framework</p>
-                  <p class="text-gray-600 text-sm">Complete set of custom annotations with proper metadata</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start space-x-3">
-                <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">2</div>
-                <div>
-                  <p class="font-semibold text-gray-800">Dependency Injection</p>
-                  <p class="text-gray-600 text-sm">Automatic component scanning and dependency resolution</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="space-y-3">
-              <div class="flex items-start space-x-3">
-                <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">3</div>
-                <div>
-                  <p class="font-semibold text-gray-800">Validation System</p>
-                  <p class="text-gray-600 text-sm">Comprehensive validation with custom validators</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start space-x-3">
-                <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">4</div>
-                <div>
-                  <p class="font-semibold text-gray-800">Reflection Usage</p>
-                  <p class="text-gray-600 text-sm">Efficient and secure reflection implementation</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
+1) Create a custom annotation with @Retention(RetentionPolicy.RUNTIME) and use reflection to read it at runtime.
+2) Use Class.forName() to load a class dynamically and inspect its methods using reflection.
+3) Use Method.invoke() to call a method dynamically on an object instance.
+4) Access and modify private fields using reflection with setAccessible(true).
+5) Create an annotation processor that scans classes for specific annotations and processes them.
+`
   }
 };

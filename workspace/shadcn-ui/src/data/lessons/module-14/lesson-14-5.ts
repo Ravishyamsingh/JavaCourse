@@ -549,64 +549,11 @@ void testMultiplyNegativeNumbers() {
       </div>
     `,
     exercise: `
-      **🎯 Test-Driven Development Exercises**
-
-      **Exercise 1: String Calculator Kata**
-      Implement a String Calculator using TDD:
-      - Start with an empty string returning 0
-      - Handle single numbers: "1" returns 1
-      - Handle two numbers: "1,2" returns 3
-      - Handle multiple numbers: "1,2,3" returns 6
-      - Handle new line delimiters: "1\\n2,3" returns 6
-      - Support custom delimiters: "//;\\n1;2" returns 3
-      - Throw exception for negative numbers
-
-      **Exercise 2: FizzBuzz TDD**
-      Create FizzBuzz using strict TDD approach:
-      - Return "1" for input 1
-      - Return "2" for input 2
-      - Return "Fizz" for multiples of 3
-      - Return "Buzz" for multiples of 5
-      - Return "FizzBuzz" for multiples of both 3 and 5
-      - Follow Red-Green-Refactor cycle for each requirement
-
-      **Exercise 3: Bank Account TDD**
-      Build a BankAccount class using TDD:
-      - Create account with initial balance
-      - Implement deposit functionality
-      - Implement withdrawal functionality
-      - Prevent overdrafts
-      - Track transaction history
-      - Calculate interest
-
-      **Exercise 4: Roman Numerals Converter**
-      Convert integers to Roman numerals using TDD:
-      - Start with 1 → "I"
-      - Handle 2 → "II", 3 → "III"
-      - Handle 4 → "IV", 5 → "V"
-      - Handle 9 → "IX", 10 → "X"
-      - Handle larger numbers up to 3999
-      - Follow transformation priority premise
-
-      **Exercise 5: Gilded Rose Refactoring**
-      Refactor the Gilded Rose kata using TDD:
-      - First, write comprehensive tests for existing behavior
-      - Ensure 100% test coverage
-      - Refactor the code while keeping tests green
-      - Add new item types using TDD approach
-      - Practice working with legacy code
-
-      **Exercise 6: Mars Rover TDD**
-      Create a Mars Rover using TDD:
-      - Initialize rover with position and direction
-      - Implement forward/backward movement
-      - Implement left/right turning
-      - Handle grid boundaries (wrapping or obstacles)
-      - Process command strings like "MMRMMRMRRM"
-      - Add obstacle detection
-
-      **Deliverable:**
-      Complete at least 3 of the above katas using strict TDD methodology. Document your Red-Green-Refactor cycles, showing the evolution of your tests and implementation. Reflect on how TDD influenced your design decisions and code quality.
-    `
+1) Write a TDD test first for a Calculator multiply method, then implement the method to make the test pass.
+2) Create a failing test for a String utility method that reverses a string, then implement the method.
+3) Implement the Red-Green-Refactor cycle for a method that calculates the factorial of a number.
+4) Write a TDD test for a method that finds the maximum value in an array, then implement the solution.
+5) Create a test-driven implementation for a method that validates email addresses using regex.
+`
   }
 };

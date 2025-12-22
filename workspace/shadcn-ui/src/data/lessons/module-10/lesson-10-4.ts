@@ -339,116 +339,12 @@ export const lesson_10_4: LessonContent = {
         }
       </div>
     `,
-    exercise: `
-      <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg mb-8">
-        <h2 class="text-2xl font-bold mb-4">🎯 Practice Exercise: Stream Processing Challenge</h2>
-        <p class="text-blue-100">Create a comprehensive program that demonstrates various stream operations on a collection of products.</p>
-      </div>
-
-      <div class="space-y-6">
-        <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">📋 Requirements</h3>
-          <div class="space-y-4">
-            <div class="bg-blue-50 p-4 rounded-lg">
-              <h4 class="font-bold text-blue-800 mb-2">1. Product Class</h4>
-              <p class="text-gray-700">Create a Product class with properties: id, name, category, price, inStock</p>
-            </div>
-            
-            <div class="bg-green-50 p-4 rounded-lg">
-              <h4 class="font-bold text-green-800 mb-2">2. Stream Operations</h4>
-              <ul class="space-y-2 text-gray-700">
-                <li>• Filter products by category and availability</li>
-                <li>• Map products to their names and prices</li>
-                <li>• Find the most expensive product</li>
-                <li>• Calculate average price by category</li>
-                <li>• Group products by category</li>
-                <li>• Sort products by price</li>
-              </ul>
-            </div>
-            
-            <div class="bg-purple-50 p-4 rounded-lg">
-              <h4 class="font-bold text-purple-800 mb-2">3. Advanced Operations</h4>
-              <ul class="space-y-2 text-gray-700">
-                <li>• Create a summary report using collectors</li>
-                <li>• Implement custom reduction operations</li>
-                <li>• Use peek() for debugging stream operations</li>
-                <li>• Demonstrate parallel stream processing</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-500">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">💡 Implementation Hints</h3>
-          <div class="space-y-3">
-            <div class="bg-gray-50 p-3 rounded">
-              <p class="text-gray-700"><strong>Stream Creation:</strong> Use Arrays.asList() or List.of() to create your product collection</p>
-            </div>
-            <div class="bg-gray-50 p-3 rounded">
-              <p class="text-gray-700"><strong>Filtering:</strong> Use filter() with lambda expressions or method references</p>
-            </div>
-            <div class="bg-gray-50 p-3 rounded">
-              <p class="text-gray-700"><strong>Mapping:</strong> Use map() to transform objects and mapToDouble() for price calculations</p>
-            </div>
-            <div class="bg-gray-50 p-3 rounded">
-              <p class="text-gray-700"><strong>Collecting:</strong> Use Collectors.groupingBy(), Collectors.averagingDouble(), etc.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-orange-500">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">🎯 Success Criteria</h3>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="space-y-3">
-              <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-                <span class="text-gray-700">Product class with all required properties</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-                <span class="text-gray-700">Proper use of filter, map, and collect operations</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-                <span class="text-gray-700">Implementation of finding and matching operations</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-                <span class="text-gray-700">Correct use of reduction and aggregation</span>
-              </div>
-            </div>
-            <div class="space-y-3">
-              <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-                <span class="text-gray-700">Grouping and statistical operations</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-                <span class="text-gray-700">Proper handling of Optional results</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-                <span class="text-gray-700">Clean, readable stream pipeline code</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-yellow-500">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">🚀 Bonus Challenges</h3>
-          <div class="space-y-3">
-            <div class="bg-yellow-50 p-3 rounded">
-              <p class="text-gray-700"><strong>Performance Comparison:</strong> Compare sequential vs parallel stream performance</p>
-            </div>
-            <div class="bg-yellow-50 p-3 rounded">
-              <p class="text-gray-700"><strong>Custom Collectors:</strong> Implement a custom collector for specific aggregation</p>
-            </div>
-            <div class="bg-yellow-50 p-3 rounded">
-              <p class="text-gray-700"><strong>Stream Debugging:</strong> Use peek() to debug complex stream pipelines</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
+exercise: `
+1. Create a stream from a list of integers and filter out even numbers.
+2. Use map() to convert a list of strings to uppercase.
+3. Use collect() to gather stream results into a new list.
+4. Find the first element in a stream that matches a condition.
+5. Count the number of elements in a stream that satisfy a predicate.
+`
   }
 };

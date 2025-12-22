@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { storeAuthData } from '@/lib/auth';
+import { storeAuthData, getDefaultRoute } from '@/lib/auth';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -58,7 +58,9 @@ const AuthCallback: React.FC = () => {
             }));
 
             toast.success(`Welcome back, ${user.firstName}!`);
-            navigate('/', { replace: true });
+            // Redirect based on user role
+            const redirectPath = getDefaultRoute(user.role);
+            navigate(redirectPath, { replace: true });
             return;
           } catch (parseError) {
             console.error('❌ Error parsing OAuth user payload:', parseError);

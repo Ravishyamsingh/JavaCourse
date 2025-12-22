@@ -431,58 +431,11 @@ class ParallelTest {
       </div>
     `,
     exercise: `
-      **🎯 Continuous Integration and Testing Exercises**
-
-      **Exercise 1: Basic CI Pipeline Setup**
-      Create a complete CI pipeline for a Java project:
-      - Set up GitHub Actions or Jenkins pipeline
-      - Configure automated testing on push and pull requests
-      - Implement parallel test execution
-      - Add test result reporting and artifact storage
-      - Configure build notifications
-
-      **Exercise 2: Multi-Environment Testing**
-      Implement testing across multiple environments:
-      - Create test matrix for different Java versions
-      - Set up database services for integration tests
-      - Configure environment-specific test profiles
-      - Implement conditional test execution
-      - Add environment teardown and cleanup
-
-      **Exercise 3: Quality Gates Implementation**
-      Build comprehensive quality gates:
-      - Configure JaCoCo coverage thresholds
-      - Set up SonarQube quality analysis
-      - Implement custom quality checks
-      - Create branch protection rules
-      - Add quality gate failure notifications
-
-      **Exercise 4: Test Optimization**
-      Optimize CI pipeline performance:
-      - Implement test categorization and selective execution
-      - Configure parallel test execution
-      - Add dependency caching
-      - Optimize Docker image usage
-      - Measure and improve build times
-
-      **Exercise 5: Advanced Pipeline Features**
-      Implement advanced CI/CD features:
-      - Set up multi-stage deployments with testing
-      - Configure automated rollback on test failures
-      - Implement canary deployments with monitoring
-      - Add performance testing in pipeline
-      - Create comprehensive reporting dashboards
-
-      **Exercise 6: Monitoring and Alerting**
-      Build monitoring and alerting system:
-      - Set up build status notifications (Slack, email)
-      - Create test trend analysis and reporting
-      - Implement flaky test detection and reporting
-      - Add build performance monitoring
-      - Configure escalation procedures for failures
-
-      **Deliverable:**
-      Create a production-ready CI/CD pipeline that includes comprehensive testing, quality gates, parallel execution, and monitoring. Document the pipeline architecture, provide runbooks for common issues, and demonstrate how the pipeline improves code quality and deployment confidence.
-    `
+1) Write a GitHub Actions workflow that runs unit tests on every push to main branch.
+2) Create a Maven configuration for parallel test execution with 4 threads.
+3) Implement a quality gate script that fails the build if test coverage is below 80%.
+4) Write a Jenkins pipeline stage that runs integration tests with database setup.
+5) Create a test configuration that runs different test suites for unit and integration tests.
+`
   }
 };

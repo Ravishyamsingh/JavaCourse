@@ -32,10 +32,12 @@ const DEFAULT_PERMISSIONS = {
     lessons: ['create', 'read', 'update', 'delete'],
     quizzes: ['create', 'read', 'update', 'delete'],
     assignments: ['create', 'read', 'update', 'delete', 'grade'],
-    users: ['read', 'update', 'manage'],
+    users: ['read', 'update', 'manage', 'create', 'delete', 'grant_permissions', 'revoke_permissions'],
+    permissions: ['read', 'grant', 'revoke'],
     analytics: ['read'],
     notifications: ['create', 'read', 'update', 'delete'],
     media: ['create', 'read', 'update', 'delete'],
+    reports: ['read', 'download', 'export'],
     system: ['read']
   },
   superadmin: {

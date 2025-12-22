@@ -1,13 +1,18 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Code, Users, Award, Clock, Star, LogOut } from 'lucide-react';
+import { BookOpen, Code, Users, Award, Clock, Star, LogOut, Settings, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types/auth';
 
 export default function Index() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  
+  // Helper to check if user is admin or super admin
+  const isAdmin = user?.role === UserRole.ADMIN || user?.role === 'admin';
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN || user?.role === 'superadmin';
 
   const handleLogout = async () => {
     try {
@@ -82,6 +87,20 @@ export default function Index() {
                 <Button onClick={() => navigate('/quiz-modules')} variant="outline">
                   Quiz
                 </Button>
+                {/* Admin Panel button for admin users */}
+                {isAdmin && !isSuperAdmin && (
+                  <Button onClick={() => navigate('/admin-panel')} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Admin Panel
+                  </Button>
+                )}
+                {/* Super Admin Panel button for super admin users */}
+                {isSuperAdmin && (
+                  <Button onClick={() => navigate('/super-admin-panel')} variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
+                    <Crown className="h-4 w-4 mr-2" />
+                    Super Admin
+                  </Button>
+                )}
                 <Button onClick={() => navigate('/course')} className="bg-blue-600 hover:bg-blue-700">
                   Start Learning
                 </Button>

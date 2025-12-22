@@ -647,73 +647,11 @@ gradle init</pre>
       </div>
     `,
     exercise: `
-      **🎯 Introduction to Gradle Exercises**
-
-      **Exercise 1: Gradle Installation and Setup**
-      Set up Gradle development environment:
-      - Install Gradle using your preferred method (SDKMAN, Homebrew, or manual)
-      - Verify installation with "gradle --version"
-      - Create a new Java application using "gradle init"
-      - Explore the generated project structure
-      - Run the application using "./gradlew run"
-      - Understand the purpose of each generated file
-
-      **Exercise 2: Build Script Exploration**
-      Work with Gradle build scripts:
-      - Examine the generated build.gradle file
-      - Add project information (group, version, description)
-      - Configure Java toolchain for specific version
-      - Add custom properties and use them in tasks
-      - Create a simple custom task that prints project information
-      - Run your custom task and verify output
-
-      **Exercise 3: Plugin Configuration**
-      Practice working with Gradle plugins:
-      - Add the 'application' plugin to your project
-      - Configure the main class for your application
-      - Add the Spring Boot plugin and dependencies
-      - Explore the tasks added by each plugin
-      - Use "gradle tasks" to see all available tasks
-      - Run different plugin-provided tasks
-
-      **Exercise 4: Dependency Management**
-      Configure project dependencies:
-      - Add compile-time dependencies (Apache Commons, Guava)
-      - Include runtime dependencies (database drivers)
-      - Add test dependencies (JUnit 5, Mockito)
-      - Configure different dependency scopes
-      - Use "gradle dependencies" to view dependency tree
-      - Resolve any dependency conflicts
-
-      **Exercise 5: Task Creation and Configuration**
-      Create custom tasks and configure existing ones:
-      - Create a custom task with dependencies on other tasks
-      - Configure the test task to use JUnit Platform
-      - Add a task that copies files from one location to another
-      - Create a task that generates a project report
-      - Use task ordering (mustRunAfter, shouldRunAfter)
-      - Test task execution order and dependencies
-
-      **Exercise 6: Build Lifecycle and Performance**
-      Explore Gradle's build features:
-      - Enable parallel builds in gradle.properties
-      - Configure build caching
-      - Use incremental compilation
-      - Measure build performance with --profile
-      - Compare build times with and without optimizations
-      - Document performance improvements
-
-      **Exercise 7: Gradle vs Maven Comparison**
-      Compare Gradle and Maven approaches:
-      - Convert a simple Maven project to Gradle
-      - Compare build script complexity and readability
-      - Measure build performance differences
-      - Document advantages and disadvantages of each tool
-      - Create a decision matrix for choosing between them
-      - Present findings with practical examples
-
-      **Deliverable:**
-      Create a comprehensive Gradle project demonstrating all learned concepts: proper project structure, plugin usage, dependency management, custom tasks, and performance optimizations. Include documentation comparing Gradle with Maven and recommendations for when to use each tool.
-    `
+1) Create a basic Gradle build script with plugins, dependencies, and tasks.
+2) Set up Gradle Wrapper for a project and demonstrate its usage across different environments.
+3) Configure Gradle tasks with dependencies and ordering using dependsOn and mustRunAfter.
+4) Implement a multi-project Gradle build with subprojects and shared configurations.
+5) Set up Gradle properties and demonstrate their usage in build configuration.
+`
   }
 };

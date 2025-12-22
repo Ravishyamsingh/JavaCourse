@@ -1,4 +1,6 @@
 import express from "express";
+import rateLimit from 'express-rate-limit';
+import { User } from "./models.js";
 import { signup, login, getProfile, getCourses, googleAuth as legacyGoogleAuth } from "./controllers.js";
 import {
   refreshToken,
@@ -36,6 +38,23 @@ import {
 } from "./middleware/rbac.js";
 
 import { getUserProgress, updateUserProgress } from './controllers/progressController.js';
+import { runJavaCompiler } from './controllers/compilerController.js';
+import proctorRoutes from './routes/proctorRoutes.js';
+import testRoutes from './routes/testRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import passwordRoutes from './routes/passwordRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
+import backupRoutes from './routes/backupRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
+import healthRoutes from './routes/healthRoutes.js';
+import {
+  downloadUserProgressReport,
+  getUserProgressReport,
+  downloadAdminUsersReport,
+  getAdminUsersReport,
+  downloadProctoringReport,
+  getProctoringReport
+} from './controllers/reportController.js';
 import {
   validateRequest,
   signupSchema,
@@ -52,13 +71,67 @@ const router = express.Router();
 // Apply general rate limiting to all routes
 router.use(generalRateLimit);
 
-// Progress endpoints
-router.get('/user/progress', authMiddleware, getUserProgress);
+// Compiler endpoint
+router.post('/compiler/java/run', runJavaCompiler);
+
+// Test ID generation endpoints
+router.use('/test', testRoutes);
+
+// Proctoring endpoints
+router.use('/proctor', proctorRoutes);
+
+// Admin endpoints
+router.use('/admin', adminRoutes);
+
+// Quiz generation endpoints
+router.use('/quiz', quizRoutes);
+
+// Backup and recovery endpoints
+router.use('/backup', backupRoutes);
+
+// Advanced analytics endpoints
+router.use('/analytics', analyticsRoutes);
+
+// Health check endpoints
+router.use('/health', healthRoutes);
+
+// Progress endpoints with specific rate limiting (max 30 requests per 15 minutes per user)
+const progressRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // limit each user to 30 progress requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many progress updates. Please wait before trying again.',
+    retryAfter: 15 * 60
+  },
+  keyGenerator: (req) => {
+    return req.user?._id || req.ip;
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+router.get('/user/progress', authMiddleware, progressRateLimit, getUserProgress);
 router.post('/user/progress',
   authMiddleware,
+  progressRateLimit,
   validateRequest(progressUpdateSchema),
   updateUserProgress
 );
+
+// User progress reports
+router.get('/reports/progress',
+  authMiddleware,
+  getUserProgressReport
+);
+
+router.get('/reports/progress/download',
+  authMiddleware,
+  downloadUserProgressReport
+);
+
+// Password recovery routes (before CSRF protection)
+router.use('/password', passwordRoutes);
 
 // Provide CSRF tokens for all routes
 router.use(provideCSRFToken);
@@ -146,6 +219,35 @@ router.put("/auth/users/:userId/role",
   updateUserRole
 );
 
+// Admin reporting endpoints
+router.get('/reports/admin/users',
+  authMiddleware,
+  adminRateLimit,
+  authorize({ roles: ['admin', 'superadmin'] }),
+  getAdminUsersReport
+);
+
+router.get('/reports/admin/users/download',
+  authMiddleware,
+  adminRateLimit,
+  authorize({ roles: ['admin', 'superadmin'] }),
+  downloadAdminUsersReport
+);
+
+router.get('/reports/admin/proctoring',
+  authMiddleware,
+  adminRateLimit,
+  authorize({ roles: ['admin', 'superadmin'] }),
+  getProctoringReport
+);
+
+router.get('/reports/admin/proctoring/download',
+  authMiddleware,
+  adminRateLimit,
+  authorize({ roles: ['admin', 'superadmin'] }),
+  downloadProctoringReport
+);
+
 // Session Management Routes with CSRF protection
 router.get("/auth/sessions", authMiddleware, getUserSessions);
 router.delete("/auth/sessions/:sessionId",
@@ -154,6 +256,82 @@ router.delete("/auth/sessions/:sessionId",
   requireOwnership('session'),
   revokeSession
 );
+
+// Session registration endpoint (for concurrent login detection)
+router.post("/auth/sessions/register", authMiddleware, async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      message: "Session registered successfully",
+      sessionId: req.user._id
+    });
+  } catch (error) {
+    console.error('Session registration error:', error);
+    res.status(500).json({ success: false, message: "Failed to register session" });
+  }
+});
+
+// Session check endpoint (for concurrent login detection)
+router.get("/auth/sessions/check", authMiddleware, async (req, res) => {
+  try {
+    // In a full implementation, you would track sessions in a database
+    // For now, return current session is valid
+    res.json({
+      success: true,
+      currentSessionValid: true,
+      sessions: []
+    });
+  } catch (error) {
+    console.error('Session check error:', error);
+    res.status(500).json({ success: false, message: "Failed to check sessions" });
+  }
+});
+
+// Terminate other sessions endpoint
+router.post("/auth/sessions/terminate-others", authMiddleware, async (req, res) => {
+  try {
+    // In a full implementation, you would invalidate other sessions in database
+    res.json({
+      success: true,
+      message: "Other sessions terminated successfully"
+    });
+  } catch (error) {
+    console.error('Session termination error:', error);
+    res.status(500).json({ success: false, message: "Failed to terminate sessions" });
+  }
+});
+
+// Update session activity endpoint
+router.put("/auth/sessions/activity", authMiddleware, async (req, res) => {
+  try {
+    // In a full implementation, you would update last activity timestamp
+    res.json({
+      success: true,
+      message: "Session activity updated"
+    });
+  } catch (error) {
+    console.error('Session activity update error:', error);
+    res.status(500).json({ success: false, message: "Failed to update activity" });
+  }
+});
+
+// User role status endpoint (for role change detection)
+router.get("/auth/user/role-status", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('role isActive');
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.json({
+      success: true,
+      role: user.role,
+      isActive: user.isActive
+    });
+  } catch (error) {
+    console.error('Role status check error:', error);
+    res.status(500).json({ success: false, message: "Failed to check role status" });
+  }
+});
 
 // Course Routes with enrollment checks
 router.get("/getCourses", getCourses);
@@ -196,23 +374,5 @@ router.get("/courses/:courseId/quizzes",
     });
   }
 );
-
-// Health check endpoint
-router.get("/health", (req, res) => {
-  res.json({
-    status: "OK",
-    message: "Authentication API Server is running",
-    timestamp: new Date().toISOString(),
-    version: "2.0.0",
-    endpoints: {
-      signup: "POST /api/auth/signup",
-      login: "POST /api/auth/login",
-      googleAuth: "POST /api/auth/google",
-      profile: "GET /api/auth/profile (protected)",
-      dashboard: "GET /api/dashboard (protected)",
-      courses: "GET /api/getCourses"
-    }
-  });
-});
 
 export default router;

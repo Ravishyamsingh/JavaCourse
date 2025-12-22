@@ -1,6 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import config from '../config.js';
 import { User } from '../models.js';
 import { tokenManager } from '../utils/tokenManager.js';
 
@@ -8,9 +9,10 @@ import { tokenManager } from '../utils/tokenManager.js';
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+      clientID: config.GOOGLE_CLIENT_ID,
+      clientSecret: config.GOOGLE_CLIENT_SECRET,
+      callbackURL:
+        config.GOOGLE_CALLBACK_URL || `${config.BACKEND_URL}/api/auth/google/callback`,
       scope: ['profile', 'email'],
       passReqToCallback: true
     },
@@ -109,7 +111,7 @@ passport.use(
         // Extract from query parameter (for development/testing)
         ExtractJwt.fromUrlQueryParameter('token')
       ]),
-      secretOrKey: process.env.JWT_ACCESS_SECRET,
+      secretOrKey: config.JWT_ACCESS_SECRET,
       passReqToCallback: true
     },
     async (req, jwtPayload, done) => {

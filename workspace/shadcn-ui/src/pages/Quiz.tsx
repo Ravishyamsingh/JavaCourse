@@ -1,22 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   BookOpen,
-  Code,
-  Users,
-  Award,
-  Clock,
   Star,
   CheckCircle2,
   XCircle,
   ChevronRight,
   RotateCcw,
-  Brain,
-  Target,
-  Zap
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuiz } from '@/contexts/QuizContext';
@@ -37,7 +31,7 @@ export default function Quiz() {
     startQuizSession,
     endQuizSession,
     currentQuestions,
-    getRecommendedDifficulty
+    geminiStatus,
   } = useQuiz();
   
   // Scroll to top when component mounts
@@ -46,6 +40,10 @@ export default function Quiz() {
   // Get URL parameters
   const urlParams = new URLSearchParams(location.search);
   const moduleParam = urlParams.get('module');
+  const geminiParam = urlParams.get('gemini') === 'true';
+  const rangeFromParam = urlParams.get('from');
+  const rangeToParam = urlParams.get('to');
+  const modulesListParam = urlParams.get('modules');
   const difficultyParam = urlParams.get('difficulty') as 'easy' | 'medium' | 'hard' | null;
   const countParam = parseInt(urlParams.get('count') || '10');
   const adaptiveParam = urlParams.get('adaptive') === 'true';
@@ -56,28 +54,77 @@ export default function Quiz() {
   const [showResult, setShowResult] = useState(false);
   const [quizStartTime, setQuizStartTime] = useState<Date | null>(null);
 
-  // Initialize quiz on component mount
+  const renderGeminiAlert = () => {
+    if (!geminiParam || geminiStatus.state !== 'error') {
+      return null;
+    }
+    return (
+      <Alert variant="destructive" className="mb-6">
+        <AlertTitle>AI quiz unavailable</AlertTitle>
+        <AlertDescription>
+          {geminiStatus.message || 'Gemini could not generate questions, so we switched to the local quiz bank.'}
+        </AlertDescription>
+      </Alert>
+    );
+  };
+
+  // Initialize quiz on component mount and when params change
   useEffect(() => {
-    initializeQuiz();
-  }, [moduleParam, difficultyParam, countParam, adaptiveParam]);
-
-  const initializeQuiz = () => {
-    const questions = generateQuiz({
-      module: moduleParam ? decodeURIComponent(moduleParam) : undefined,
-      difficulty: difficultyParam || undefined,
-      count: countParam,
-      adaptive: adaptiveParam
-    });
-
-    setQuizData(questions);
-    startQuizSession(questions, {
-      module: moduleParam ? decodeURIComponent(moduleParam) : undefined,
-      difficulty: difficultyParam || undefined
-    });
-    setQuizStartTime(new Date());
+    // Reset quiz state before generating new questions
+    resetQuiz();
+    setQuizData([]);
     setCurrentQuestion(0);
     setSelectedOption(null);
     setShowResult(false);
+    
+    initializeQuiz();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moduleParam, difficultyParam, countParam, adaptiveParam, geminiParam, rangeFromParam, rangeToParam, modulesListParam]);
+
+  // Sync with context questions (used when Gemini resolves async)
+  useEffect(() => {
+    if (currentQuestions && currentQuestions.length > 0) {
+      setQuizData(currentQuestions);
+      startQuizSession(currentQuestions, {
+        module: moduleParam ? decodeURIComponent(moduleParam) : undefined,
+        difficulty: difficultyParam || undefined
+      });
+      setQuizStartTime(new Date());
+      setCurrentQuestion(0);
+      setSelectedOption(null);
+      setShowResult(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestions]);
+
+  const initializeQuiz = () => {
+    const range = rangeFromParam && rangeToParam ? { from: parseInt(rangeFromParam), to: parseInt(rangeToParam) } : undefined;
+    const list = modulesListParam ? modulesListParam.split(',').map(s => parseInt(s.trim())).filter(n => !Number.isNaN(n)) : undefined;
+
+    const questions = generateQuiz({
+      module: moduleParam ? decodeURIComponent(moduleParam) : undefined,
+      modulesRange: range,
+      modulesList: list,
+      difficulty: difficultyParam || undefined,
+      count: countParam,
+      adaptive: adaptiveParam,
+      useGemini: geminiParam
+    });
+
+    if (questions.length > 0) {
+      setQuizData(questions);
+      startQuizSession(questions, {
+        module: moduleParam ? decodeURIComponent(moduleParam) : undefined,
+        difficulty: difficultyParam || undefined
+      });
+      setQuizStartTime(new Date());
+      setCurrentQuestion(0);
+      setSelectedOption(null);
+      setShowResult(false);
+    } else {
+      // Gemini path: wait for async resolution into currentQuestions via context
+      setQuizData([]);
+    }
   };
 
   const handleSelectOption = (optionIndex: number) => {
@@ -127,14 +174,17 @@ export default function Quiz() {
   // Show loading state if quiz data is not ready
   if (quizData.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <Card className="max-w-md mx-auto border-0 shadow-xl bg-white/80 backdrop-blur-lg">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-lg space-y-4">
+          {renderGeminiAlert()}
+          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-lg">
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Generating Quiz Questions</h3>
             <p className="text-gray-600">Please wait while we prepare your personalized quiz...</p>
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -165,6 +215,7 @@ export default function Quiz() {
         </header>
 
         <div className="container mx-auto px-4 py-16">
+          {renderGeminiAlert()}
           <Card className="max-w-2xl mx-auto border-0 shadow-xl bg-white/80 backdrop-blur-lg">
             <CardHeader className="text-center pb-8">
               <CardTitle className="text-3xl font-bold text-gray-900 mb-4">
@@ -188,7 +239,7 @@ export default function Quiz() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                {quizData.map((question, index) => {
+                {quizData.map((question) => {
                   const answer = resultsMap.get(question.id);
                   return (
                     <div key={question.id} className="p-4 rounded-lg border">
@@ -266,6 +317,7 @@ export default function Quiz() {
       </header>
 
       <div className="container mx-auto px-4 py-16">
+        {renderGeminiAlert()}
         <div className="max-w-2xl mx-auto mb-6">
           <BackButton to="/quiz-modules" label="Back to Quiz Selection" />
         </div>

@@ -2,7 +2,9 @@ import { User } from "../models.js";
 import { Token } from "../models/Token.js";
 import { tokenManager } from "../utils/tokenManager.js";
 import passport from "../config/passport.js";
+import config from "../config.js";
 import { hasRole, hasPermission } from "../middleware/rbac.js";
+import { cacheService } from "../services/cacheService.js";
 
 // Token refresh endpoint
 export const refreshToken = async (req, res) => {
@@ -265,13 +267,13 @@ export const googleAuthCallback = (req, res, next) => {
     try {
       if (err) {
         console.error('❌ Google OAuth authentication error:', err);
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_error`);
+        return res.redirect(`${config.FRONTEND_URL}/login?error=oauth_error`);
       }
 
       if (!user) {
         console.log('⚠️  Google OAuth authentication failed:', info?.message);
         const errorCode = info?.code || 'oauth_failed';
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=${errorCode}`);
+        return res.redirect(`${config.FRONTEND_URL}/login?error=${errorCode}`);
       }
 
       // Generate tokens for the authenticated user
@@ -289,7 +291,7 @@ export const googleAuthCallback = (req, res, next) => {
       console.log('✅ Google OAuth successful for user:', user.email);
 
       // Redirect to frontend with secure cookies
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = config.FRONTEND_URL || 'http://localhost:5173';
       const redirectUrl = new URL('/auth/callback', frontendUrl);
 
       const userPayload = {
@@ -304,11 +306,11 @@ export const googleAuthCallback = (req, res, next) => {
 
       // Determine the cookie domain so tokens remain accessible in production
       const cookieDomain = (() => {
-        if (process.env.COOKIE_DOMAIN) {
-          return process.env.COOKIE_DOMAIN.trim();
+        if (config.COOKIE_DOMAIN) {
+          return config.COOKIE_DOMAIN.trim();
         }
 
-        if (process.env.NODE_ENV === 'production') {
+        if (config.NODE_ENV === 'production') {
           try {
             const { hostname } = new URL(frontendUrl);
             return hostname === 'localhost' ? undefined : hostname;
@@ -323,7 +325,7 @@ export const googleAuthCallback = (req, res, next) => {
       // Set secure HTTP-only cookies for tokens
       const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+  secure: config.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: 15 * 60 * 1000, // 15 minutes for access token
         domain: cookieDomain
@@ -355,7 +357,7 @@ export const googleAuthCallback = (req, res, next) => {
       res.redirect(redirectUrl.toString());
     } catch (error) {
       console.error('❌ Google OAuth callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
+      res.redirect(`${config.FRONTEND_URL}/login?error=server_error`);
     }
   })(req, res, next);
 };
@@ -363,6 +365,7 @@ export const googleAuthCallback = (req, res, next) => {
 /**
  * Get current authenticated user profile
  * GET /api/auth/me
+ * Uses Redis caching for improved performance
  */
 export const getCurrentUser = async (req, res) => {
   try {
@@ -373,6 +376,17 @@ export const getCurrentUser = async (req, res) => {
         success: false,
         message: 'Not authenticated',
         code: 'NOT_AUTHENTICATED'
+      });
+    }
+
+    const userId = user._id.toString();
+
+    // Try to get from Redis cache first
+    const cachedProfile = await cacheService.getUserProfile(userId);
+    if (cachedProfile) {
+      return res.json({
+        ...cachedProfile,
+        cached: true
       });
     }
 
@@ -389,7 +403,7 @@ export const getCurrentUser = async (req, res) => {
       });
     }
 
-    res.json({
+    const responseData = {
       success: true,
       user: {
         id: freshUser._id,
@@ -408,7 +422,12 @@ export const getCurrentUser = async (req, res) => {
         createdAt: freshUser.createdAt,
         updatedAt: freshUser.updatedAt
       }
-    });
+    };
+
+    // Cache the user profile (10 minute TTL)
+    await cacheService.setUserProfile(userId, responseData);
+
+    res.json(responseData);
   } catch (error) {
     console.error('❌ Get current user error:', error);
     res.status(500).json({
@@ -457,6 +476,10 @@ export const updateProfile = async (req, res) => {
         code: 'USER_NOT_FOUND'
       });
     }
+
+    // Invalidate user profile and progress cache after update
+    await cacheService.invalidateUserProfile(userId.toString());
+    await cacheService.invalidateUserProgress(userId.toString());
 
     res.json({
       success: true,

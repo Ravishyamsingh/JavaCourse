@@ -1,646 +1,584 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 import {
   Users,
-  BookOpen,
-  FileText,
   BarChart3,
+  BookOpen,
   Settings,
-  Search,
-  Filter,
-  MoreHorizontal,
-  Eye,
+  Download,
+  Plus,
   Edit,
   Trash2,
-  UserPlus,
-  Shield,
-  Activity,
+  Search,
+  Filter,
   TrendingUp,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
+  Activity,
+  Award,
   Clock,
-  Layout,
-  Image,
-  Video,
-  FileImage
+  AlertCircle,
+  CheckCircle,
+  AlertTriangle,
+  Shield,
+  Database,
+  Zap,
+  Eye,
+  Lock,
+  Unlock,
+  RefreshCw,
+  Gauge,
+  BarChart4,
+  FileText,
+  LogOut
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { UserRole } from '@/types/auth';
-import { toast } from 'sonner';
-import CourseManager from '@/components/cms/CourseManager';
-import MediaManager from '@/components/cms/MediaManager';
-import QuizBuilder from '@/components/cms/QuizBuilder';
-import RichTextEditor from '@/components/cms/RichTextEditor';
+import { ADMIN_CONFIG, getRoleLabel, getTabLabel, getReportConfig } from '@/config/adminConfig';
 
 interface User {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: 'guest' | 'user' | 'admin' | 'superadmin';
+  role: string;
   isActive: boolean;
-  isEmailVerified: boolean;
-  lastLogin?: string;
-  createdAt: string;
 }
 
-interface Course {
-  id: string;
-  title: string;
-  status: 'draft' | 'published' | 'archived';
-  instructorId: string;
-  createdAt: string;
-  modulesCount: number;
-  studentsCount: number;
-}
-
-interface SystemStats {
+interface Analytics {
   totalUsers: number;
   activeUsers: number;
-  totalCourses: number;
-  publishedCourses: number;
-  totalLessons: number;
-  totalQuizzes: number;
-  systemHealth: 'good' | 'warning' | 'critical';
+  adminUsers: number;
+  newUsersThisMonth: number;
+  recentUsers: User[];
+  [key: string]: any;
 }
 
-const AdminPanel: React.FC = () => {
-  const { user, hasPermission } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+const AdminPanel = () => {
+  const { user, tokens } = useAuth();
+  const navigate = useNavigate();
+  
+  // State Management
+  const [activeTab, setActiveTab] = useState<string>(ADMIN_CONFIG.TABS.DASHBOARD);
   const [users, setUsers] = useState<User[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [stats, setStats] = useState<SystemStats | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filterRole, setFilterRole] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(ADMIN_CONFIG.DEFAULT_PAGE);
+  const [pageSize, setPageSize] = useState<number>(ADMIN_CONFIG.DEFAULT_PAGE_SIZE);
 
-  // Mock data - in real app, this would come from API
+  // Authorization Check
   useEffect(() => {
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        role: 'user',
-        isActive: true,
-        isEmailVerified: true,
-        lastLogin: '2024-01-20T10:30:00Z',
-        createdAt: '2024-01-15T08:00:00Z'
-      },
-      {
-        id: '2',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        email: 'jane.smith@example.com',
-        role: 'user',
-        isActive: true,
-        isEmailVerified: false,
-        lastLogin: '2024-01-19T15:45:00Z',
-        createdAt: '2024-01-10T12:00:00Z'
-      },
-      {
-        id: '3',
-        firstName: 'Bob',
-        lastName: 'Johnson',
-        email: 'bob.johnson@example.com',
-        role: 'user',
-        isActive: false,
-        isEmailVerified: true,
-        lastLogin: '2024-01-18T09:20:00Z',
-        createdAt: '2024-01-05T14:30:00Z'
-      }
-    ];
+    if (!user || !Object.values(ADMIN_CONFIG.USER_ROLES).includes(user.role)) {
+      navigate('/dashboard');
+      return;
+    }
+    fetchDashboardData();
+  }, [user, navigate]);
 
-    const mockCourses: Course[] = [
-      {
-        id: 'course-1',
-        title: 'Complete Java Programming',
-        status: 'published',
-        instructorId: 'instructor-1',
-        createdAt: '2024-01-15T08:00:00Z',
-        modulesCount: 12,
-        studentsCount: 245
-      },
-      {
-        id: 'course-2',
-        title: 'Advanced JavaScript Concepts',
-        status: 'draft',
-        instructorId: 'instructor-2',
-        createdAt: '2024-01-18T10:00:00Z',
-        modulesCount: 8,
-        studentsCount: 0
-      }
-    ];
+  // Fetch users when tab changes or filters change
+  useEffect(() => {
+    if (activeTab === ADMIN_CONFIG.TABS.USERS) {
+      fetchUsers();
+    }
+  }, [activeTab, filterRole, filterStatus, searchTerm, currentPage]);
 
-    const mockStats: SystemStats = {
-      totalUsers: 1250,
-      activeUsers: 1180,
-      totalCourses: 45,
-      publishedCourses: 38,
-      totalLessons: 680,
-      totalQuizzes: 156,
-      systemHealth: 'good'
-    };
-
-    setUsers(mockUsers);
-    setCourses(mockCourses);
-    setStats(mockStats);
-  }, []);
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' ||
-                         (statusFilter === 'active' && user.isActive) ||
-                         (statusFilter === 'inactive' && !user.isActive);
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-
-  const handleUserAction = async (action: string, userId: string) => {
-    setIsLoading(true);
+  /**
+   * Generic API fetch with authentication
+   */
+  const authFetch = useCallback(async (path: string, options: RequestInit = {}) => {
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(`${ADMIN_CONFIG.API_BASE_URL}${path}`, {
+        ...options,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tokens?.accessToken}`,
+          ...options.headers
+        }
+      });
 
-      if (action === 'deactivate') {
-        setUsers(prev => prev.map(u =>
-          u.id === userId ? { ...u, isActive: false } : u
-        ));
-        toast.success('User deactivated successfully');
-      } else if (action === 'activate') {
-        setUsers(prev => prev.map(u =>
-          u.id === userId ? { ...u, isActive: true } : u
-        ));
-        toast.success('User activated successfully');
-      } else if (action === 'delete') {
-        setUsers(prev => prev.filter(u => u.id !== userId));
-        toast.success('User deleted successfully');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API Error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API Fetch Error:', error);
+      throw error;
+    }
+  }, [tokens?.accessToken]);
+
+  /**
+   * Fetch dashboard statistics
+   */
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await authFetch('/admin/dashboard/stats');
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error('Dashboard fetch error:', error);
+      toast.error(ADMIN_CONFIG.MESSAGES.ERROR.FETCH_DASHBOARD);
+    } finally {
+      setLoading(false);
+    }
+  }, [authFetch]);
+
+  /**
+   * Fetch users with filters and pagination
+   */
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      if (filterRole !== 'all') params.append('role', filterRole);
+      if (filterStatus !== 'all') params.append('status', filterStatus);
+      if (searchTerm) params.append('search', searchTerm);
+      params.append('page', currentPage.toString());
+      params.append('limit', pageSize.toString());
+
+      const response = await authFetch(`/admin/users?${params.toString()}`);
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Users fetch error:', error);
+      toast.error(ADMIN_CONFIG.MESSAGES.ERROR.FETCH_USERS);
+    } finally {
+      setLoading(false);
+    }
+  }, [authFetch, filterRole, filterStatus, searchTerm, currentPage, pageSize]);
+
+  /**
+   * Delete a user
+   */
+  const handleDeleteUser = useCallback(async (userId: string) => {
+    if (!confirm(ADMIN_CONFIG.MESSAGES.CONFIRMATION.DELETE_USER)) return;
+
+    try {
+      await authFetch(`/admin/users/${userId}`, { method: 'DELETE' });
+      toast.success(ADMIN_CONFIG.MESSAGES.SUCCESS.USER_DELETED);
+      fetchUsers();
+    } catch (error) {
+      console.error('Delete user error:', error);
+      toast.error(ADMIN_CONFIG.MESSAGES.ERROR.DELETE_USER);
+    }
+  }, [authFetch, fetchUsers]);
+
+  /**
+   * Update user role
+   */
+  const handleRoleChange = useCallback(async (userId: string, newRole: string) => {
+    try {
+      console.log('🔄 Changing role for user:', { userId, newRole });
+      
+      const response = await authFetch(`/admin/users/${userId}/role`, {
+        method: 'PUT',
+        body: JSON.stringify({ role: newRole })
+      });
+
+      console.log('📡 Role change response:', response);
+
+      if (response.success) {
+        console.log('✅ Role changed successfully');
+        toast.success(`${ADMIN_CONFIG.MESSAGES.SUCCESS.ROLE_UPDATED} (${getRoleLabel(newRole)})`);
+        fetchUsers();
+      } else {
+        console.error('❌ Role change failed:', response.message);
+        toast.error(response.message || ADMIN_CONFIG.MESSAGES.ERROR.UPDATE_ROLE);
       }
     } catch (error) {
-      toast.error('Action failed');
-    } finally {
-      setIsLoading(false);
+      console.error('❌ Role change error:', error);
+      const errorMessage = error instanceof Error ? error.message : ADMIN_CONFIG.MESSAGES.ERROR.UPDATE_ROLE;
+      toast.error(errorMessage);
     }
-  };
+  }, [authFetch, fetchUsers]);
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'superadmin': return 'destructive';
-      case 'admin': return 'default';
-      case 'user': return 'secondary';
-      case 'guest': return 'outline';
-      default: return 'outline';
+  /**
+   * Export users as CSV
+   */
+  const handleExportUsers = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${ADMIN_CONFIG.API_BASE_URL}/admin/users/export?format=csv`,
+        {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${tokens?.accessToken}`
+          }
+        }
+      );
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${ADMIN_CONFIG.REPORTS.USER_LIST.filename}-${Date.now()}.csv`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      toast.success(ADMIN_CONFIG.MESSAGES.SUCCESS.USERS_EXPORTED);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(ADMIN_CONFIG.MESSAGES.ERROR.EXPORT_USERS);
     }
-  };
+  }, [tokens?.accessToken]);
 
-  const getStatusIcon = (isActive: boolean, isEmailVerified: boolean) => {
-    if (!isActive) return <XCircle className="h-4 w-4 text-red-500" />;
-    if (!isEmailVerified) return <Clock className="h-4 w-4 text-yellow-500" />;
-    return <CheckCircle className="h-4 w-4 text-green-500" />;
-  };
+  /**
+   * Download report
+   */
+  const handleDownloadReport = useCallback(async (reportId: string) => {
+    try {
+      const reportConfig = getReportConfig(reportId);
+      if (!reportConfig) {
+        toast.error('Report configuration not found');
+        return;
+      }
 
-  if (!hasPermission('users', 'read')) {
+      const response = await fetch(
+        `${ADMIN_CONFIG.API_BASE_URL}${reportConfig.endpoint}?format=csv`,
+        {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${tokens?.accessToken}`
+          }
+        }
+      );
+
+      if (!response.ok) throw new Error('Report download failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${reportConfig.filename}-${Date.now()}.csv`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      toast.success(ADMIN_CONFIG.MESSAGES.SUCCESS.REPORT_DOWNLOADED);
+    } catch (error) {
+      console.error('Report download error:', error);
+      toast.error(ADMIN_CONFIG.MESSAGES.ERROR.DOWNLOAD_REPORT);
+    }
+  }, [tokens?.accessToken]);
+
+  /**
+   * Render dashboard stats cards
+   */
+  const renderDashboardStats = () => {
+    if (!analytics) return null;
+
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">You don't have permission to access the admin panel.</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {ADMIN_CONFIG.DASHBOARD_STATS.map((stat) => (
+          <Card key={stat.id}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics[stat.key]}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stat.subtitle === 'percentage'
+                  ? `${Math.round((analytics.activeUsers / analytics.totalUsers) * 100)}% of total`
+                  : analytics[stat.subtitle] || stat.subtitle}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     );
-  }
+  };
+
+  /**
+   * Render analytics cards
+   */
+  const renderAnalyticsCards = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {ADMIN_CONFIG.ANALYTICS_CARDS.map((card) => (
+          <Card key={card.id}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                {card.id === 'total-lessons' && <Activity className="h-4 w-4" />}
+                {card.id === 'avg-score' && <Award className="h-4 w-4" />}
+                {card.id === 'engagement' && <Clock className="h-4 w-4" />}
+                {card.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics?.[card.key] || card.defaultValue}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  /**
+   * Render reports section
+   */
+  const renderReports = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.values(ADMIN_CONFIG.REPORTS).map((report) => (
+          <Card key={report.id} className="border">
+            <CardHeader>
+              <CardTitle className="text-base">{report.name}</CardTitle>
+              <CardDescription>{report.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Includes: {report.columns.join(', ')}
+              </p>
+              <Button
+                onClick={() => handleDownloadReport(report.id)}
+                className={`w-full ${report.id === 'student-progress' ? ADMIN_CONFIG.COLORS.SUCCESS : ADMIN_CONFIG.COLORS.PRIMARY} ${report.id === 'student-progress' ? ADMIN_CONFIG.COLORS.SUCCESS_HOVER : ADMIN_CONFIG.COLORS.PRIMARY_HOVER}`}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download CSV
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="px-6 py-4">
+      <div className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-gray-600">Manage users, courses, and system settings</p>
+            <div className="flex items-center gap-3">
+              <Settings className="h-6 w-6 text-blue-600" />
+              <h1 className="text-2xl font-bold">Admin Panel</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="px-3 py-1">
-                <Shield className="h-4 w-4 mr-2" />
-                Admin Access
-              </Badge>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </div>
+            <Badge variant="outline" className="text-base">
+              {getRoleLabel(user?.role || 'user')}
+            </Badge>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
-            <TabsTrigger value="content">Content</TabsTrigger>
-            <TabsTrigger value="media">Media</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          {/* Tab Navigation */}
+          <TabsList className="grid w-full grid-cols-5">
+            {Object.entries(ADMIN_CONFIG.TABS).map(([key, value]) => (
+              <TabsTrigger key={value} value={value} className="flex items-center gap-2">
+                {value === ADMIN_CONFIG.TABS.DASHBOARD && <BarChart3 className="h-4 w-4" />}
+                {value === ADMIN_CONFIG.TABS.USERS && <Users className="h-4 w-4" />}
+                {value === ADMIN_CONFIG.TABS.REPORTS && <Download className="h-4 w-4" />}
+                {value === ADMIN_CONFIG.TABS.CONTENT && <BookOpen className="h-4 w-4" />}
+                {value === ADMIN_CONFIG.TABS.ANALYTICS && <TrendingUp className="h-4 w-4" />}
+                {getTabLabel(value)}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Dashboard Tab */}
+          <TabsContent value={ADMIN_CONFIG.TABS.DASHBOARD} className="space-y-6">
+            {renderDashboardStats()}
+            {analytics?.recentUsers && (
               <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Users</p>
-                      <p className="text-2xl font-bold">{stats?.totalUsers}</p>
-                      <p className="text-xs text-green-600 flex items-center mt-1">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        +12% this month
-                      </p>
-                    </div>
-                    <Users className="h-8 w-8 text-blue-500" />
+                <CardHeader>
+                  <CardTitle>Recent Users</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analytics.recentUsers.map((u) => (
+                      <div key={u._id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{u.firstName} {u.lastName}</p>
+                          <p className="text-sm text-muted-foreground">{u.email}</p>
+                        </div>
+                        <Badge variant="outline">{getRoleLabel(u.role)}</Badge>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Active Users</p>
-                      <p className="text-2xl font-bold">{stats?.activeUsers}</p>
-                      <p className="text-xs text-green-600 flex items-center mt-1">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        +8% this month
-                      </p>
-                    </div>
-                    <CheckCircle className="h-8 w-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Courses</p>
-                      <p className="text-2xl font-bold">{stats?.totalCourses}</p>
-                      <p className="text-xs text-blue-600 flex items-center mt-1">
-                        <BookOpen className="h-3 w-3 mr-1" />
-                        {stats?.publishedCourses} published
-                      </p>
-                    </div>
-                    <BookOpen className="h-8 w-8 text-purple-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">System Health</p>
-                      <p className="text-2xl font-bold capitalize">{stats?.systemHealth}</p>
-                      <p className="text-xs text-green-600 flex items-center mt-1">
-                        <Activity className="h-3 w-3 mr-1" />
-                        All systems operational
-                      </p>
-                    </div>
-                    <Activity className="h-8 w-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest system events and user actions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                    <UserPlus className="h-5 w-5 text-blue-500" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">New user registration</p>
-                      <p className="text-xs text-gray-500">john.doe@example.com joined 2 minutes ago</p>
-                    </div>
-                    <Badge variant="outline">User</Badge>
-                  </div>
-
-                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                    <BookOpen className="h-5 w-5 text-green-500" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Course published</p>
-                      <p className="text-xs text-gray-500">Advanced JavaScript Concepts published 15 minutes ago</p>
-                    </div>
-                    <Badge variant="outline">Course</Badge>
-                  </div>
-
-                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                    <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">System alert</p>
-                      <p className="text-xs text-gray-500">High memory usage detected 1 hour ago</p>
-                    </div>
-                    <Badge variant="outline">System</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            )}
           </TabsContent>
 
           {/* Users Tab */}
-          <TabsContent value="users" className="mt-6">
+          <TabsContent value={ADMIN_CONFIG.TABS.USERS} className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>User Management</CardTitle>
-                    <CardDescription>Manage user accounts and permissions</CardDescription>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Manage all users in the system</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Filters */}
+                <div className="flex gap-4 flex-wrap">
+                  <div className="flex-1 relative min-w-[200px]">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search users..."
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(ADMIN_CONFIG.DEFAULT_PAGE);
+                      }}
+                    />
                   </div>
-                  <Button>
-                    <UserPlus className="h-4 w-4 mr-2" />
+
+                  <Select value={filterRole} onValueChange={(value) => {
+                    setFilterRole(value);
+                    setCurrentPage(ADMIN_CONFIG.DEFAULT_PAGE);
+                  }}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ADMIN_CONFIG.FILTER_OPTIONS.ROLES.map((role) => (
+                        <SelectItem key={role.value} value={role.value}>
+                          {role.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={filterStatus} onValueChange={(value) => {
+                    setFilterStatus(value);
+                    setCurrentPage(ADMIN_CONFIG.DEFAULT_PAGE);
+                  }}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ADMIN_CONFIG.FILTER_OPTIONS.STATUS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Button onClick={fetchUsers} variant="outline">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
+                  </Button>
+
+                  <Button onClick={handleExportUsers} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+
+                  <Button onClick={() => navigate('/admin/users/new')} className={ADMIN_CONFIG.COLORS.PRIMARY}>
+                    <Plus className="h-4 w-4 mr-2" />
                     Add User
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {/* Search and Filters */}
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search users..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Select value={roleFilter} onValueChange={setRoleFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      <SelectItem value="superadmin">Super Admin</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="guest">Guest</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                {/* Users Table */}
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Last Login</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-blue-600">
-                                {user.firstName[0]}{user.lastName[0]}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="font-medium">{user.firstName} {user.lastName}</div>
-                              <div className="text-sm text-gray-500">{user.email}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getRoleBadgeVariant(user.role)}>
-                            {user.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {getStatusIcon(user.isActive, user.isEmailVerified)}
-                            <span className={user.isActive ? 'text-green-600' : 'text-red-600'}>
-                              {user.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleUserAction(
-                                user.isActive ? 'deactivate' : 'activate',
-                                user.id
-                              )}
-                              disabled={isLoading}
-                            >
-                              {user.isActive ? (
-                                <XCircle className="h-4 w-4" />
-                              ) : (
-                                <CheckCircle className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Courses Tab */}
-          <TabsContent value="courses" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Course Management</CardTitle>
-                <CardDescription>Monitor and manage course content</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {courses.map((course) => (
-                    <Card key={course.id}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <CardTitle className="text-lg">{course.title}</CardTitle>
-                            <CardDescription>
-                              {course.modulesCount} modules • {course.studentsCount} students
-                            </CardDescription>
-                          </div>
-                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
-                            {course.status}
-                          </Badge>
+                {/* Users List */}
+                <div className="space-y-2">
+                  {users.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No users found. Click "Filter" to load users.
+                    </div>
+                  ) : (
+                    users.map((u) => (
+                      <div key={u._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+                        <div className="flex-1">
+                          <p className="font-medium">{u.firstName} {u.lastName}</p>
+                          <p className="text-sm text-muted-foreground">{u.email}</p>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between text-sm text-gray-500">
-                          <span>Created {new Date(course.createdAt).toLocaleDateString()}</span>
-                          <div className="flex items-center space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={u.isActive ? 'default' : 'secondary'}>
+                            {u.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
 
-          {/* Content Management Tab */}
-          <TabsContent value="content" className="mt-6">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Layout className="h-5 w-5" />
-                    <span>Content Management</span>
-                  </CardTitle>
-                  <CardDescription>Create and manage course content, lessons, and quizzes</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="courses" className="space-y-4">
-                    <TabsList>
-                      <TabsTrigger value="courses">Courses</TabsTrigger>
-                      <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
-                      <TabsTrigger value="editor">Rich Editor</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="courses">
-                      <CourseManager />
-                    </TabsContent>
-                    
-                    <TabsContent value="quizzes">
-                      <QuizBuilder />
-                    </TabsContent>
-                    
-                    <TabsContent value="editor">
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Rich Text Editor</h3>
-                        <RichTextEditor
-                          content=""
-                          onChange={(content) => console.log('Content changed:', content)}
-                          placeholder="Start writing your lesson content..."
-                        />
+                          <Select value={u.role} onValueChange={(value) => handleRoleChange(u._id, value)}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ADMIN_CONFIG.FILTER_OPTIONS.ROLES.filter(r => r.value !== 'all').map((role) => (
+                                <SelectItem key={role.value} value={role.value}>
+                                  {role.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/users/${u._id}`)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(u._id)}>
+                            <Trash2 className={`h-4 w-4 ${ADMIN_CONFIG.COLORS.DANGER}`} />
+                          </Button>
+                        </div>
                       </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Media Management Tab */}
-          <TabsContent value="media" className="mt-6">
+          {/* Reports Tab */}
+          <TabsContent value={ADMIN_CONFIG.TABS.REPORTS} className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileImage className="h-5 w-5" />
-                  <span>Media Library</span>
-                </CardTitle>
-                <CardDescription>Upload and manage images, videos, and other media files</CardDescription>
+                <CardTitle>Download Reports</CardTitle>
+                <CardDescription>Generate and download reports</CardDescription>
               </CardHeader>
-              <CardContent>
-                <MediaManager />
+              <CardContent className="space-y-4">
+                <Button onClick={() => navigate('/admin/reports')} variant="outline" className="w-full mb-4">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  View Student Progress Reports with Charts
+                </Button>
+                {renderReports()}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Tab */}
+          <TabsContent value={ADMIN_CONFIG.TABS.CONTENT} className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Content Management</CardTitle>
+                <CardDescription>Manage courses, modules, and lessons</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button onClick={() => navigate('/admin/content/new')} className={ADMIN_CONFIG.COLORS.PRIMARY}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Content
+                </Button>
+                <div className="text-center py-8 text-muted-foreground">
+                  Content management interface coming soon
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Analytics</CardTitle>
-                  <CardDescription>User registration and activity trends</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <BarChart3 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">Advanced analytics coming soon...</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Performance</CardTitle>
-                  <CardDescription>Server health and performance metrics</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">CPU Usage</span>
-                      <span className="text-sm font-medium">45%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Memory Usage</span>
-                      <span className="text-sm font-medium">67%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Storage Used</span>
-                      <span className="text-sm font-medium">2.3 GB</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Response Time</span>
-                      <span className="text-sm font-medium">120ms</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value={ADMIN_CONFIG.TABS.ANALYTICS} className="space-y-6">
+            {renderAnalyticsCards()}
+            <Card>
+              <CardHeader>
+                <CardTitle>Analytics Dashboard</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                  Detailed analytics coming soon
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

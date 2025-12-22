@@ -1,0 +1,107 @@
+# =====================================================
+# RENDER DEPLOYMENT CONFIGURATION
+# Backend Service for Java Course Platform
+# =====================================================
+
+services:
+  - type: web
+    name: javacourse-backend
+    runtime: node
+    region: oregon  # or singapore for lower latency to India
+    plan: free      # Use 'starter' for production
+    
+    # Build Configuration
+    buildCommand: npm install
+    startCommand: npm run prod
+    
+    # Root Directory (relative to repo root)
+    rootDir: Java Course Website Design/backend
+    
+    # Environment Variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: LOG_LEVEL
+        value: info
+        
+      # URLs - Update these with your actual domains
+      - key: BACKEND_URL
+        value: https://javacourse.onrender.com
+      - key: FRONTEND_URL
+        value: https://java-course.vercel.app
+      - key: ALLOWED_ORIGINS
+        value: https://java-course.vercel.app,https://javacourse.onrender.com
+      - key: CORS_ORIGIN
+        value: https://java-course.vercel.app
+      - key: COOKIE_DOMAIN
+        value: javacourse.onrender.com
+        
+      # Database - Use Render Secret Groups or Dashboard
+      - key: MONGO_URL
+        sync: false  # Set via Render Dashboard for security
+      - key: MONGODB_URI
+        sync: false
+        
+      # Redis
+      - key: REDIS_URL
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_DB
+        value: "0"
+        
+      # JWT Secrets - Use Render Secret Groups
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: CSRF_SECRET
+        sync: false
+      - key: JWT_ACCESS_EXPIRY
+        value: 15m
+      - key: JWT_REFRESH_EXPIRY
+        value: 7d
+        
+      # Google OAuth
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        value: https://javacourse.onrender.com/api/auth/google/callback
+        
+      # Email Configuration
+      - key: EMAIL_SERVICE
+        value: gmail
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+        
+      # Gemini AI
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+        
+      # Security
+      - key: BCRYPT_SALT_ROUNDS
+        value: "12"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "100"
+        
+    # Health Check
+    healthCheckPath: /api/health
+    
+    # Auto Deploy on push
+    autoDeploy: true

@@ -378,50 +378,11 @@ public class ConfigDemoServlet extends HttpServlet {
 }
     `,
     exercise: `
-      **🎯 Introduction to Servlets Exercises**
-
-      **Exercise 1: Basic Servlet Creation**
-      Create your first servlet with the following requirements:
-      - Create a servlet that responds to GET requests at "/hello"
-      - Display a personalized greeting with the current date and time
-      - Accept a "name" parameter from the URL query string
-      - Use proper HTML structure in the response
-      - Handle cases where no name parameter is provided
-
-      **Exercise 2: Form Processing Servlet**
-      Build a servlet that handles form submission:
-      - Create an HTML form with fields for name, email, and message
-      - Process the form data in a POST request handler
-      - Display the submitted information back to the user
-      - Implement basic validation for required fields
-      - Show appropriate error messages for invalid input
-
-      **Exercise 3: Session Management**
-      Implement session tracking in a servlet:
-      - Create a servlet that tracks user visits using sessions
-      - Store and display visit count, first visit time, and last visit time
-      - Provide functionality to reset the session
-      - Display session ID and other session attributes
-      - Handle session timeout scenarios
-
-      **Exercise 4: Servlet Configuration**
-      Practice servlet configuration techniques:
-      - Configure a servlet using both annotations and web.xml
-      - Set initialization parameters for database connection details
-      - Use servlet context to share data between servlets
-      - Implement proper initialization and cleanup methods
-      - Test different URL mapping patterns
-
-      **Exercise 5: User Registration System**
-      Create a comprehensive user registration servlet:
-      - Handle both GET (display form) and POST (process form) requests
-      - Implement form validation for username, email, and password
-      - Store user data temporarily in session
-      - Display success/error messages appropriately
-      - Use proper HTML structure and basic CSS styling
-
-      **Deliverable:**
-      Create a complete servlet-based web application that demonstrates understanding of servlet lifecycle, request/response handling, session management, and form processing. Include proper error handling and user-friendly interfaces.
-    `
+1) Create a basic servlet that handles HTTP GET requests and returns HTML content.
+2) Implement servlet lifecycle methods (init, service, destroy) with proper logging.
+3) Create a servlet that handles both GET and POST requests with form processing.
+4) Configure a servlet using @WebServlet annotation with URL patterns and initialization parameters.
+5) Implement session management in a servlet to track user visits and store data.
+`
   }
 };

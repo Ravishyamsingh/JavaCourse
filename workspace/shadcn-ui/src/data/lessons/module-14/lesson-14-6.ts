@@ -661,62 +661,11 @@ New Code Smells: <= 5</pre>
       </div>
     `,
     exercise: `
-      **🎯 Code Coverage and Quality Metrics Exercises**
-
-      **Exercise 1: Coverage Analysis Setup**
-      Set up code coverage analysis for a Java project:
-      - Configure JaCoCo plugin in Maven or Gradle
-      - Create a simple Calculator class with multiple methods
-      - Write basic tests and generate coverage reports
-      - Analyze line, branch, and method coverage results
-      - Set coverage thresholds and quality gates
-
-      **Exercise 2: Improving Coverage Strategically**
-      Work with an existing codebase to improve coverage:
-      - Identify uncovered code areas using coverage reports
-      - Write tests for critical business logic first
-      - Focus on branch coverage for conditional statements
-      - Test edge cases and error conditions
-      - Exclude irrelevant code (getters, setters, generated code)
-      - Achieve 80%+ meaningful coverage
-
-      **Exercise 3: SonarQube Quality Analysis**
-      Set up comprehensive quality analysis:
-      - Install and configure SonarQube locally
-      - Integrate SonarQube with your build process
-      - Analyze code quality metrics (bugs, vulnerabilities, code smells)
-      - Create custom quality gates with specific thresholds
-      - Fix identified issues and re-analyze
-      - Document quality improvements over time
-
-      **Exercise 4: Quality Metrics Dashboard**
-      Create a quality metrics tracking system:
-      - Set up automated quality checks in CI/CD pipeline
-      - Track coverage trends over time
-      - Monitor technical debt accumulation
-      - Create quality reports for stakeholders
-      - Implement quality gates that fail builds
-      - Establish team quality standards
-
-      **Exercise 5: Coverage vs Quality Analysis**
-      Compare high coverage with low-quality tests:
-      - Write tests that achieve high coverage but poor quality
-      - Use mutation testing to verify test effectiveness
-      - Refactor tests to be more meaningful
-      - Demonstrate how coverage alone doesn't guarantee quality
-      - Create guidelines for writing effective tests
-
-      **Exercise 6: Legacy Code Coverage**
-      Work with legacy code to improve testability:
-      - Analyze coverage of existing legacy codebase
-      - Identify areas with zero test coverage
-      - Write characterization tests for existing behavior
-      - Refactor code to improve testability
-      - Gradually increase coverage while maintaining functionality
-      - Document the refactoring process
-
-      **Deliverable:**
-      Create a comprehensive quality analysis report that includes coverage metrics, quality gate results, technical debt assessment, and improvement recommendations. Include before/after comparisons showing quality improvements achieved through systematic testing and refactoring.
-    `
+1) Write a JUnit test that achieves 100% line coverage for a simple Calculator add method.
+2) Create a test that achieves 100% branch coverage for a method with if-else conditions.
+3) Implement a test suite that demonstrates both line and branch coverage metrics.
+4) Write a test that covers exception handling paths for complete coverage.
+5) Create a parameterized test that covers multiple input scenarios for comprehensive coverage.
+`
   }
 };

@@ -149,102 +149,13 @@ export const lesson_1_1: LessonContent = {
         </section>
       </div>
     `,
-    codeExample: `/**
- * JavaIntroduction.java
- *
- * This program demonstrates the basic structure of a Java application
- * and showcases fundamental Java concepts including:
- * - Class declaration
- * - Main method (entry point)
- * - Output statements
- * - Comments and documentation
- *
- * Every Java application must have at least one class with a main method
- * to serve as the entry point for program execution.
- */
-
-public class JavaIntroduction {
-
-    /**
-     * The main method - the entry point of every Java application
-     *
-     * @param args Command line arguments passed to the program
-     *             (we'll learn about these in later lessons)
-     */
+    codeExample: `
+public class HelloJava {
     public static void main(String[] args) {
-        // Welcome message demonstrating System.out.println()
-        System.out.println("=================================");
-        System.out.println("   Welcome to Java Programming!  ");
-        System.out.println("=================================");
-
-        // Display Java's history and creator
-        System.out.println();
-        System.out.println("🏛️  History:");
-        System.out.println("   Java was created in 1995 by James Gosling");
-        System.out.println("   Originally developed at Sun Microsystems");
-        System.out.println("   Now maintained by Oracle Corporation");
-
-        // Demonstrate Java's key principles
-        System.out.println();
-        System.out.println("🌟 Key Features:");
-        System.out.println("   ✅ Platform Independent - Write Once, Run Anywhere!");
-        System.out.println("   ✅ Object-Oriented Programming");
-        System.out.println("   ✅ Secure and Robust");
-        System.out.println("   ✅ Large Community and Ecosystem");
-
-        // Show Java's versatility
-        System.out.println();
-        System.out.println("🚀 Used For:");
-        System.out.println("   • Enterprise Applications");
-        System.out.println("   • Android Mobile Apps");
-        System.out.println("   • Web Development");
-        System.out.println("   • Desktop Applications");
-        System.out.println("   • Scientific Applications");
-
-        // Motivational message
-        System.out.println();
-        System.out.println("🎉 You're about to embark on an amazing journey!");
-        System.out.println("   Java will open doors to countless opportunities");
-        System.out.println("   in software development and technology.");
-        System.out.println();
-        System.out.println("=================================");
-        System.out.println("    Let's start coding in Java!   ");
-        System.out.println("=================================");
+        System.out.println("Welcome to Java!");
     }
 }
-
-/*
- * PROGRAM OUTPUT:
- * =================================
- *    Welcome to Java Programming!
- * =================================
- *
- * 🏛️  History:
- *    Java was created in 1995 by James Gosling
- *    Originally developed at Sun Microsystems
- *    Now maintained by Oracle Corporation
- *
- * 🌟 Key Features:
- *    ✅ Platform Independent - Write Once, Run Anywhere!
- *    ✅ Object-Oriented Programming
- *    ✅ Secure and Robust
- *    ✅ Large Community and Ecosystem
- *
- * 🚀 Used For:
- *    • Enterprise Applications
- *    • Android Mobile Apps
- *    • Web Development
- *    • Desktop Applications
- *    • Scientific Applications
- *
- * 🎉 You're about to embark on an amazing journey!
- *    Java will open doors to countless opportunities
- *    in software development and technology.
- *
- * =================================
- *     Let's start coding in Java!
- * =================================
- */`,
+`,
     exercise: `
       **🎯 Introduction to Java Exercises**
 

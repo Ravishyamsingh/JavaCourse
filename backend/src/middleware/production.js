@@ -3,10 +3,11 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import responseTime from 'response-time';
 import winston from 'winston';
+import config from '../config.js';
 
 // Production Logger
 export const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: config.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),

@@ -401,6 +401,7 @@ public class ComingSoon {
                   title="Interactive Code Example"
                   description="Run this example to see how it works"
                   readonly={false}
+                  lessonId={lessonId || ''}
                 />
               </div>
             </TabsContent>
@@ -460,6 +461,7 @@ public class Exercise {
                   title="Exercise Code Editor"
                   description="Write and test your solution here"
                   readonly={false}
+                  lessonId={lessonId || ''}
                 />
               </div>
             </TabsContent>

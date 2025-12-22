@@ -24,9 +24,11 @@ export const lesson_4_6: LessonContent = {
     `,
     codeExample: `// HashMap and HashSet examples will be added later`,
     exercise: `
-      **🎯 HashMap and HashSet Practice Exercise**
-      
-      Create programs to practice HashMap and HashSet operations.
-    `
+1. Create a HashMap to store student names and their grades, then print all entries.
+2. Create a HashSet and add duplicate elements to demonstrate uniqueness.
+3. Write a program to check if a key exists in a HashMap.
+4. Create a program to iterate through a HashSet using different methods.
+5. Write a program to remove elements from a HashMap by key.
+`
   }
 };

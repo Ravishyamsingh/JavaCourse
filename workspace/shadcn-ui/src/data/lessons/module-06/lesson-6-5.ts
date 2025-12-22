@@ -72,32 +72,10 @@ export const lesson_6_5: LessonContent = {
       '        return -1;\n' +
       '    }\n' +
       '}',
-    exercise: 'Create a comprehensive debugging toolkit that demonstrates various debugging techniques and helps identify common programming issues.\n\n' +
-      '**Requirements:**\n' +
-      '1. **Debug Utility Class:**\n' +
-      '   - Implement conditional debugging with debug flags\n' +
-      '   - Create methods for performance measurement\n' +
-      '   - Add object state inspection capabilities\n' +
-      '   - Include stack trace analysis tools\n\n' +
-      '2. **Exception Debugging:**\n' +
-      '   - Create custom exception classes with detailed information\n' +
-      '   - Implement exception logging and analysis\n' +
-      '   - Add context-aware error reporting\n' +
-      '   - Include recovery suggestions\n\n' +
-      '3. **Interactive Debugging Simulation:**\n' +
-      '   - Create a program with intentional bugs\n' +
-      '   - Add strategic breakpoint locations\n' +
-      '   - Include variable watch demonstrations\n' +
-      '   - Show step-through debugging scenarios\n\n' +
-      '4. **Performance Debugging:**\n' +
-      '   - Implement execution time measurement\n' +
-      '   - Add memory usage tracking\n' +
-      '   - Create performance comparison tools\n' +
-      '   - Include bottleneck identification\n\n' +
-      '**Learning Objectives:**\n' +
-      '- Master systematic debugging approaches\n' +
-      '- Learn to use debugging tools effectively\n' +
-      '- Understand performance analysis techniques\n' +
-      '- Practice exception handling and logging'
+    exercise: `
+1) Add print statements to debug a method that calculates the sum of an array and identify where the logic fails.
+2) Use breakpoints to step through a loop that finds the maximum value in an array.
+3) Analyze a stack trace to identify the line number where a NullPointerException occurred.
+`
   }
 };

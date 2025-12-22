@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 import {
   User,
   UserRole,
@@ -271,6 +272,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password, selectedRole }),
       });
 
@@ -353,6 +355,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             refreshToken: authState.tokens?.refreshToken,
           }),
@@ -390,6 +393,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ refreshToken }),
       });
 

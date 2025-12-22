@@ -282,11 +282,17 @@ const javaKnowledgeBase = {
 
 export class DynamicQuizGenerator {
   private questionIdCounter = 1;
+  private questionCache: Map<string, DynamicQuizQuestion[]> = new Map();
 
   /**
    * Generate quiz questions for a specific module
    */
   generateQuestionsForModule(moduleName: string, count: number = 10): DynamicQuizQuestion[] {
+    const cacheKey = `${moduleName}_${count}`;
+    if (this.questionCache.has(cacheKey)) {
+      return this.questionCache.get(cacheKey)!;
+    }
+
     const questions: DynamicQuizQuestion[] = [];
     const moduleKnowledge = javaKnowledgeBase[moduleName as keyof typeof javaKnowledgeBase];
     
@@ -316,7 +322,9 @@ export class DynamicQuizGenerator {
     }
 
     // If we need more questions, generate variations
-    while (questions.length < count && moduleKnowledge.concepts.length > 0) {
+    let attempts = 0;
+    const maxAttempts = count * 2;
+    while (questions.length < count && moduleKnowledge.concepts.length > 0 && attempts < maxAttempts) {
       const randomConcept = moduleKnowledge.concepts[Math.floor(Math.random() * moduleKnowledge.concepts.length)];
       const randomQuestion = randomConcept.questions[Math.floor(Math.random() * randomConcept.questions.length)];
       
@@ -325,9 +333,12 @@ export class DynamicQuizGenerator {
       if (variation && !questions.some(q => q.question === variation.question)) {
         questions.push(variation);
       }
+      attempts++;
     }
 
-    return questions.slice(0, count);
+    const result = questions.slice(0, count);
+    this.questionCache.set(cacheKey, result);
+    return result;
   }
 
   /**

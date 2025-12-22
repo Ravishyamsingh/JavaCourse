@@ -682,74 +682,29 @@ public class HealthController {
 }
     `,
     exercise: `
-      <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg mb-8 shadow-2xl">
-        <h1 class="text-3xl font-bold m-0 flex items-center">
-          <span class="w-3 h-10 bg-white rounded mr-4"></span>
-          Exercise: Design a Microservices E-commerce System
-        </h1>
-        <p class="mt-3 text-blue-100 text-lg">Design and implement a complete microservices architecture for an e-commerce platform</p>
-      </div>
+1. Hello and Name Printer
 
-      <div class="space-y-8">
-        <section class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
-            System Analysis and Service Identification
-          </h2>
-          
-          <div class="bg-blue-50 p-4 rounded-lg mb-4">
-            <h4 class="font-bold text-blue-800 mb-2">📋 Business Requirements</h4>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-blue-800 mb-2">Core Features</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• User registration and authentication</li>
-                  <li>• Product catalog and search</li>
-                  <li>• Shopping cart management</li>
-                  <li>• Order processing and tracking</li>
-                  <li>• Payment processing</li>
-                  <li>• Inventory management</li>
-                  <li>• Notification system</li>
-                </ul>
-              </div>
-              <div class="bg-white p-3 rounded border">
-                <h5 class="font-bold text-blue-800 mb-2">Non-Functional Requirements</h5>
-                <ul class="text-sm space-y-1">
-                  <li>• High availability (99.9% uptime)</li>
-                  <li>• Scalability (handle 10k concurrent users)</li>
-                  <li>• Performance (response time < 200ms)</li>
-                  <li>• Security (PCI DSS compliance)</li>
-                  <li>• Fault tolerance and resilience</li>
-                  <li>• Data consistency and integrity</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-gray-800 text-green-400 p-4 rounded-lg">
-            <h4 class="text-white mb-2">💡 Service Decomposition Task</h4>
-            <pre class="text-sm">
-Identify and design the following microservices:
+Write a Java program to print 'Hello' on screen and your name on a separate line.
+Expected Output :
+Hello
+Alexandra Abramov
 
-1. User Service - User registration, authentication, profile management
-2. Product Service - Product catalog, categories, search functionality
-3. Cart Service - Shopping cart operations, session management
-4. Order Service - Order creation, processing, status tracking
-5. Payment Service - Payment processing, transaction management
-6. Inventory Service - Stock management, availability checking
-7. Notification Service - Email, SMS, push notifications</pre>
-          </div>
-        </section>
+2. Sum of Two Numbers
 
-        <div class="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg mt-8">
-          <h3 class="text-xl font-bold mb-2">🎯 Learning Outcomes</h3>
-          <p class="text-blue-100">
-            After completing this exercise, you'll have designed and implemented a production-ready microservices architecture
-            with proper service decomposition, communication patterns, data consistency, and observability practices.
-          </p>
-        </div>
-      </div>
-    `
+Write a Java program to print the sum of two numbers.
+Test Data:
+74 + 36
+Expected Output :
+110
+
+3. Division of Two Numbers
+
+Write a Java program to divide two numbers and print them on the screen.
+Test Data :
+50/3
+Expected Output :
+16
+`
   }
 };
     

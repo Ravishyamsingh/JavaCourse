@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Settings, LogOut, Trophy, BookOpen, Edit, RotateCcw } from 'lucide-react';
+import { User, Settings, LogOut, Trophy, BookOpen, Edit, RotateCcw, ListChecks } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ProfileEditDialog from './ProfileEditDialog';
@@ -93,6 +93,19 @@ const UserProfile: React.FC = () => {
           <Trophy className="mr-2 h-4 w-4" />
           <span>Certificates</span>
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/test')}>
+          <ListChecks className="mr-2 h-4 w-4" />
+          <span>Test</span>
+        </DropdownMenuItem>
+        {(user.role === 'admin' || user.role === 'superadmin') && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Admin Panel</span>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
           <Edit className="mr-2 h-4 w-4" />

@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import router from "./routes.js";
+import config from "./config.js";
 import {
   securityHeaders,
   compressionMiddleware,
@@ -30,6 +31,24 @@ app.use(globalRateLimit);
 
 
 // Secure CORS configuration
+const normaliseOrigin = (origin) => {
+  if (!origin) return null;
+  try {
+    const url = new URL(origin);
+    return `${url.protocol}//${url.host}`;
+  } catch (error) {
+    return origin.trim();
+  }
+};
+
+const parseOrigins = (value) => {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((origin) => normaliseOrigin(origin))
+    .filter(Boolean);
+};
+
 const getAllowedOrigins = () => {
   const baseOrigins = [
     'https://accounts.google.com', // Required for Google OAuth
@@ -37,13 +56,18 @@ const getAllowedOrigins = () => {
   ];
 
   // Allow operators to inject additional origins even if NODE_ENV is misconfigured.
-  const envOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
-    : [];
+  const envOrigins = parseOrigins(process.env.ALLOWED_ORIGINS || config.ALLOWED_ORIGINS);
+
+  const configuredOrigins = [
+    normaliseOrigin(config.FRONTEND_URL),
+    normaliseOrigin(config.BACKEND_URL),
+    normaliseOrigin(process.env.FRONTEND_URL),
+    ...parseOrigins(config.CORS_ORIGIN)
+  ].filter(Boolean);
 
   if (process.env.NODE_ENV === 'production') {
     // Production origins from environment variables
-    return Array.from(new Set([...baseOrigins, ...envOrigins]));
+    return Array.from(new Set([...baseOrigins, ...envOrigins, ...configuredOrigins]));
   }
 
   // Development origins - still restricted but more permissive
@@ -51,10 +75,11 @@ const getAllowedOrigins = () => {
     'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
     'http://localhost:8080'
   ];
 
-  return Array.from(new Set([...baseOrigins, ...devOrigins, ...envOrigins]));
+  return Array.from(new Set([...baseOrigins, ...devOrigins, ...envOrigins, ...configuredOrigins]));
 };
 
 const allowedOrigins = getAllowedOrigins();
@@ -96,12 +121,20 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-
-// Use routes
-app.use("/api", router);
+// Basic health check (before router to avoid 404)
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
 // Enhanced health check
 app.get("/api/health/detailed", detailedHealthCheck);
+
+// Use routes
+app.use("/api", router);
 
 // Root route
 app.get("/", (req, res) => {

@@ -363,82 +363,11 @@ pipeline {
       </div>
     `,
     exercise: `
-      **🎯 CI/CD Pipeline Integration Exercises**
-
-      **Exercise 1: GitHub Actions Setup**
-      Create a comprehensive GitHub Actions workflow:
-      - Set up a multi-stage pipeline with build, test, and deploy stages
-      - Configure matrix builds for multiple Java versions
-      - Add caching for Gradle dependencies
-      - Implement parallel test execution
-      - Set up artifact publishing and Docker image building
-      - Configure environment-specific deployments
-
-      **Exercise 2: Jenkins Pipeline Implementation**
-      Build a complete Jenkins declarative pipeline:
-      - Create a Jenkinsfile with multiple stages
-      - Configure parallel execution for tests
-      - Add SonarQube integration for code quality
-      - Set up artifact archiving and publishing
-      - Implement approval gates for production deployment
-      - Add notification systems (email, Slack)
-
-      **Exercise 3: GitLab CI/CD Configuration**
-      Implement GitLab CI/CD pipeline:
-      - Create .gitlab-ci.yml with comprehensive stages
-      - Configure Docker-in-Docker for containerization
-      - Set up GitLab Container Registry integration
-      - Implement environment-specific deployments
-      - Add security scanning and dependency checking
-      - Configure manual approval for production
-
-      **Exercise 4: Quality Gates and Security**
-      Implement comprehensive quality and security checks:
-      - Set up SonarQube quality gates with thresholds
-      - Configure OWASP dependency checking
-      - Add static code analysis tools
-      - Implement security vulnerability scanning
-      - Set up license compliance checking
-      - Create quality reports and dashboards
-
-      **Exercise 5: Multi-environment Deployment**
-      Design deployment strategies for multiple environments:
-      - Configure development, staging, and production environments
-      - Implement blue-green deployment strategy
-      - Set up canary deployments with traffic splitting
-      - Configure rollback mechanisms
-      - Add health checks and monitoring
-      - Implement feature flags for controlled releases
-
-      **Exercise 6: Performance Optimization**
-      Optimize CI/CD pipeline performance:
-      - Implement build caching strategies
-      - Configure parallel job execution
-      - Optimize Docker layer caching
-      - Set up incremental builds
-      - Measure and improve build times
-      - Create performance benchmarks and monitoring
-
-      **Exercise 7: Monitoring and Observability**
-      Set up comprehensive monitoring:
-      - Configure build metrics collection
-      - Set up deployment monitoring
-      - Implement alerting for failed builds
-      - Create dashboards for pipeline visibility
-      - Add log aggregation and analysis
-      - Set up performance tracking
-
-      **Exercise 8: Advanced Pipeline Patterns**
-      Implement advanced CI/CD patterns:
-      - Create reusable pipeline templates
-      - Implement pipeline as code with version control
-      - Set up cross-repository dependencies
-      - Configure conditional pipeline execution
-      - Implement pipeline orchestration for microservices
-      - Add compliance and audit trails
-
-      **Deliverable:**
-      Create a production-ready CI/CD pipeline demonstrating all learned concepts: comprehensive automation, quality gates, security scanning, multi-environment deployment, monitoring, and optimization. Include documentation of the pipeline architecture and operational procedures.
-    `
+1) Set up a GitHub Actions workflow for a Maven project with build and test stages.
+2) Configure a Jenkins pipeline for a Gradle project with quality gates.
+3) Create a CI/CD pipeline that integrates code quality checks and security scanning.
+4) Set up automated deployment using CI/CD with environment-specific configurations.
+5) Implement parallel job execution in a CI/CD pipeline for faster builds.
+`
   }
 };

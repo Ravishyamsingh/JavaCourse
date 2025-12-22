@@ -472,61 +472,11 @@ mvnw.cmd clean package  # Windows</pre>
       </div>
     `,
     exercise: `
-      **🎯 Introduction to Maven Exercises**
-
-      **Exercise 1: Maven Installation and Setup**
-      Install Maven on your system and verify the installation:
-      - Download and install Apache Maven
-      - Set up environment variables (MAVEN_HOME, PATH)
-      - Verify installation with "mvn --version"
-      - Create a simple "Hello World" Maven project using archetype
-      - Explore the generated project structure
-
-      **Exercise 2: POM Configuration**
-      Create and configure a Maven project with the following requirements:
-      - Set up project coordinates (groupId, artifactId, version)
-      - Configure Java version properties
-      - Add JUnit 5 dependency for testing
-      - Add Apache Commons Lang dependency
-      - Configure Maven Compiler and Surefire plugins
-      - Validate the POM structure
-
-      **Exercise 3: Project Structure Exploration**
-      Work with the Maven standard directory structure:
-      - Create the standard Maven directory layout
-      - Add sample Java classes to src/main/java
-      - Add unit tests to src/test/java
-      - Add configuration files to src/main/resources
-      - Build the project and examine the target directory
-      - Understand the relationship between directories and build process
-
-      **Exercise 4: Dependency Management**
-      Practice adding and managing dependencies:
-      - Add multiple dependencies to your pom.xml
-      - Explore transitive dependencies using "mvn dependency:tree"
-      - Resolve dependency conflicts by examining version resolution
-      - Use dependency exclusions when needed
-      - Understand different dependency scopes (compile, test, runtime, provided)
-
-      **Exercise 5: Build Lifecycle Practice**
-      Execute various Maven lifecycle phases:
-      - Run individual lifecycle phases (validate, compile, test)
-      - Execute multiple phases in sequence
-      - Clean and rebuild the project
-      - Package the application into a JAR file
-      - Install the artifact to your local repository
-      - Understand how phases are interdependent
-
-      **Exercise 6: Maven Wrapper Usage**
-      Set up and use Maven Wrapper for your project:
-      - Generate Maven Wrapper files for your project
-      - Use the wrapper to build your project
-      - Verify that the wrapper uses the correct Maven version
-      - Share the wrapper with team members
-      - Understand the benefits of using Maven Wrapper
-
-      **Deliverable:**
-      Create a comprehensive Maven project that demonstrates understanding of project setup, POM configuration, dependency management, and build lifecycle. Document your learning process and include screenshots of key Maven commands and their outputs.
-    `
+1) Create a basic Maven project structure with proper directories and explain the purpose of each directory.
+2) Write a pom.xml file with Maven coordinates, dependencies, and build configuration.
+3) Demonstrate how Maven resolves transitive dependencies using a dependency tree.
+4) Configure a Maven profile for different environments (development/production).
+5) Set up Maven properties and show how they are used in dependency management.
+`
   }
 };
