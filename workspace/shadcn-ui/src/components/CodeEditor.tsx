@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import Editor, { OnMount } from '@monaco-editor/react';
-import type { editor as MonacoEditor } from 'monaco-editor';
+import Editor, { OnMount, loader } from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +16,9 @@ import {
   Keyboard
 } from 'lucide-react';
 import { CompilerClientError, runJavaCode, type RunJavaResponse } from '@/services/compiler';
+
+// Configure Monaco to use local package instead of CDN
+loader.config({ monaco });
 
 interface CodeEditorProps {
   initialCode?: string;
@@ -49,10 +52,10 @@ export default function CodeEditor({
   const [hasError, setHasError] = useState(false);
   const [status, setStatus] = useState<'idle' | 'queued' | 'success' | 'error'>('idle');
   const [jobMeta, setJobMeta] = useState<{ exitCode?: number | string | null; memory?: number | string | null; status?: string } | null>(null);
-  const editorRef = useRef<import('monaco-editor').editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const runCodeRef = useRef<() => void>();
 
-  const editorOptions = useMemo<MonacoEditor.IStandaloneEditorConstructionOptions>(() => ({
+  const editorOptions = useMemo<monaco.editor.IStandaloneEditorConstructionOptions>(() => ({
     fontSize: 14,
     fontFamily: 'JetBrains Mono, Fira Code, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
     minimap: { enabled: false },
@@ -251,6 +254,14 @@ export default function CodeEditor({
                 }}
                 options={editorOptions}
                 onMount={handleEditorMount}
+                loading={
+                  <div className="flex items-center justify-center h-full min-h-[420px] bg-gray-900">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500" />
+                      <span className="text-gray-400 text-sm">Loading Code Editor...</span>
+                    </div>
+                  </div>
+                }
               />
               {!readonly && (
                 <div className="absolute bottom-4 right-4 flex items-center gap-3">

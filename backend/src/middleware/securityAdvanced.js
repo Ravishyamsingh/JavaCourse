@@ -10,12 +10,15 @@ export const sanitizeInput = (input) => {
   if (!input) return input;
   
   if (typeof input === 'string') {
-    // Remove HTML tags and dangerous characters
+    // Don't sanitize email addresses, names, or passwords
+    // Only remove actual dangerous HTML tags and scripts
     return input
-      .replace(/<[^>]*>/g, '')
-      .replace(/[<>\"']/g, '')
+      .replace(/<script[^>]*>.*?<\/script>/gi, '')
+      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
       .trim()
-      .substring(0, 1000);
+      .substring(0, 5000); // Increased limit for code/content
   }
   
   if (typeof input === 'object') {
@@ -64,13 +67,17 @@ export const detectXSSAttempt = (input) => {
 export const detectSQLInjection = (input) => {
   if (!input || typeof input !== 'string') return false;
   
+  // Skip SQL injection detection for email addresses
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) {
+    return false;
+  }
+  
   const sqlPatterns = [
     /(\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE|SCRIPT|JAVASCRIPT|EVAL)\b)/gi,
-    /(-{2}|\/\*|\*\/|;|'|")/g,
+    /(-{2}|\/\*|\*\/|;)/g, // Removed quotes from pattern
     /(or\s+1\s*=\s*1)/gi,
     /(or\s+true)/gi,
-    /(1\s*=\s*1)/gi,
-    /(admin|password|username)\s*=\s*/gi
+    /(1\s*=\s*1)/gi
   ];
   
   return sqlPatterns.some(pattern => pattern.test(input));
@@ -113,7 +120,9 @@ export const sanitizeRequestMiddleware = (req, res, next) => {
     const skipSanitizationFields = [
       'refreshToken', 'accessToken', 'token', 'password', 'csrfToken',
       'userId', 'sessionId', 'id', '_id', 'userAgent', 'deviceInfo',
-      'timestamp', 'lastActivity', 'ipAddress'
+      'timestamp', 'lastActivity', 'ipAddress',
+      // Code editor fields - contain programming code with keywords like 'class', 'select', etc.
+      'code', 'input', 'source_code', 'stdin', 'output', 'sourceCode'
     ];
     
     // Sanitize query parameters
