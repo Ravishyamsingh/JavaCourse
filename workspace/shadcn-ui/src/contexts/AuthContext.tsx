@@ -13,7 +13,7 @@ import {
   SESSION_DURATION
 } from '@/types/auth';
 
-// API base URL
+// API base URL - VITE_API_URL should include /api suffix
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Token storage keys

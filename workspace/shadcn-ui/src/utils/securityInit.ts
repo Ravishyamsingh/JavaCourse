@@ -37,12 +37,13 @@ const applySecurityHeaders = () => {
   cspMeta.httpEquiv = 'Content-Security-Policy';
   cspMeta.content = `
     default-src 'self';
-    script-src 'self' https://accounts.google.com https://apis.google.com https://accounts.google.com/gsi/client;
+    script-src 'self' 'unsafe-eval' blob: https://accounts.google.com https://apis.google.com https://accounts.google.com/gsi/client;
     style-src 'self' 'unsafe-inline' https://accounts.google.com;
     img-src 'self' data: https: blob:;
     font-src 'self' data: https:;
-    connect-src 'self' http://localhost:5000 https://accounts.google.com https://apis.google.com https://generativelanguage.googleapis.com;
+    connect-src 'self' http://localhost:5000 https://accounts.google.com https://apis.google.com https://generativelanguage.googleapis.com https://emkc.org;
     frame-src https://accounts.google.com;
+    worker-src 'self' blob:;
     object-src 'none';
     base-uri 'self';
     form-action 'self';

@@ -9,10 +9,7 @@ const testConnection = async () => {
     console.log('Connection URL (masked):', process.env.MONGO_URL?.replace(/:[^:]*@/, ':****@'));
     
     try {
-        await mongoose.connect(process.env.MONGO_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        await mongoose.connect(process.env.MONGO_URL);
         
         console.log('✅ Successfully connected to MongoDB Atlas!');
         console.log('📁 Database:', mongoose.connection.name);

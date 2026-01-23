@@ -15,8 +15,8 @@ export class AuthService {
       return nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: config.GMAIL_USER,
-          pass: config.GMAIL_PASSWORD
+          user: config.EMAIL_USER,
+          pass: config.EMAIL_PASSWORD
         }
       });
     }
@@ -94,7 +94,7 @@ export class AuthService {
     const resetUrl = `${config.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
     const mailOptions = {
-      from: config.GMAIL_USER,
+      from: config.EMAIL_FROM || config.EMAIL_USER,
       to: email,
       subject: 'Password Reset Request - Java Learning Platform',
       html: `
@@ -131,7 +131,7 @@ export class AuthService {
     const verificationUrl = `${config.FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
     const mailOptions = {
-      from: config.GMAIL_USER,
+      from: config.EMAIL_FROM || config.EMAIL_USER,
       to: email,
       subject: 'Email Verification - Java Learning Platform',
       html: `
