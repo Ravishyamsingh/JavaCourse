@@ -11,6 +11,8 @@ export const CSP_CONFIG = {
   'default-src': ["'self'"],
   'script-src': [
     "'self'",
+    "'unsafe-eval'",
+    'blob:',
     'https://accounts.google.com',
     'https://apis.google.com',
     'https://accounts.google.com/gsi/client'
@@ -36,7 +38,12 @@ export const CSP_CONFIG = {
     'http://localhost:5000',
     'https://accounts.google.com',
     'https://apis.google.com',
-    'https://generativelanguage.googleapis.com'
+    'https://generativelanguage.googleapis.com',
+    'https://emkc.org'
+  ],
+  'worker-src': [
+    "'self'",
+    'blob:'
   ],
   'frame-src': [
     'https://accounts.google.com'

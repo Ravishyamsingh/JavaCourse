@@ -18,6 +18,7 @@
  */
 
 import redis from 'redis';
+import crypto from 'crypto';
 import { logger } from '../utils/monitoring.js';
 
 /**
@@ -594,7 +595,6 @@ class CacheService {
    * Generate compiler cache key from code hash
    */
   getCompilerCacheKey(code, input) {
-    const crypto = require('crypto');
     const hash = crypto.createHash('sha256').update(code + input).digest('hex').substring(0, 16);
     return getCacheKey(CACHE_CONFIG.COMPILER_RESULT, hash);
   }
