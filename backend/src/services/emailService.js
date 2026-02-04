@@ -5,6 +5,7 @@
 
 import nodemailer from 'nodemailer';
 import { logger } from '../utils/monitoring.js';
+import config from '../config.js';
 
 class EmailService {
   constructor() {
@@ -14,18 +15,46 @@ class EmailService {
 
   /**
    * Initialize email transporter
+   * Supports Gmail service or custom SMTP configuration
    */
   initializeTransporter() {
     try {
-      this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_PORT === '465',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD
-        }
-      });
+      // Check if we have the required email configuration
+      if (!config.EMAIL_USER || !config.EMAIL_PASSWORD) {
+        logger.warn('Email credentials not configured - email service will be unavailable');
+        return;
+      }
+
+      // Use Gmail service configuration (from .env EMAIL_SERVICE=gmail)
+      if (config.EMAIL_SERVICE === 'gmail') {
+        this.transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: config.EMAIL_USER,
+            pass: config.EMAIL_PASSWORD
+          }
+        });
+      } else if (config.EMAIL_HOST) {
+        // Custom SMTP configuration
+        this.transporter = nodemailer.createTransport({
+          host: config.EMAIL_HOST,
+          port: config.EMAIL_PORT || 587,
+          secure: config.EMAIL_SECURE,
+          auth: {
+            user: config.EMAIL_USER,
+            pass: config.EMAIL_PASSWORD
+          }
+        });
+      } else {
+        // Default to Gmail if service not specified but credentials exist
+        this.transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: config.EMAIL_USER,
+            pass: config.EMAIL_PASSWORD
+          }
+        });
+      }
 
       // Verify connection
       this.transporter.verify((error, success) => {
@@ -51,7 +80,7 @@ class EmailService {
       }
 
       const mailOptions = {
-        from: `${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM}>`,
+        from: config.EMAIL_FROM || `${config.EMAIL_USER}`,
         to,
         subject,
         html,

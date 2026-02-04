@@ -135,8 +135,8 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api', routes);
 
-// 404 handler for undefined routes
-app.use('*', (req, res) => {
+// 404 handler for undefined routes (Express 5 wildcard syntax)
+app.use('{*path}', (req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
@@ -155,8 +155,6 @@ const connectDB = async () => {
   const mongoURI = config.MONGODB_URI || config.MONGO_URL || 'mongodb://localhost:27017/javacourse';
 
     const conn = await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,

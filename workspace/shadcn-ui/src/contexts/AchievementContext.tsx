@@ -107,19 +107,6 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     }
   }, [achievements, isAuthenticated, accessToken]);
 
-  // Check for quiz-related achievements
-  useEffect(() => {
-    if (quizResults.length > 0) {
-      const score = getQuizScore();
-      const total = quizResults.length;
-      const percentage = total > 0 ? (score / total) * 100 : 0;
-      if (quizResults.length >= 1) unlockAchievement('first-quiz');
-      if (percentage >= 90) unlockAchievement('quiz-master');
-      if (percentage === 100) unlockAchievement('perfect-score');
-      if (quizResults.length >= 5) unlockAchievement('consistent-learner');
-    }
-  }, [quizResults, getQuizScore]);
-
   const unlockAchievement = (id: string) => {
     setAchievements(prev => {
       const achievementIndex = prev.findIndex(a => a.id === id);
@@ -135,6 +122,19 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       return prev;
     });
   };
+
+  // Check for quiz-related achievements
+  useEffect(() => {
+    if (quizResults.length > 0) {
+      const score = getQuizScore();
+      const total = quizResults.length;
+      const percentage = total > 0 ? (score / total) * 100 : 0;
+      if (quizResults.length >= 1) unlockAchievement('first-quiz');
+      if (percentage >= 90) unlockAchievement('quiz-master');
+      if (percentage === 100) unlockAchievement('perfect-score');
+      if (quizResults.length >= 5) unlockAchievement('consistent-learner');
+    }
+  }, [quizResults, getQuizScore]);
 
   const getUnlockedAchievements = () => {
     return achievements.filter(a => a.unlocked);
