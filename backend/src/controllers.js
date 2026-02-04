@@ -163,13 +163,12 @@ export const login = async (req, res) => {
     }
 
     const { email, password } = sanitizedBody;
-    // Note: selectedRole is ignored - role is determined by user's account in database
 
     // Always perform password hashing to prevent timing attacks
     const dummyHash = '$2b$12$dummyhashtopreventtimingattacksanduserenum';
 
     try {
-      // Find user
+      // Find user by email
       const user = await User.findOne({ email });
 
       if (!user) {
@@ -197,36 +196,37 @@ export const login = async (req, res) => {
       }
 
       // Check if user has a password set
-      // If no password is set, they must have signed up with Google OAuth
+      // If no password is set, user must use Google Sign-In or set a password first
       if (!user.password) {
         await comparePassword(password, dummyHash); // Constant time operation
         return res.status(401).json({
           success: false,
-          message: "This account was created with Google Sign-In. Please use 'Continue with Google' to login.",
-          code: 'GOOGLE_AUTH_REQUIRED'
+          message: "This account was created with Google Sign-In. To login with email and password, please use 'Forgot Password' to set a password first, or use 'Continue with Google'.",
+          code: 'PASSWORD_NOT_SET',
+          action: 'SET_PASSWORD'
         });
       }
 
-      // Check password
+      // Verify password
       const validPassword = await comparePassword(password, user.password);
 
       if (!validPassword) {
         await user.incLoginAttempts();
         return res.status(401).json({
           success: false,
-          message: "Invalid password.",
-          code: 'INVALID_PASSWORD'
+          message: "Invalid email or password.",
+          code: 'INVALID_CREDENTIALS'
         });
       }
 
-      // Reset login attempts on successful login
+      // Password is valid - reset login attempts
       await user.resetLoginAttempts();
       
-      // Update last login
+      // Update last login timestamp
       user.lastLogin = new Date();
       await user.save();
 
-      // Issue a fresh access/refresh token pair for the session
+      // Generate tokens
       const { accessToken, refreshToken, expiresIn, tokenType } = await tokenManager.createTokenPair(
         user._id,
         'local',
@@ -234,7 +234,8 @@ export const login = async (req, res) => {
         req
       );
 
-      logger.info('Login successful', { email: getLoggableEmail(email) });
+      logger.info('Login successful', { email: getLoggableEmail(email), userId: user._id });
+      
       res.json({
         success: true,
         message: "Login successful",
@@ -242,7 +243,7 @@ export const login = async (req, res) => {
         refreshToken,
         expiresIn,
         tokenType,
-        token: accessToken, // Backward compatibility for legacy clients
+        token: accessToken,
         user: {
           id: user._id,
           firstName: user.firstName,

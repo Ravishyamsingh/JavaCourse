@@ -132,11 +132,10 @@ const Login: React.FC = () => {
 
     try {
       await login(formData.email, formData.password);
-
       // Success is handled in the auth context
       // Navigation will happen via useEffect when isAuthenticated becomes true
     } catch (error) {
-      // Error is handled in the auth context
+      // Error is already handled in the auth context and displayed via toast
       console.error('Login error:', error);
     } finally {
       setIsLoading(false);

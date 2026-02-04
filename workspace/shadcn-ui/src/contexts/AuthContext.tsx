@@ -345,7 +345,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        const errorMessage = data.message || 'Login failed';
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+        }));
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
       const { user, accessToken, refreshToken } = data;
@@ -364,12 +371,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toast.success(`Welcome back, ${user.firstName}!`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }));
-      toast.error(errorMessage);
+      // Error state and toast already set above if response was not ok
+      if (!errorMessage.includes('Login failed') && !errorMessage.includes('not found') && !errorMessage.includes('locked') && !errorMessage.includes('Google')) {
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+        }));
+        toast.error(errorMessage);
+      }
       throw error;
     }
   };

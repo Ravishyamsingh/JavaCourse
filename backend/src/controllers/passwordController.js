@@ -47,14 +47,9 @@ export const forgotPassword = async (req, res, next) => {
       });
     }
 
-    if (user.provider === 'google' && !user.password) {
-      return res.status(400).json({
-        success: false,
-        message: 'This account uses Google Sign-In. Please use Google to log in.',
-        code: 'GOOGLE_AUTH_ONLY',
-        action: 'GOOGLE_LOGIN'
-      });
-    }
+    // Allow Google users to set a password (enables hybrid login)
+    // This is intentional - we want users to be able to add email/password login to their Google account
+    const isSettingFirstPassword = user.provider === 'google' && !user.password;
 
     const { resetToken } = await authService.createPasswordResetToken(user._id);
 
@@ -64,12 +59,15 @@ export const forgotPassword = async (req, res, next) => {
       logger.warn('Email service not configured, but token created');
     }
 
-    logger.info('Password reset email sent', { email: getLoggableEmail(email) });
+    const logMessage = isSettingFirstPassword ? 'Password setup email sent for Google user' : 'Password reset email sent';
+    logger.info(logMessage, { email: getLoggableEmail(email) });
 
     res.json({
       success: true,
-      message: 'Password reset link has been sent to your email. Please check your inbox.',
-      code: 'RESET_EMAIL_SENT',
+      message: isSettingFirstPassword 
+        ? 'A link to set your password has been sent to your email. This will allow you to login with email and password.'
+        : 'Password reset link has been sent to your email. Please check your inbox.',
+      code: isSettingFirstPassword ? 'SET_PASSWORD_EMAIL_SENT' : 'RESET_EMAIL_SENT',
       email: email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
     });
   } catch (error) {
