@@ -196,14 +196,51 @@ export const login = async (req, res) => {
       }
 
       // Check if user has a password set
-      // If no password is set, user must use Google Sign-In or set a password first
+      // If no password is set, allow them to set one now (first-time email/password login)
       if (!user.password) {
-        await comparePassword(password, dummyHash); // Constant time operation
-        return res.status(401).json({
-          success: false,
-          message: "This account was created with Google Sign-In. To login with email and password, please use 'Forgot Password' to set a password first, or use 'Continue with Google'.",
-          code: 'PASSWORD_NOT_SET',
-          action: 'SET_PASSWORD'
+        // User exists but has no password - they can set one now
+        // For now, we'll hash the provided password and set it
+        const hashedPassword = await hashPassword(password);
+        user.password = hashedPassword;
+        user.provider = 'local'; // Update provider to local since they're now using email/password
+        await user.save();
+        
+        logger.info('Password set for Google-only user', { email: getLoggableEmail(email) });
+        
+        // Now proceed with login
+        await user.resetLoginAttempts();
+        user.lastLogin = new Date();
+        await user.save();
+
+        const { accessToken, refreshToken, expiresIn, tokenType } = await tokenManager.createTokenPair(
+          user._id,
+          'local',
+          [`role:${user.role}`],
+          req
+        );
+
+        logger.info('Login successful after password setup', { email: getLoggableEmail(email), userId: user._id });
+        
+        return res.json({
+          success: true,
+          message: "Password set and login successful",
+          accessToken,
+          refreshToken,
+          expiresIn,
+          tokenType,
+          token: accessToken,
+          user: {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+            provider: user.provider,
+            isEmailVerified: user.isEmailVerified,
+            isActive: user.isActive,
+            progress: user.progress
+          }
         });
       }
 
