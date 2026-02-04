@@ -36,6 +36,7 @@ export const CSP_CONFIG = {
   'connect-src': [
     "'self'",
     'http://localhost:5000',
+    'https://javacourse.onrender.com',
     'https://accounts.google.com',
     'https://apis.google.com',
     'https://generativelanguage.googleapis.com',
