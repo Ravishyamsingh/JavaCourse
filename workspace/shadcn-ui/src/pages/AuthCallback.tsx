@@ -4,6 +4,19 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { storeAuthData, getDefaultRoute } from '@/lib/auth';
 
+/**
+ * Helper to get a cookie value by name
+ */
+const getCookie = (name: string): string | null => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookieValue = parts.pop()?.split(';').shift();
+    return cookieValue ? decodeURIComponent(cookieValue) : null;
+  }
+  return null;
+};
+
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -34,41 +47,63 @@ const AuthCallback: React.FC = () => {
           return;
         }
 
-        const accessToken = searchParams.get('accessToken');
-        const refreshToken = searchParams.get('refreshToken') || '';
-        const userParam = searchParams.get('user');
-
-        if (accessToken && userParam) {
-          try {
-            const user = JSON.parse(userParam);
-
-            storeAuthData(accessToken, refreshToken, user);
-
-            // Notify AuthContext listeners
-            window.dispatchEvent(new StorageEvent('storage', {
-              key: 'auth_access_token',
-              newValue: accessToken,
-              oldValue: null,
-              storageArea: localStorage
-            }));
-
-            toast.success(`Welcome back, ${user.firstName}!`);
-            // Redirect based on user role
-            const redirectPath = getDefaultRoute(user.role);
-            navigate(redirectPath, { replace: true });
-            return;
-          } catch (parseError) {
-            toast.error('Authentication data was corrupted. Please try again.');
-            navigate('/login', { replace: true });
-            return;
-          }
-        }
-
         const authSuccess = searchParams.get('auth');
         const provider = searchParams.get('provider');
 
+        // Check if OAuth was successful - tokens are now in HTTP-only cookies
         if (authSuccess === 'success' && provider === 'google') {
-          toast.error('Authentication completed without session tokens. Please try logging in again.');
+          // Read user data from the userData cookie (non-httpOnly)
+          const userDataCookie = getCookie('userData');
+          
+          if (userDataCookie) {
+            try {
+              const user = JSON.parse(userDataCookie);
+              
+              // Note: accessToken and refreshToken are in HTTP-only cookies
+              // They will be sent automatically with requests
+              // We store a flag in localStorage to indicate authenticated state
+              storeAuthData('cookie-auth', '', user);
+
+              // Notify AuthContext listeners
+              window.dispatchEvent(new StorageEvent('storage', {
+                key: 'auth_access_token',
+                newValue: 'cookie-auth',
+                oldValue: null,
+                storageArea: localStorage
+              }));
+
+              toast.success(`Welcome back, ${user.firstName}!`);
+              // Redirect based on user role
+              const redirectPath = getDefaultRoute(user.role);
+              navigate(redirectPath, { replace: true });
+              return;
+            } catch (parseError) {
+              console.error('Failed to parse user data cookie:', parseError);
+            }
+          }
+          
+          // Fallback: cookies may be set but userData not readable
+          // Try to fetch user profile from API using the cookie-based auth
+          try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
+              credentials: 'include' // Include cookies
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && data.user) {
+                storeAuthData('cookie-auth', '', data.user);
+                toast.success(`Welcome back, ${data.user.firstName}!`);
+                const redirectPath = getDefaultRoute(data.user.role);
+                navigate(redirectPath, { replace: true });
+                return;
+              }
+            }
+          } catch (fetchError) {
+            console.error('Failed to fetch user profile:', fetchError);
+          }
+          
+          toast.error('Authentication completed but session could not be established. Please try again.');
           navigate('/login', { replace: true });
           return;
         }

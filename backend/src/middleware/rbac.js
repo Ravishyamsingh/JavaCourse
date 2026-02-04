@@ -1,4 +1,5 @@
 import { User } from '../models.js';
+import { logger } from '../utils/monitoring.js';
 
 // Role hierarchy for cascading permissions
 const ROLE_HIERARCHY = {
@@ -136,12 +137,17 @@ export const requireRole = (requiredRoles, options = {}) => {
 
       // Log admin/superadmin actions
       if (['admin', 'superadmin'].includes(user.role)) {
-        console.log(`🔐 Admin Action: ${user.email} (${user.role}) - ${req.method} ${req.path}`);
+        logger.info('Admin action', {
+          email: user.email,
+          role: user.role,
+          method: req.method,
+          path: req.path
+        });
       }
 
       next();
     } catch (error) {
-      console.error('❌ Role middleware error:', error);
+      logger.error('Role middleware error', { message: error.message, stack: error.stack });
       res.status(500).json({
         success: false,
         message: 'Authorization check failed',
@@ -190,7 +196,7 @@ export const requirePermission = (resource, action, options = {}) => {
 
       next();
     } catch (error) {
-      console.error('❌ Permission middleware error:', error);
+      logger.error('Permission middleware error', { message: error.message, resource, action });
       res.status(500).json({
         success: false,
         message: 'Permission check failed',
@@ -221,16 +227,13 @@ export const requireOwnership = (resourceType, ownerField = 'userId') => {
 
       // Admins and superadmins can access all resources
       if (['admin', 'superadmin'].includes(user.role)) {
-        console.log(`🔐 Admin access granted: ${user.email} accessing ${resourceType} ${resourceId}`);
+        logger.debug('Admin access granted', { email: user.email, resourceType, resourceId });
         return next();
       }
 
       // For other users, check actual ownership in database
       try {
         let resource = null;
-        
-        // Import models dynamically to avoid circular dependencies
-        const { User } = await import('../models.js');
         
         switch (resourceType.toLowerCase()) {
           case 'user':
@@ -248,7 +251,8 @@ export const requireOwnership = (resourceType, ownerField = 'userId') => {
           case 'course':
             // For courses, check if user is enrolled or is the instructor
             resource = await User.findById(user._id).select('progress.enrolledCourses');
-            if (!resource || !resource.progress.enrolledCourses.includes(resourceId)) {
+            const enrolledCourses = resource?.progress?.enrolledCourses || [];
+            if (!resource || !enrolledCourses.includes(resourceId)) {
               return res.status(403).json({
                 success: false,
                 message: 'Access denied: You are not enrolled in this course',
@@ -260,8 +264,7 @@ export const requireOwnership = (resourceType, ownerField = 'userId') => {
           case 'lesson':
           case 'quiz':
             // For lessons/quizzes, check course enrollment
-            // This would require additional logic to map lesson/quiz to course
-            console.log(`🔐 Lesson/Quiz access check: ${user.email} accessing ${resourceType} ${resourceId}`);
+            logger.debug('Lesson/Quiz access check', { email: user.email, resourceType, resourceId });
             break;
             
           default:
@@ -273,10 +276,10 @@ export const requireOwnership = (resourceType, ownerField = 'userId') => {
             });
         }
 
-        console.log(`✅ Ownership verified: ${user.email} can access ${resourceType} ${resourceId}`);
+        logger.debug('Ownership verified', { email: user.email, resourceType, resourceId });
         next();
       } catch (dbError) {
-        console.error('❌ Database error during ownership check:', dbError);
+        logger.error('Database error during ownership check', { message: dbError.message, resourceType });
         return res.status(500).json({
           success: false,
           message: 'Failed to verify resource ownership',
@@ -284,7 +287,7 @@ export const requireOwnership = (resourceType, ownerField = 'userId') => {
         });
       }
     } catch (error) {
-      console.error('❌ Ownership middleware error:', error);
+      logger.error('Ownership middleware error', { message: error.message, stack: error.stack });
       res.status(500).json({
         success: false,
         message: 'Ownership check failed',
@@ -314,14 +317,12 @@ export const requireEnrollment = (resourceType) => {
 
       // Admins and superadmins don't need enrollment
       if (['admin', 'superadmin'].includes(user.role)) {
-        console.log(`🔐 Admin enrollment bypass: ${user.email} accessing ${resourceType} ${resourceId}`);
+        logger.debug('Admin enrollment bypass', { email: user.email, resourceType, resourceId });
         return next();
       }
 
       // Check actual enrollment in database
       try {
-        const { User } = await import('../models.js');
-        
         const userWithEnrollment = await User.findById(user._id)
           .select('progress.enrolledCourses')
           .lean();
@@ -335,9 +336,9 @@ export const requireEnrollment = (resourceType) => {
         }
 
         // Check if user is enrolled in the course
-        const isEnrolled = userWithEnrollment.progress.enrolledCourses.some(
+        const isEnrolled = userWithEnrollment.progress?.enrolledCourses?.some(
           courseId => courseId.toString() === resourceId.toString()
-        );
+        ) ?? false;
 
         if (!isEnrolled) {
           return res.status(403).json({
@@ -349,10 +350,10 @@ export const requireEnrollment = (resourceType) => {
           });
         }
 
-        console.log(`✅ Enrollment verified: ${user.email} is enrolled in ${resourceType} ${resourceId}`);
+        logger.debug('Enrollment verified', { email: user.email, resourceType, resourceId });
         next();
       } catch (dbError) {
-        console.error('❌ Database error during enrollment check:', dbError);
+        logger.error('Database error during enrollment check', { message: dbError.message });
         return res.status(500).json({
           success: false,
           message: 'Failed to verify enrollment',
@@ -360,7 +361,7 @@ export const requireEnrollment = (resourceType) => {
         });
       }
     } catch (error) {
-      console.error('❌ Enrollment middleware error:', error);
+      logger.error('Enrollment middleware error', { message: error.message, stack: error.stack });
       res.status(500).json({
         success: false,
         message: 'Enrollment check failed',
@@ -439,7 +440,7 @@ export const authorize = (rules) => {
           });
         }
         
-        console.log(`✅ Ownership check passed for ${user.email}`);
+        logger.debug('Ownership check passed', { email: user.email });
       }
 
       // Check enrollment if required
@@ -447,14 +448,13 @@ export const authorize = (rules) => {
         const resourceId = req.params.id || req.body.id || req.params.courseId;
         
         if (resourceId) {
-          const { User } = await import('../models.js');
           const userWithEnrollment = await User.findById(user._id)
             .select('progress.enrolledCourses')
             .lean();
 
-          const isEnrolled = userWithEnrollment?.progress.enrolledCourses.some(
+          const isEnrolled = userWithEnrollment?.progress?.enrolledCourses?.some(
             courseId => courseId.toString() === resourceId.toString()
-          );
+          ) ?? false;
 
           if (!isEnrolled) {
             return res.status(403).json({
@@ -465,12 +465,12 @@ export const authorize = (rules) => {
           }
         }
         
-        console.log(`✅ Enrollment check passed for ${user.email}`);
+        logger.debug('Enrollment check passed', { email: user.email });
       }
 
       next();
     } catch (error) {
-      console.error('❌ Authorization middleware error:', error);
+      logger.error('Authorization middleware error', { message: error.message, stack: error.stack });
       res.status(500).json({
         success: false,
         message: 'Authorization check failed',

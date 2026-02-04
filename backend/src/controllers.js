@@ -3,11 +3,13 @@ import { hashPassword, comparePassword, validatePasswordStrength } from "./utils
 import { tokenManager } from "./utils/tokenManager.js";
 import { verifyGoogleToken } from "./utils/googleAuth.js";
 import { validateRequest, signupSchema, loginSchema, sanitizeInput } from "./utils/validation.js";
+import { logger } from './utils/monitoring.js';
+import { getLoggableEmail } from './utils/sanitization.js';
 
 // Regular signup with email/password - Enhanced with validation
 export const signup = async (req, res) => {
   try {
-    console.log('📝 Signup attempt for:', req.body.email);
+    logger.info('Signup attempt', { email: getLoggableEmail(req.body.email) });
 
     // Sanitize and validate input
     const sanitizedBody = sanitizeInput(req.body);
@@ -103,7 +105,7 @@ export const signup = async (req, res) => {
       req
     );
 
-    console.log('✅ User registered successfully:', email);
+    logger.info('User registered successfully', { email: getLoggableEmail(email) });
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -125,7 +127,7 @@ export const signup = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Signup error:', error);
+    logger.error('Signup error', { message: error.message, stack: error.stack });
     
     // Handle specific MongoDB errors
     if (error.code === 11000) {
@@ -147,7 +149,7 @@ export const signup = async (req, res) => {
 // Regular login with email/password - Fixed timing attack vulnerability
 export const login = async (req, res) => {
   try {
-    console.log('🔐 Login attempt for:', req.body.email);
+    logger.info('Login attempt', { email: getLoggableEmail(req.body.email) });
 
     // Sanitize and validate input
     const sanitizedBody = sanitizeInput(req.body);
@@ -229,7 +231,7 @@ export const login = async (req, res) => {
         req
       );
 
-      console.log('✅ Login successful for:', email);
+      logger.info('Login successful', { email: getLoggableEmail(email) });
       res.json({
         success: true,
         message: "Login successful",
@@ -253,7 +255,7 @@ export const login = async (req, res) => {
       });
 
     } catch (authError) {
-      console.error('❌ Authentication error:', authError);
+      logger.error('Authentication error', { message: authError.message, stack: authError.stack });
       return res.status(500).json({
         success: false,
         message: "Authentication failed",
@@ -262,7 +264,7 @@ export const login = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('❌ Login error:', error);
+    logger.error('Login error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -274,22 +276,22 @@ export const login = async (req, res) => {
 // Google OAuth login/signup
 export const googleAuth = async (req, res) => {
   try {
-    console.log('🔍 Google auth attempt');
+    logger.info('Google auth attempt');
     const { token } = req.body;
 
     if (!token) {
-      console.error('❌ Google auth failed: No token provided');
+      logger.error('Google auth failed: No token provided');
       return res.status(400).json({
         success: false,
         message: "Google token is required"
       });
     }
 
-    console.log('🔑 Google token received, length:', token.length);
+    logger.info('Google token received', { tokenLength: token.length });
 
     // Verify Google token and get user info
     const googleUserInfo = await verifyGoogleToken(token);
-    console.log('✅ Google token verified for:', googleUserInfo.email);
+    logger.info('Google token verified', { email: getLoggableEmail(googleUserInfo.email) });
     
     // Check if user exists
     let user = await User.findOne({ email: googleUserInfo.email });
@@ -304,7 +306,7 @@ export const googleAuth = async (req, res) => {
       }
       user.lastLogin = new Date();
       await user.save();
-      console.log('🔄 Updated existing user with Google info');
+      logger.info('Updated existing user with Google info', { email: getLoggableEmail(user.email) });
     } else {
       // Create new user from Google info
       user = new User({
@@ -351,7 +353,7 @@ export const googleAuth = async (req, res) => {
         }
       });
       await user.save();
-      console.log('✅ Created new user from Google info');
+      logger.info('Created new user from Google info', { email: getLoggableEmail(user.email) });
     }
 
     // Admin role assignment is now handled through proper admin invitation system
@@ -386,7 +388,7 @@ export const googleAuth = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Google auth error:', error);
+    logger.error('Google auth error', { message: error.message, stack: error.stack });
     res.status(401).json({
       success: false,
       message: error.message || "Google authentication failed"
@@ -397,6 +399,17 @@ export const googleAuth = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
+    
+    // Handle case where user is not found (e.g., deleted account)
+    if (!user) {
+      logger.warn('Profile fetch failed: User not found', { userId: req.user._id?.toString() });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        code: 'USER_NOT_FOUND'
+      });
+    }
+    
     res.json({
       success: true,
       user: {
@@ -414,7 +427,7 @@ export const getProfile = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Profile fetch error:', error);
+    logger.error('Profile fetch error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: "Server error"
@@ -425,13 +438,12 @@ export const getProfile = async (req, res) => {
 // Course Controllers (existing)
 export const getCourses = async (req, res) => {
   try {
-    console.log("Getting courses from database...");
+    logger.info('Getting courses from database');
     const courseData = await CourseModel.find();
-    console.log("Found courses:", courseData);
-    console.log("Number of courses:", courseData.length);
+    logger.info('Found courses', { count: courseData.length });
     res.json(courseData);
   } catch (error) {
-    console.error("Error getting courses:", error);
+    logger.error('Error getting courses', { message: error.message, stack: error.stack });
     res.status(500).json({ message: error.message });
   }
 };

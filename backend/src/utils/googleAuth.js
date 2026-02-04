@@ -1,5 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
 import config from '../config.js';
+import { logger } from './monitoring.js';
 
 const client = new OAuth2Client(config.GOOGLE_CLIENT_ID);
 
@@ -26,7 +27,10 @@ export const verifyGoogleToken = async (token) => {
       isEmailVerified: payload.email_verified || false
     };
   } catch (error) {
-    console.error('Google token verification failed:', error);
+    logger.error('Google token verification failed', {
+      message: error.message,
+      code: error.code
+    });
     throw new Error('Invalid Google token');
   }
 };
@@ -61,11 +65,17 @@ export const getGoogleAuthURL = () => {
  */
 export const getGoogleUserFromCode = async (code) => {
   try {
+    // Create a fresh OAuth2Client per request to avoid race conditions
+    const requestClient = new OAuth2Client(
+      config.GOOGLE_CLIENT_ID,
+      config.GOOGLE_CLIENT_SECRET,
+      `${config.BACKEND_URL}/api/auth/google/callback`
+    );
+    
     // Exchange code for tokens
-    const { tokens } = await client.getToken(code);
-    client.setCredentials(tokens);
+    const { tokens } = await requestClient.getToken(code);
 
-    // Get user info
+    // Get user info using the access token directly (no setCredentials mutation)
     const userInfoResponse = await fetch(
       `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokens.access_token}`,
       {
@@ -86,7 +96,10 @@ export const getGoogleUserFromCode = async (code) => {
       isEmailVerified: userInfo.verified_email || false
     };
   } catch (error) {
-    console.error('Failed to get Google user from code:', error);
+    logger.error('Failed to get Google user from code', {
+      message: error.message,
+      code: error.code
+    });
     throw new Error('Failed to authenticate with Google');
   }
 };

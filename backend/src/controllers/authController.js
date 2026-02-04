@@ -1,10 +1,12 @@
 import { User } from "../models.js";
 import { Token } from "../models/Token.js";
 import { tokenManager } from "../utils/tokenManager.js";
+import { hashPassword, comparePassword } from "../utils/auth.js";
 import passport from "../config/passport.js";
 import config from "../config.js";
 import { hasRole, hasPermission } from "../middleware/rbac.js";
 import { cacheService } from "../services/cacheService.js";
+import { logger } from "../utils/monitoring.js";
 
 // Token refresh endpoint
 export const refreshToken = async (req, res) => {
@@ -27,7 +29,7 @@ export const refreshToken = async (req, res) => {
       ...tokens
     });
   } catch (error) {
-    console.error('❌ Token refresh error:', error);
+    logger.error('Token refresh error', { message: error.message, stack: error.stack });
     res.status(401).json({
       success: false,
       message: error.message || "Failed to refresh token",
@@ -55,7 +57,7 @@ export const logout = async (req, res) => {
       message: "Logged out successfully"
     });
   } catch (error) {
-    console.error('❌ Logout error:', error);
+    logger.error('Logout error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: "Logout failed"
@@ -74,7 +76,7 @@ export const logoutAll = async (req, res) => {
       message: "Logged out from all devices successfully"
     });
   } catch (error) {
-    console.error('❌ Logout all error:', error);
+    logger.error('Logout all error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: "Failed to logout from all devices"
@@ -101,7 +103,7 @@ export const getUserSessions = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('❌ Get sessions error:', error);
+    logger.error('Get sessions error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: "Failed to retrieve sessions"
@@ -135,7 +137,7 @@ export const revokeSession = async (req, res) => {
       message: "Session revoked successfully"
     });
   } catch (error) {
-    console.error('❌ Revoke session error:', error);
+    logger.error('Revoke session error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: "Failed to revoke session"
@@ -228,7 +230,7 @@ export const changePassword = async (req, res) => {
       message: "Password changed successfully. Please login again."
     });
   } catch (error) {
-    console.error('❌ Change password error:', error);
+    logger.error('Change password error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: "Failed to change password"
@@ -243,7 +245,7 @@ export const changePassword = async (req, res) => {
  * GET /api/auth/google
  */
 export const googleAuth = (req, res, next) => {
-  console.log('🔐 Initiating Google OAuth authentication');
+  logger.info('Initiating Google OAuth authentication');
 
   // Store additional state if needed
   const state = req.query.state || 'login';
@@ -261,17 +263,17 @@ export const googleAuth = (req, res, next) => {
  * GET /api/auth/google/callback
  */
 export const googleAuthCallback = (req, res, next) => {
-  console.log('🔐 Processing Google OAuth callback');
+  logger.info('Processing Google OAuth callback');
 
   passport.authenticate('google', { session: false }, async (err, user, info) => {
     try {
       if (err) {
-        console.error('❌ Google OAuth authentication error:', err);
+        logger.error('Google OAuth authentication error', { message: err.message, stack: err.stack });
         return res.redirect(`${config.FRONTEND_URL}/login?error=oauth_error`);
       }
 
       if (!user) {
-        console.log('⚠️  Google OAuth authentication failed:', info?.message);
+        logger.warn('Google OAuth authentication failed', { message: info?.message });
         const errorCode = info?.code || 'oauth_failed';
         return res.redirect(`${config.FRONTEND_URL}/login?error=${errorCode}`);
       }
@@ -282,7 +284,7 @@ export const googleAuthCallback = (req, res, next) => {
 
       // If admin email and user is not already admin, promote to admin
       if (isAdminEmail && user.role === 'user') {
-        console.log('🔑 Admin email detected, promoting user to admin:', user.email);
+        logger.info('Admin email detected, promoting user to admin', { email: user.email });
         user.role = 'admin';
         await user.save();
       }
@@ -299,7 +301,7 @@ export const googleAuthCallback = (req, res, next) => {
         $inc: { loginAttempts: 0 } // Reset login attempts on successful login
       });
 
-      console.log('✅ Google OAuth successful for user:', user.email, 'Role:', user.role);
+      logger.info('Google OAuth successful', { email: user.email, role: user.role });
 
       // Redirect to frontend with secure cookies
   const frontendUrl = config.FRONTEND_URL || 'http://localhost:5173';
@@ -326,7 +328,7 @@ export const googleAuthCallback = (req, res, next) => {
             const { hostname } = new URL(frontendUrl);
             return hostname === 'localhost' ? undefined : hostname;
           } catch (error) {
-            console.warn('⚠️  Unable to derive cookie domain:', error);
+            logger.warn('Unable to derive cookie domain', { message: error.message });
           }
         }
 
@@ -359,15 +361,14 @@ export const googleAuthCallback = (req, res, next) => {
       });
 
       // Add success parameter to URL instead of tokens
+      // Tokens are already set in HTTP-only cookies above - no need to expose in URL
       redirectUrl.searchParams.set('auth', 'success');
       redirectUrl.searchParams.set('provider', 'google');
-      redirectUrl.searchParams.set('accessToken', tokens.accessToken);
-      redirectUrl.searchParams.set('refreshToken', tokens.refreshToken);
-      redirectUrl.searchParams.set('user', JSON.stringify(userPayload));
+      // User data is available via the userData cookie set above
 
       res.redirect(redirectUrl.toString());
     } catch (error) {
-      console.error('❌ Google OAuth callback error:', error);
+      logger.error('Google OAuth callback error', { message: error.message, stack: error.stack });
       res.redirect(`${config.FRONTEND_URL}/login?error=server_error`);
     }
   })(req, res, next);
@@ -440,7 +441,7 @@ export const getCurrentUser = async (req, res) => {
 
     res.json(responseData);
   } catch (error) {
-    console.error('❌ Get current user error:', error);
+    logger.error('Get current user error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to get user profile',
@@ -508,7 +509,7 @@ export const updateProfile = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Update profile error:', error);
+    logger.error('Update profile error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to update profile',
@@ -551,7 +552,7 @@ export const getUserPermissions = async (req, res) => {
       permissions
     });
   } catch (error) {
-    console.error('❌ Get permissions error:', error);
+    logger.error('Get permissions error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to get permissions',
@@ -617,7 +618,7 @@ export const getAllUsers = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Get all users error:', error);
+    logger.error('Get all users error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to get users',
@@ -646,7 +647,8 @@ export const updateUserRole = async (req, res) => {
     }
 
     // Prevent self-demotion for super admins
-    if (userId === req.user._id && req.user.role === 'superadmin' && role !== 'superadmin') {
+    const currentUserId = req.user?._id?.toString();
+    if (currentUserId && userId === currentUserId && req.user.role === 'superadmin' && role !== 'superadmin') {
       return res.status(400).json({
         success: false,
         message: 'Cannot change your own superadmin role',
@@ -673,7 +675,7 @@ export const updateUserRole = async (req, res) => {
     }
 
     // Log admin action
-    console.log(`🔐 Admin Action: ${req.user.email} changed ${updatedUser.email}'s role to ${role}`);
+    logger.info('Admin Action: User role changed', { adminEmail: req.user.email, userEmail: updatedUser.email, newRole: role });
 
     res.json({
       success: true,
@@ -687,7 +689,7 @@ export const updateUserRole = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Update user role error:', error);
+    logger.error('Update user role error', { message: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to update user role',

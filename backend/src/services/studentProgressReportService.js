@@ -1,4 +1,5 @@
 import { User } from '../models.js';
+import { logger } from '../utils/monitoring.js';
 
 export const REPORT_TEMPLATES = {
   STUDENT_PROGRESS: [
@@ -90,7 +91,7 @@ export const generateUserProgressReport = async () => {
 
     return report;
   } catch (error) {
-    console.error('Error generating user progress report:', error);
+    logger.error('Error generating user progress report', { message: error.message, stack: error.stack });
     throw error;
   }
 };
@@ -123,7 +124,7 @@ export const generatePerformanceMetricsReport = async () => {
 
     return report.sort((a, b) => b.averageScore - a.averageScore);
   } catch (error) {
-    console.error('Error generating performance metrics report:', error);
+    logger.error('Error generating performance metrics report', { message: error.message, stack: error.stack });
     throw error;
   }
 };
@@ -156,7 +157,7 @@ export const generateActivityReport = async () => {
 
     return report;
   } catch (error) {
-    console.error('Error generating activity report:', error);
+    logger.error('Error generating activity report', { message: error.message, stack: error.stack });
     throw error;
   }
 };
@@ -238,7 +239,7 @@ export const generateStudentActivityMetrics = async () => {
 
     return metrics;
   } catch (error) {
-    console.error('Error generating student activity metrics:', error);
+    logger.error('Error generating student activity metrics', { message: error.message, stack: error.stack });
     throw error;
   }
 };
@@ -339,7 +340,7 @@ export const getReportStatistics = async (reportData) => {
 
     return stats;
   } catch (error) {
-    console.error('Error calculating report statistics:', error);
+    logger.error('Error calculating report statistics', { message: error.message, stack: error.stack });
     throw error;
   }
 };
@@ -381,7 +382,7 @@ export const exportReportWithStatistics = async (reportType = 'STUDENT_PROGRESS'
 
     return exportData;
   } catch (error) {
-    console.error('Error exporting report with statistics:', error);
+    logger.error('Error exporting report with statistics', { reportType, format, message: error.message });
     throw error;
   }
 };

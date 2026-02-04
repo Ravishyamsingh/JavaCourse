@@ -2,6 +2,7 @@ import { User } from '../models.js';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { ADMIN_BACKEND_CONFIG, getErrorMessage, getSuccessMessage, isValidRole, isValidEmail, isValidPassword } from '../config/adminConfig.js';
+import { logger } from '../utils/monitoring.js';
 
 const USER_ROLES = ADMIN_BACKEND_CONFIG.USER_ROLES;
 
@@ -243,11 +244,11 @@ export const adminUpdateUserRole = async (req, res, next) => {
     const { userId } = req.params;
     const { role, permissions } = req.body;
 
-    console.log('🔄 Role change request:', { userId, role, currentUser: req.user._id });
+    logger.info('Role change request', { userId, role, currentUser: req.user._id });
 
     // Validate role
     if (!role || !Object.values(USER_ROLES).includes(role)) {
-      console.error('❌ Invalid role:', role);
+      logger.error('Invalid role', { role });
       return res.status(400).json({
         success: false,
         message: 'Invalid role. Must be one of: user, admin, superadmin'
@@ -257,18 +258,18 @@ export const adminUpdateUserRole = async (req, res, next) => {
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
-      console.error('❌ User not found:', userId);
+      logger.error('User not found', { userId });
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    console.log('✅ User found:', { userId, currentRole: user.role });
+    logger.info('User found', { userId, currentRole: user.role });
 
     // Prevent self-demotion from superadmin
     if (req.user.role === 'superadmin' && req.user._id.toString() === userId && role !== 'superadmin') {
-      console.error('❌ Cannot demote self from superadmin');
+      logger.error('Cannot demote self from superadmin');
       return res.status(400).json({
         success: false,
         message: 'Cannot demote yourself from superadmin role'
@@ -279,13 +280,13 @@ export const adminUpdateUserRole = async (req, res, next) => {
     const oldRole = user.role;
     user.role = role;
 
-    console.log('🔄 Updating role:', { oldRole, newRole: role });
+    logger.info('Updating role', { oldRole, newRole: role });
 
     // Update permissions if provided
     if (permissions && Array.isArray(permissions)) {
       user.adminData = user.adminData || {};
       user.adminData.permissions = permissions;
-      console.log('✅ Permissions updated:', permissions);
+      logger.info('Permissions updated', { permissions });
     }
 
     // Log the change
@@ -299,7 +300,7 @@ export const adminUpdateUserRole = async (req, res, next) => {
 
     await user.save();
 
-    console.log('✅ Role updated successfully:', { userId, oldRole, newRole: role });
+    logger.info('Role updated successfully', { userId, oldRole, newRole: role });
 
     const userResponse = user.toObject();
     delete userResponse.password;
@@ -311,7 +312,7 @@ export const adminUpdateUserRole = async (req, res, next) => {
       data: userResponse
     });
   } catch (error) {
-    console.error('❌ Error updating user role:', error);
+    logger.error('Error updating user role', { message: error.message, stack: error.stack });
     next(error);
   }
 };

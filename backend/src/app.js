@@ -97,8 +97,11 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // Log blocked origins for security monitoring
-    console.log(`🚫 CORS: Blocked origin: ${origin || 'null'} - Environment: ${process.env.NODE_ENV}`);
+    // Log blocked origins for security monitoring using logger
+    logger.warn('CORS blocked origin', {
+      origin: origin || 'null',
+      environment: process.env.NODE_ENV
+    });
     
     return callback(new Error(`Origin ${origin} not allowed by CORS policy`));
   },

@@ -10,6 +10,7 @@ import {
   exportReportWithStatistics,
   REPORT_TEMPLATES
 } from '../services/studentProgressReportService.js';
+import { logger } from '../utils/monitoring.js';
 
 /**
  * Get student progress report
@@ -40,7 +41,7 @@ export const getStudentProgressReport = async (req, res, next) => {
       count: reportData.length
     });
   } catch (error) {
-    console.error('Error generating student progress report:', error);
+    logger.error('Error generating student progress report', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -73,7 +74,7 @@ export const getPerformanceMetricsReport = async (req, res, next) => {
       count: reportData.length
     });
   } catch (error) {
-    console.error('Error generating performance metrics report:', error);
+    logger.error('Error generating performance metrics report', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -106,7 +107,7 @@ export const getActivityReport = async (req, res, next) => {
       count: reportData.length
     });
   } catch (error) {
-    console.error('Error generating activity report:', error);
+    logger.error('Error generating activity report', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -124,7 +125,7 @@ export const getStudentActivityMetrics = async (req, res, next) => {
       data: metrics
     });
   } catch (error) {
-    console.error('Error generating student activity metrics:', error);
+    logger.error('Error generating student activity metrics', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -158,7 +159,7 @@ export const getComprehensiveReport = async (req, res, next) => {
       count: reportData.length
     });
   } catch (error) {
-    console.error('Error generating comprehensive report:', error);
+    logger.error('Error generating comprehensive report', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -190,7 +191,7 @@ export const exportCustomReport = async (req, res, next) => {
       data: result
     });
   } catch (error) {
-    console.error('Error exporting custom report:', error);
+    logger.error('Error exporting custom report', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -206,7 +207,7 @@ export const getReportTemplates = async (req, res, next) => {
       availableFormats: ['json', 'csv']
     });
   } catch (error) {
-    console.error('Error fetching report templates:', error);
+    logger.error('Error fetching report templates', { message: error.message, stack: error.stack });
     next(error);
   }
 };

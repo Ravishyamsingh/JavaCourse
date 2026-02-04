@@ -3,13 +3,15 @@
  * Centralized error handling for all API endpoints
  */
 
+import { logger } from '../utils/monitoring.js';
+
 export const globalErrorHandler = (err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
   const code = err.code || 'INTERNAL_ERROR';
 
   // Log error
-  console.error({
+  logger.error('Request error', {
     timestamp: new Date().toISOString(),
     status,
     message,

@@ -1,6 +1,7 @@
 import express from "express";
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { User } from "./models.js";
+import { logger } from './utils/monitoring.js';
 import { signup, login, getProfile, getCourses, googleAuth as legacyGoogleAuth } from "./controllers.js";
 import {
   refreshToken,
@@ -71,8 +72,21 @@ const router = express.Router();
 // Apply general rate limiting to all routes
 router.use(generalRateLimit);
 
-// Compiler endpoint
-router.post('/compiler/java/run', runJavaCompiler);
+// Rate limiter specifically for compiler endpoint (stricter limits)
+const compilerRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 requests per minute
+  message: {
+    success: false,
+    message: 'Too many compilation requests. Please wait before trying again.',
+    code: 'COMPILER_RATE_LIMIT'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Compiler endpoint (protected with auth and rate limiting)
+router.post('/compiler/java/run', authMiddleware, compilerRateLimit, runJavaCompiler);
 
 // Test ID generation endpoints
 router.use('/test', testRoutes);
@@ -266,7 +280,7 @@ router.post("/auth/sessions/register", authMiddleware, async (req, res) => {
       sessionId: req.user._id
     });
   } catch (error) {
-    console.error('Session registration error:', error);
+    logger.error('Session registration error', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: "Failed to register session" });
   }
 });
@@ -282,7 +296,7 @@ router.get("/auth/sessions/check", authMiddleware, async (req, res) => {
       sessions: []
     });
   } catch (error) {
-    console.error('Session check error:', error);
+    logger.error('Session check error', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: "Failed to check sessions" });
   }
 });
@@ -296,7 +310,7 @@ router.post("/auth/sessions/terminate-others", authMiddleware, async (req, res) 
       message: "Other sessions terminated successfully"
     });
   } catch (error) {
-    console.error('Session termination error:', error);
+    logger.error('Session termination error', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: "Failed to terminate sessions" });
   }
 });
@@ -310,7 +324,7 @@ router.put("/auth/sessions/activity", authMiddleware, async (req, res) => {
       message: "Session activity updated"
     });
   } catch (error) {
-    console.error('Session activity update error:', error);
+    logger.error('Session activity update error', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: "Failed to update activity" });
   }
 });
@@ -328,7 +342,7 @@ router.get("/auth/user/role-status", authMiddleware, async (req, res) => {
       isActive: user.isActive
     });
   } catch (error) {
-    console.error('Role status check error:', error);
+    logger.error('Role status check error', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: "Failed to check role status" });
   }
 });

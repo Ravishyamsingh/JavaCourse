@@ -1,6 +1,7 @@
 // backend/src/controllers/progressController.js
 import { User } from '../models.js';
 import { cacheService } from '../services/cacheService.js';
+import { logger } from '../utils/monitoring.js';
 
 const defaultProgressState = {
   completedLessons: [],
@@ -212,7 +213,7 @@ export const getUserProgress = async (req, res) => {
 
     res.json(responseData);
   } catch (error) {
-    console.error('Progress fetch error:', error);
+    logger.error('Progress fetch error', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: 'Failed to fetch progress' });
   }
 };
@@ -376,7 +377,7 @@ export const updateUserProgress = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Progress update error:', error);
+    logger.error('Progress update error', { message: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: 'Failed to update progress' });
   }
 };

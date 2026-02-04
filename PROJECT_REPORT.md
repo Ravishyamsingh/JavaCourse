@@ -117,7 +117,7 @@ Existing Java learning platforms face several challenges:
 
 The project follows an **Agile Development Methodology** with iterative sprints:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    AGILE DEVELOPMENT CYCLE                       │
 ├─────────────────────────────────────────────────────────────────┤
@@ -232,6 +232,7 @@ Requirements were gathered through:
 ## 3.2 Functional Requirements
 
 ### FR-01: User Authentication
+
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | FR-01.1 | Users can register with email and password | High |
@@ -1308,7 +1309,7 @@ describe('Token Service', () => {
 
 1. **CORS Configuration Complexity**
    - Issue: Google OAuth callbacks failing due to CORS
-   - Impact: Users unable to complete social-login
+   - Impact: Users unable to complete social login
    
 2. **Gemini API Rate Limiting**
    - Issue: Free tier limited to 15 requests per minute

@@ -69,6 +69,14 @@ async function updateAdmin() {
     console.log('✅ Done - Disconnected from MongoDB');
   } catch (err) {
     console.error('❌ Error:', err.message);
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+        console.log('🔌 MongoDB connection cleaned up');
+      }
+    } catch (closeError) {
+      console.error('❌ Error closing MongoDB connection:', closeError.message);
+    }
     process.exit(1);
   }
 }

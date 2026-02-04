@@ -1,7 +1,7 @@
 {
-  "name": "ravi",
+  "name": "java-course-backend",
   "version": "1.0.0",
-  "description": "It's an amazing package",
+  "description": "Java Course Learning Platform - Backend API",
   "main": "index.js",
   "type": "module",
   "scripts": {

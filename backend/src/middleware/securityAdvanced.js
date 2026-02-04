@@ -133,6 +133,23 @@ export const detectNoSQLInjection = (input) => {
 };
 
 /**
+ * Helper function to recursively check strings in objects for injection patterns
+ * @param {*} val - The value to check
+ * @param {Function} detector - The detection function to use
+ * @returns {boolean} - True if injection detected
+ */
+const checkStringForInjection = (val, detector) => {
+  if (typeof val === 'string') {
+    return detector(val);
+  } else if (Array.isArray(val)) {
+    return val.some(item => checkStringForInjection(item, detector));
+  } else if (val && typeof val === 'object') {
+    return Object.values(val).some(item => checkStringForInjection(item, detector));
+  }
+  return false;
+};
+
+/**
  * Middleware to sanitize all request inputs
  * Smart filtering to avoid false positives on legitimate data
  */
@@ -213,16 +230,16 @@ export const sanitizeRequestMiddleware = (req, res, next) => {
             code: 'INVALID_INPUT'
           });
         }
-        
+
         // Use targeted SQL injection detection (skip quote matching for allowed fields)
-        if (!allowedFieldsWithQuotes.includes(key) && detectSQLInjection(JSON.stringify(value))) {
+        if (!allowedFieldsWithQuotes.includes(key) && checkStringForInjection(value, detectSQLInjection)) {
           console.warn(`🚨 Potential SQL injection attempt detected in body parameter: ${key}`);
           return res.status(400).json({
             success: false,
             message: 'Invalid input detected',
             code: 'INVALID_INPUT'
           });
-        } else if (allowedFieldsWithQuotes.includes(key) && detectSQLInjectionWithoutQuotes(JSON.stringify(value))) {
+        } else if (allowedFieldsWithQuotes.includes(key) && checkStringForInjection(value, detectSQLInjectionWithoutQuotes)) {
           console.warn(`🚨 Potential injection attempt detected in body parameter: ${key}`);
           return res.status(400).json({
             success: false,

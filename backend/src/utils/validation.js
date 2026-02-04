@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import DOMPurify from 'isomorphic-dompurify';
+import { logger } from './monitoring.js';
 
 // Enhanced validation schemas
 export const signupSchema = Joi.object({
@@ -298,10 +299,15 @@ export const sanitizeInput = (input) => {
 
   if (typeof input === 'object' && input !== null) {
     const sanitized = {};
+    // Keys that must be blocked to prevent prototype pollution
+    const blockedKeys = new Set(['__proto__', 'prototype', 'constructor']);
+    
     for (const [key, value] of Object.entries(input)) {
-      // Sanitize keys to prevent prototype pollution
-      const cleanKey = key.replace(/^__|prototype|constructor/gi, '');
-      sanitized[cleanKey] = sanitizeInput(value);
+      // Skip dangerous keys (case-insensitive)
+      if (blockedKeys.has(key.toLowerCase())) {
+        continue;
+      }
+      sanitized[key] = sanitizeInput(value);
     }
     return sanitized;
   }
@@ -324,11 +330,25 @@ export const validateRequest = (schema, property = 'body') => {
       });
       
       if (error) {
-        const errors = error.details.map(detail => ({
-          field: detail.path.join('.'),
-          message: detail.message,
-          value: detail.context?.value
-        }));
+        // Fields whose values should never be included in error responses
+        const sensitiveFields = ['password', 'pwd', 'secret', 'token', 'creditcard', 'ssn', 'apikey', 'accesstoken', 'refreshtoken'];
+        
+        const errors = error.details.map(detail => {
+          const fieldName = detail.path.join('.');
+          const isSensitive = sensitiveFields.some(sf => fieldName.toLowerCase().includes(sf));
+          
+          const errorObj = {
+            field: fieldName,
+            message: detail.message
+          };
+          
+          // Only include value for non-sensitive fields
+          if (!isSensitive && detail.context?.value !== undefined) {
+            errorObj.value = detail.context.value;
+          }
+          
+          return errorObj;
+        });
         
         return res.status(400).json({
           success: false,
@@ -342,7 +362,11 @@ export const validateRequest = (schema, property = 'body') => {
       req[property] = value;
       next();
     } catch (validationError) {
-      console.error('❌ Validation middleware error:', validationError);
+      logger.error('Validation middleware error', {
+        message: validationError.message,
+        stack: validationError.stack,
+        property
+      });
       return res.status(500).json({
         success: false,
         message: 'Validation processing failed',

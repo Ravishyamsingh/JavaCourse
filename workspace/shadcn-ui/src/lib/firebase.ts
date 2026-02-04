@@ -1,25 +1,41 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup, Auth } from 'firebase/auth';
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDAqIdHfwbia5lkXtElnbQFlYYUl5kfR64",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "login-a906f.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "login-a906f",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "login-a906f.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "21858022853",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:21858022853:web:9fb083f12229b660eec7ac",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-K98GLJ10C6"
-};
+// Check if Firebase is configured
+const isFirebaseConfigured = Boolean(
+  import.meta.env.VITE_FIREBASE_API_KEY &&
+  import.meta.env.VITE_FIREBASE_PROJECT_ID
+);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// Firebase configuration - only use environment variables, no hardcoded fallbacks
+const firebaseConfig = isFirebaseConfigured ? {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+} : null;
 
-// Configure Google Auth Provider
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
+// Initialize Firebase only if configured
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
+
+if (firebaseConfig) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  
+  // Configure Google Auth Provider
+  googleProvider = new GoogleAuthProvider();
+  googleProvider.addScope('email');
+  googleProvider.addScope('profile');
+} else if (import.meta.env.DEV) {
+  console.warn('[Firebase] Firebase is not configured. Set VITE_FIREBASE_* environment variables to enable Firebase authentication.');
+}
+
+export { auth, googleProvider, signInWithPopup, isFirebaseConfigured };
 
 // For development, we'll use a different approach
 export const isDevelopment = import.meta.env.DEV;

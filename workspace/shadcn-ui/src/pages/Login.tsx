@@ -42,12 +42,11 @@ const Login: React.FC = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  // Handle URL parameters for OAuth callback
+  // Handle URL parameters for OAuth callback (legacy support + cookie-based)
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    const accessToken = urlParams.get('accessToken');
-    const refreshToken = urlParams.get('refreshToken');
-    const userParam = urlParams.get('user');
+    const authSuccess = urlParams.get('auth');
+    const provider = urlParams.get('provider');
     const error = urlParams.get('error');
 
     if (error) {
@@ -56,21 +55,54 @@ const Login: React.FC = () => {
       return;
     }
 
-    if (accessToken && refreshToken && userParam) {
-      try {
-        const user = JSON.parse(decodeURIComponent(userParam));
-        const tokens = { accessToken, refreshToken };
+    // Cookie-based OAuth success - tokens are in HTTP-only cookies
+    if (authSuccess === 'success' && provider === 'google') {
+      // Read user data from the userData cookie (non-httpOnly)
+      const getCookie = (name: string): string | null => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+          const cookieValue = parts.pop()?.split(';').shift();
+          return cookieValue ? decodeURIComponent(cookieValue) : null;
+        }
+        return null;
+      };
 
-        // Store auth data using our utility function
-        storeAuthData(tokens.accessToken, tokens.refreshToken, user);
-
-        toast.success(`Welcome, ${user.firstName}!`);
-        const roleBasedPath = getDefaultRoute(user.role);
-        navigate(roleBasedPath, { replace: true });
-      } catch (error) {
-        console.error('Failed to parse OAuth callback data:', error);
-        toast.error('Authentication failed');
+      const userDataCookie = getCookie('userData');
+      if (userDataCookie) {
+        try {
+          const user = JSON.parse(userDataCookie);
+          // Store auth state - tokens are in HTTP-only cookies
+          storeAuthData('cookie-auth', '', user);
+          toast.success(`Welcome, ${user.firstName}!`);
+          const roleBasedPath = getDefaultRoute(user.role);
+          navigate(roleBasedPath, { replace: true });
+          return;
+        } catch (parseError) {
+          console.error('Failed to parse OAuth callback data:', parseError);
+        }
       }
+      
+      // Fallback: try to fetch user profile from API
+      (async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+              storeAuthData('cookie-auth', '', data.user);
+              toast.success(`Welcome, ${data.user.firstName}!`);
+              const roleBasedPath = getDefaultRoute(data.user.role);
+              navigate(roleBasedPath, { replace: true });
+            }
+          }
+        } catch (fetchError) {
+          console.error('Failed to fetch user profile:', fetchError);
+          toast.error('Authentication failed');
+        }
+      })();
     }
   }, [location.search, navigate]);
 

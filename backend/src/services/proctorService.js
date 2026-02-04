@@ -1,5 +1,6 @@
 import { ProctorEvent, ProctorSession, QuestionProgress, TestLifecycle } from '../models/ProctorModels.js';
 import { User } from '../models.js';
+import { logger } from '../utils/monitoring.js';
 
 /**
  * Proctoring Service
@@ -55,7 +56,7 @@ export const getSessionAnalytics = async (userId, testId, sessionId) => {
       }
     };
   } catch (error) {
-    console.error('Error getting session analytics:', error);
+    logger.error('Error getting session analytics', { userId, testId, sessionId, message: error.message });
     throw error;
   }
 };
@@ -136,7 +137,7 @@ export const getTestAnalytics = async (testId, startDate, endDate) => {
       }
     };
   } catch (error) {
-    console.error('Error getting test analytics:', error);
+    logger.error('Error getting test analytics', { testId, startDate, endDate, message: error.message });
     throw error;
   }
 };
@@ -148,7 +149,7 @@ export const detectSuspiciousActivity = async (userId, testId, sessionId) => {
   try {
     const [session, events] = await Promise.all([
       ProctorSession.findOne({ userId, testId, sessionId }),
-      ProctorEvent.find({ userId, testId, sessionId })
+      ProctorEvent.find({ userId, testId, sessionId }).sort({ createdAt: 1 })
     ]);
 
     if (!session) {
@@ -223,7 +224,7 @@ export const detectSuspiciousActivity = async (userId, testId, sessionId) => {
       riskLevel: suspiciousPatterns.some(p => p.severity === 'critical') ? 'high' : 'medium'
     };
   } catch (error) {
-    console.error('Error detecting suspicious activity:', error);
+    logger.error('Error detecting suspicious activity', { userId, testId, sessionId, message: error.message });
     throw error;
   }
 };
@@ -285,7 +286,7 @@ export const generateSessionReport = async (userId, testId, sessionId) => {
       lifecycle: analytics.lifecycle?.actions || []
     };
   } catch (error) {
-    console.error('Error generating session report:', error);
+    logger.error('Error generating session report', { userId, testId, sessionId, message: error.message });
     throw error;
   }
 };
@@ -307,7 +308,7 @@ export const exportSessionData = async (userId, testId, sessionId) => {
       data: report
     };
   } catch (error) {
-    console.error('Error exporting session data:', error);
+    logger.error('Error exporting session data', { userId, testId, sessionId, message: error.message });
     throw error;
   }
 };
@@ -338,7 +339,7 @@ export const cleanupOldData = async (daysOld = 90) => {
       cutoffDate
     };
   } catch (error) {
-    console.error('Error cleaning up old data:', error);
+    logger.error('Error cleaning up old data', { message: error.message, stack: error.stack });
     throw error;
   }
 };
@@ -379,7 +380,7 @@ export const getFlaggedSessions = async (severity = 'critical', limit = 50) => {
       return severityOrder[a.suspicious.riskLevel] - severityOrder[b.suspicious.riskLevel];
     });
   } catch (error) {
-    console.error('Error getting flagged sessions:', error);
+    logger.error('Error getting flagged sessions', { message: error.message, stack: error.stack });
     throw error;
   }
 };

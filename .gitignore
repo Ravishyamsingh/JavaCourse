@@ -61,6 +61,9 @@ workspace/shadcn-ui/.env.local
 workspace/shadcn-ui/.env.production
 workspace/shadcn-ui/.env.development
 workspace/shadcn-ui/.env.test
+# .env.example is needed for documentation, don't ignore it
+!workspace/shadcn-ui/.env.example
+!backend/.env.example
 
 # Build outputs
 build/

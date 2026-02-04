@@ -4,6 +4,57 @@
  */
 
 import DOMPurify from 'isomorphic-dompurify';
+import crypto from 'crypto';
+
+/**
+ * Mask email for safe logging (hides part of local and domain)
+ * e.g., "john.doe@example.com" -> "jo***@ex***.com"
+ */
+export const maskEmail = (email) => {
+  if (!email || typeof email !== 'string') return '[no-email]';
+  
+  const parts = email.split('@');
+  if (parts.length !== 2) return '[invalid-email]';
+  
+  const [local, domain] = parts;
+  const domainParts = domain.split('.');
+  
+  // Mask local part: show first 2 chars, rest as ***
+  const maskedLocal = local.length > 2 
+    ? local.substring(0, 2) + '***' 
+    : local[0] + '***';
+  
+  // Mask domain: show first 2 chars of domain name
+  const maskedDomain = domainParts[0].length > 2
+    ? domainParts[0].substring(0, 2) + '***'
+    : domainParts[0][0] + '***';
+  
+  const tld = domainParts.slice(1).join('.');
+  
+  return `${maskedLocal}@${maskedDomain}.${tld}`;
+};
+
+/**
+ * Hash email for logging (SHA256, first 12 chars)
+ * Useful for correlating logs without exposing PII
+ */
+export const hashEmail = (email) => {
+  if (!email || typeof email !== 'string') return '[no-email]';
+  return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex').substring(0, 12);
+};
+
+/**
+ * Get loggable email based on config
+ * Returns masked email by default, raw only if ALLOW_PII_LOGGING is true
+ */
+import config from '../config.js';
+
+export const getLoggableEmail = (email) => {
+  if (config.ALLOW_PII_LOGGING) {
+    return email;
+  }
+  return maskEmail(email);
+};
 
 /**
  * Sanitize string input

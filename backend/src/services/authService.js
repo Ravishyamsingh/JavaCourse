@@ -1,6 +1,7 @@
 import { User } from '../models.js';
 import { hashPassword, comparePassword, validatePasswordStrength } from '../utils/auth.js';
 import { tokenManager } from '../utils/tokenManager.js';
+import { logger } from '../utils/monitoring.js';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import config from '../config.js';
@@ -87,7 +88,7 @@ export class AuthService {
 
   async sendPasswordResetEmail(email, resetToken) {
     if (!this.emailTransporter) {
-      console.warn('Email service not configured');
+      logger.warn('Email service not configured');
       return false;
     }
 
@@ -117,14 +118,14 @@ export class AuthService {
       await this.emailTransporter.sendMail(mailOptions);
       return true;
     } catch (error) {
-      console.error('Failed to send password reset email:', error);
+      logger.error('Failed to send password reset email', { message: error.message, stack: error.stack });
       return false;
     }
   }
 
   async sendVerificationEmail(email, verificationToken) {
     if (!this.emailTransporter) {
-      console.warn('Email service not configured');
+      logger.warn('Email service not configured');
       return false;
     }
 
@@ -153,7 +154,7 @@ export class AuthService {
       await this.emailTransporter.sendMail(mailOptions);
       return true;
     } catch (error) {
-      console.error('Failed to send verification email:', error);
+      logger.error('Failed to send verification email', { message: error.message, stack: error.stack });
       return false;
     }
   }

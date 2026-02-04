@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Token } from '../models/Token.js';
+import { logger } from './monitoring.js';
 
 const UNIT_IN_MS = {
   ms: 1,
@@ -102,7 +103,7 @@ class TokenManager {
         tokenType: 'Bearer'
       };
     } catch (error) {
-      console.error('Token creation error:', error);
+      logger.error('Token creation error', { message: error.message, stack: error.stack });
       throw new Error('Failed to create authentication tokens');
     }
   }
@@ -157,7 +158,7 @@ class TokenManager {
 
       return newTokens;
     } catch (error) {
-      console.error('Token refresh error:', error);
+      logger.error('Token refresh error', { message: error.message, stack: error.stack });
       throw new Error('Failed to refresh tokens');
     }
   }
@@ -181,7 +182,7 @@ class TokenManager {
 
       return true;
     } catch (error) {
-      console.error('Token revocation error:', error);
+      logger.error('Token revocation error', { message: error.message, stack: error.stack });
       return false;
     }
   }
@@ -192,7 +193,7 @@ class TokenManager {
       await Token.revokeAllUserTokens(userId, reason);
       return true;
     } catch (error) {
-      console.error('Bulk token revocation error:', error);
+      logger.error('Bulk token revocation error', { userId, reason, message: error.message });
       return false;
     }
   }
@@ -206,10 +207,10 @@ class TokenManager {
   async cleanupExpiredTokens() {
     try {
       const result = await Token.cleanupExpiredTokens();
-      console.log(`Cleaned up ${result.deletedCount} expired tokens`);
+      logger.info('Cleaned up expired tokens', { deletedCount: result.deletedCount });
       return result.deletedCount;
     } catch (error) {
-      console.error('Token cleanup error:', error);
+      logger.error('Token cleanup error', { message: error.message, stack: error.stack });
       return 0;
     }
   }
@@ -225,7 +226,7 @@ class TokenManager {
 
       return sessions;
     } catch (error) {
-      console.error('Get sessions error:', error);
+      logger.error('Get sessions error', { userId, message: error.message });
       return [];
     }
   }
@@ -243,9 +244,9 @@ class TokenManager {
     }
 
     try {
-      // Validate base64 encoding
-      JSON.parse(Buffer.from(parts[0], 'base64').toString());
-      JSON.parse(Buffer.from(parts[1], 'base64').toString());
+      // Validate base64url encoding (per JWT/RFC4648 standard)
+      JSON.parse(Buffer.from(parts[0], 'base64url').toString());
+      JSON.parse(Buffer.from(parts[1], 'base64url').toString());
       return true;
     } catch {
       return false;

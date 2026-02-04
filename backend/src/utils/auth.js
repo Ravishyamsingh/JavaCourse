@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import config from '../config.js';
+import { logger } from './monitoring.js';
 
 const SALT_ROUNDS = 12; // Increased from 10 for better security
 const TOKEN_EXPIRY = '15m'; // Reduced from 7d for better security
@@ -18,7 +19,7 @@ const validateEnvironment = () => {
   } else {
     // Development: if JWT_ACCESS_SECRET is missing, try falling back or set a dev default.
     if (!config.JWT_ACCESS_SECRET) {
-      console.warn('⚠️ JWT_ACCESS_SECRET not set — using a weak development default. Do NOT use in production.');
+      logger.warn('JWT_ACCESS_SECRET not set — using a weak development default. Do NOT use in production.');
     }
   }
 };
@@ -47,11 +48,12 @@ export const comparePassword = async (password, hashedPassword) => {
 // DEPRECATED: Legacy JWT utilities - Use tokenManager instead
 // These functions are kept for backward compatibility but should not be used
 export const generateToken = (payload) => {
-  console.warn('⚠️  DEPRECATED: Use tokenManager.generateAccessToken() instead');
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is required');
+  logger.warn('DEPRECATED: Use tokenManager.generateAccessToken() instead');
+  const secret = config.JWT_ACCESS_SECRET || config.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_ACCESS_SECRET or JWT_SECRET environment variable is required');
   }
-  return jwt.sign(payload, process.env.JWT_SECRET, {
+  return jwt.sign(payload, secret, {
     expiresIn: TOKEN_EXPIRY,
     issuer: 'java-course-api',
     audience: 'java-course-client'
@@ -59,11 +61,12 @@ export const generateToken = (payload) => {
 };
 
 export const verifyToken = (token) => {
-  console.warn('⚠️  DEPRECATED: Use tokenManager.verifyAccessToken() instead');
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is required');
+  logger.warn('DEPRECATED: Use tokenManager.verifyAccessToken() instead');
+  const secret = config.JWT_ACCESS_SECRET || config.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_ACCESS_SECRET or JWT_SECRET environment variable is required');
   }
-  return jwt.verify(token, process.env.JWT_SECRET);
+  return jwt.verify(token, secret);
 };
 
 // Secure random token generation utility

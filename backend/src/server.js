@@ -176,8 +176,7 @@ const connectDB = async () => {
     });
 
   } catch (error) {
-    logger.error('❌ MongoDB connection failed:', error);
-    console.error('❌ MongoDB connection failed:', error.message);
+    logger.error('MongoDB connection failed', { message: error.message, stack: error.stack });
     process.exit(1);
   }
 };
@@ -252,16 +251,14 @@ const startServer = async () => {
 
     return server;
   } catch (error) {
-    logger.error('❌ Failed to start server:', error);
-    console.error('❌ Failed to start server:', error.message);
+    logger.error('Failed to start server', { message: error.message, stack: error.stack });
     process.exit(1);
   }
 };
 
 // Start the application
 startServer().catch((error) => {
-  logger.error('❌ Application startup failed:', error);
-  console.error('❌ Application startup failed:', error.message);
+  logger.error('Application startup failed', { message: error.message, stack: error.stack });
   process.exit(1);
 });
 

@@ -71,6 +71,9 @@ const config = {
   BCRYPT_SALT_ROUNDS: parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12,
   SESSION_SECRET: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
 
+  // Privacy & Logging
+  ALLOW_PII_LOGGING: process.env.ALLOW_PII_LOGGING === 'true', // Default: false - never log raw PII
+
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
   RATE_LIMIT_MAX_REQUESTS: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
@@ -124,19 +127,30 @@ const requiredEnvVars = [
   'MONGO_URL'
 ];
 
+// Logger not available yet at config load time, use structured console output
+const logConfigError = (message, details = {}) => {
+  console.error(JSON.stringify({ level: 'error', message, ...details, timestamp: new Date().toISOString() }));
+};
+
+const logConfigWarn = (message, details = {}) => {
+  console.warn(JSON.stringify({ level: 'warn', message, ...details, timestamp: new Date().toISOString() }));
+};
+
+const logConfigInfo = (message, details = {}) => {
+  console.log(JSON.stringify({ level: 'info', message, ...details, timestamp: new Date().toISOString() }));
+};
+
 if (NODE_ENV === 'production') {
   const missingVars = requiredEnvVars.filter((varName) => !config[varName]);
   if (missingVars.length > 0) {
-    console.error('❌ Missing required environment variables (production):', missingVars);
-    console.error('Please configure these in your production environment (Vercel, PM2, etc.).');
+    logConfigError('Missing required environment variables (production)', { missingVars });
     process.exit(1);
   }
 } else {
   // In development, log warnings but do not exit; fallbacks exist for local work
   const missingVars = requiredEnvVars.filter((varName) => !config[varName]);
   if (missingVars.length > 0) {
-    console.warn('⚠️ Development warning - missing environment variables:', missingVars);
-    console.warn('Using defaults where possible. For a clean local setup, copy backend/.env.example to backend/.env and set values.');
+    logConfigWarn('Development warning - missing environment variables', { missingVars });
   }
 }
 
@@ -189,28 +203,25 @@ const validateConfiguration = () => {
 
   // Print errors
   if (errors.length > 0) {
-    console.error('\n❌ CONFIGURATION ERRORS:');
-    errors.forEach(error => console.error(`   - ${error}`));
-    console.error('\nPlease fix these errors before starting the server.\n');
+    logConfigError('Configuration errors detected', { errors });
     process.exit(1);
   }
 
   // Print warnings
   if (warnings.length > 0) {
-    console.warn('\n⚠️  CONFIGURATION WARNINGS:');
-    warnings.forEach(warning => console.warn(`   - ${warning}`));
-    console.warn('');
+    logConfigWarn('Configuration warnings', { warnings });
   }
 };
 
 // Run validation
 validateConfiguration();
 
-console.log('✅ Backend configuration loaded');
-console.log(`📍 Environment: ${config.NODE_ENV}`);
-console.log(`🗄️ Database: ${config.MONGO_URL}`);
-console.log(`🌐 Frontend: ${config.FRONTEND_URL}`);
-console.log(`🔐 JWT Access Expiry: ${config.JWT_ACCESS_EXPIRY}`);
-console.log(`🔑 JWT Refresh Expiry: ${config.JWT_REFRESH_EXPIRY}`);
+logConfigInfo('Backend configuration loaded', {
+  environment: config.NODE_ENV,
+  database: config.MONGO_URL ? config.MONGO_URL.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'not configured',
+  frontend: config.FRONTEND_URL,
+  jwtAccessExpiry: config.JWT_ACCESS_EXPIRY,
+  jwtRefreshExpiry: config.JWT_REFRESH_EXPIRY
+});
 
 export default config;

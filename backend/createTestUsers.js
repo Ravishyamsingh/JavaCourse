@@ -21,9 +21,9 @@ async function createTestUsers() {
       process.exit(1);
     }
 
-    // Clear existing users for testing
-    await User.deleteMany({});
-    console.log('🗑️  Cleared existing users');
+    // Clear existing test users only (safety measure)
+    await User.deleteMany({ isTestAccount: true });
+    console.log('🗑️  Cleared existing test users');
 
     // Create Admin User with environment-driven credentials
     const adminEmail = process.env.TEST_ADMIN_EMAIL || 'test+admin@example.com';
@@ -39,6 +39,7 @@ async function createTestUsers() {
       provider: 'local',
       isEmailVerified: true,
       isActive: true,
+      isTestAccount: true,
       profile: {
         bio: 'Super Administrator',
         socialLinks: {}
@@ -68,6 +69,7 @@ async function createTestUsers() {
       lastName: 'User',
       email: 'test@example.com',
       password: testPassword,
+      isTestAccount: true,
       role: 'user',
       provider: 'local',
       isEmailVerified: true,

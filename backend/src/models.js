@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 // Role enumeration for hierarchical permissions
 const USER_ROLES = {
@@ -24,6 +25,7 @@ const userSchema = new mongoose.Schema({
   }, // Role-based access control
   isEmailVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true }, // Account status
+  isTestAccount: { type: Boolean, default: false, index: true }, // Flag for test accounts (cleanup)
   lastLogin: { type: Date },
   loginAttempts: { type: Number, default: 0 }, // Failed login tracking
   lockUntil: { type: Date }, // Account lock timestamp
@@ -143,12 +145,35 @@ userSchema.index({ lastLogin: -1 });
 
 // Pre-save middleware for password hashing
 userSchema.pre('save', async function(next) {
-  // Add any pre-save logic here
-  next();
+  // Only hash password if it's modified and exists
+  if (!this.isModified('password') || !this.password) {
+    return next();
+  }
+  
+  try {
+    // Don't re-hash if already hashed (bcrypt hashes start with $2a$ or $2b$)
+    if (this.password.startsWith('$2a$') || this.password.startsWith('$2b$')) {
+      return next();
+    }
+    
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Instance methods
 userSchema.methods = {
+  // Compare password for login
+  async comparePassword(candidatePassword) {
+    if (!this.password) {
+      return false;
+    }
+    return bcrypt.compare(candidatePassword, this.password);
+  },
+
   // Check if account is locked
   isAccountLocked() {
     return this.isLocked;
@@ -156,10 +181,10 @@ userSchema.methods = {
 
   // Increment login attempts
   incLoginAttempts() {
+    this.loginAttempts += 1;
     if (this.loginAttempts >= 5) {
       this.lockUntil = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
     }
-    this.loginAttempts += 1;
     return this.save();
   },
 
@@ -222,7 +247,26 @@ userSchema.statics = {
   // Get active users count
   async getActiveUsersCount() {
     return this.countDocuments({ isActive: true });
+  },
+
+  // Safe selection that excludes sensitive fields
+  safeSelect() {
+    return '-password -security.twoFactorSecret -security.backupCodes -security.passwordResetToken -security.emailVerificationToken -adminData.systemLogs';
   }
+};
+
+// Transform to exclude sensitive fields when converting to JSON
+userSchema.methods.toSafeJSON = function() {
+  const obj = this.toObject();
+  delete obj.password;
+  delete obj.security?.twoFactorSecret;
+  delete obj.security?.backupCodes;
+  delete obj.security?.passwordResetToken;
+  delete obj.security?.passwordResetExpires;
+  delete obj.security?.emailVerificationToken;
+  delete obj.security?.emailVerificationExpires;
+  delete obj.adminData?.systemLogs;
+  return obj;
 };
 
 const User = mongoose.model("User", userSchema);

@@ -77,7 +77,7 @@ const App = () => (
                       <Route path="/super-admin-panel" element={<ProtectedRoute requiredRole={UserRole.SUPER_ADMIN}><SuperAdminPanel /></ProtectedRoute>} />
                       <Route path="/oauth-tests" element={<ProtectedRoute requiredRole={UserRole.SUPER_ADMIN}><OAuthTestRunner /></ProtectedRoute>} />
                       <Route path="/google-oauth-test" element={<GoogleOAuthTest />} />
-                      <Route path="/code-editor-test" element={<CodeEditorTest />} />
+                      <Route path="/code-editor-test" element={<ProtectedRoute requiredRole={UserRole.SUPER_ADMIN}><CodeEditorTest /></ProtectedRoute>} />
                       <Route path="/cms" element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><CMSDashboard /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>

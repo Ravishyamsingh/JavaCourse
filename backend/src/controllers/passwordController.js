@@ -1,7 +1,9 @@
 import { User } from '../models.js';
 import { authService } from '../services/authService.js';
 import { sanitizeInput } from '../utils/validation.js';
+import { getLoggableEmail } from '../utils/sanitization.js';
 import Joi from 'joi';
+import { logger } from '../utils/monitoring.js';
 
 const forgotPasswordSchema = Joi.object({
   email: Joi.string().email().required().trim().lowercase()
@@ -19,7 +21,7 @@ const verifyEmailSchema = Joi.object({
 
 export const forgotPassword = async (req, res, next) => {
   try {
-    console.log('🔐 Forgot password request for:', req.body.email);
+    logger.info('Forgot password request', { email: getLoggableEmail(req.body.email) });
 
     const sanitizedBody = sanitizeInput(req.body);
     const { error, value } = forgotPasswordSchema.validate(sanitizedBody);
@@ -59,10 +61,10 @@ export const forgotPassword = async (req, res, next) => {
     const emailSent = await authService.sendPasswordResetEmail(email, resetToken);
 
     if (!emailSent) {
-      console.warn('⚠️  Email service not configured, but token created');
+      logger.warn('Email service not configured, but token created');
     }
 
-    console.log('✅ Password reset email sent to:', email);
+    logger.info('Password reset email sent', { email: getLoggableEmail(email) });
 
     res.json({
       success: true,
@@ -71,14 +73,14 @@ export const forgotPassword = async (req, res, next) => {
       email: email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
     });
   } catch (error) {
-    console.error('❌ Forgot password error:', error);
+    logger.error('Forgot password error', { message: error.message, stack: error.stack });
     next(error);
   }
 };
 
 export const resetPassword = async (req, res, next) => {
   try {
-    console.log('🔐 Password reset attempt');
+    logger.info('Password reset attempt');
 
     const sanitizedBody = sanitizeInput(req.body);
     const { error, value } = resetPasswordSchema.validate(sanitizedBody);
@@ -116,7 +118,7 @@ export const resetPassword = async (req, res, next) => {
 
     const updatedUser = await authService.resetPassword(token, newPassword);
 
-    console.log('✅ Password reset successful for:', updatedUser.email);
+    logger.info('Password reset successful', { email: getLoggableEmail(updatedUser.email) });
 
     res.json({
       success: true,
@@ -125,7 +127,7 @@ export const resetPassword = async (req, res, next) => {
       action: 'LOGIN'
     });
   } catch (error) {
-    console.error('��� Reset password error:', error);
+    logger.error('Reset password error', { message: error.message, stack: error.stack });
     if (error.message.includes('Invalid or expired')) {
       return res.status(400).json({
         success: false,
@@ -140,7 +142,7 @@ export const resetPassword = async (req, res, next) => {
 
 export const verifyEmail = async (req, res, next) => {
   try {
-    console.log('📧 Email verification attempt');
+    logger.info('Email verification attempt');
 
     const sanitizedBody = sanitizeInput(req.body);
     const { error, value } = verifyEmailSchema.validate(sanitizedBody);
@@ -157,7 +159,7 @@ export const verifyEmail = async (req, res, next) => {
 
     const user = await authService.verifyEmail(token);
 
-    console.log('✅ Email verified for:', user.email);
+    logger.info('Email verified', { email: getLoggableEmail(user.email) });
 
     res.json({
       success: true,
@@ -170,7 +172,7 @@ export const verifyEmail = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('❌ Email verification error:', error);
+    logger.error('Email verification error', { message: error.message, stack: error.stack });
     if (error.message.includes('Invalid or expired')) {
       return res.status(400).json({
         success: false,
@@ -185,7 +187,7 @@ export const verifyEmail = async (req, res, next) => {
 
 export const resendVerificationEmail = async (req, res, next) => {
   try {
-    console.log('📧 Resend verification email request');
+    logger.info('Resend verification email request');
 
     const sanitizedBody = sanitizeInput(req.body);
     const { error, value } = forgotPasswordSchema.validate(sanitizedBody);
@@ -223,10 +225,10 @@ export const resendVerificationEmail = async (req, res, next) => {
     const emailSent = await authService.sendVerificationEmail(email, verificationToken);
 
     if (!emailSent) {
-      console.warn('⚠️  Email service not configured');
+      logger.warn('Email service not configured');
     }
 
-    console.log('✅ Verification email resent to:', email);
+    logger.info('Verification email resent', { email: getLoggableEmail(email) });
 
     res.json({
       success: true,
@@ -235,7 +237,7 @@ export const resendVerificationEmail = async (req, res, next) => {
       email: email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
     });
   } catch (error) {
-    console.error('❌ Resend verification email error:', error);
+    logger.error('Resend verification email error', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -271,7 +273,7 @@ export const checkEmailExists = async (req, res, next) => {
       message: 'Email is available for registration'
     });
   } catch (error) {
-    console.error('❌ Check email error:', error);
+    logger.error('Check email error', { message: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -305,7 +307,7 @@ export const validatePasswordResetToken = async (req, res, next) => {
       email: user.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
     });
   } catch (error) {
-    console.error('❌ Validate reset token error:', error);
+    logger.error('Validate reset token error', { message: error.message, stack: error.stack });
     next(error);
   }
 };

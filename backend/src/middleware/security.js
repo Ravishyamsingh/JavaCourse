@@ -23,7 +23,14 @@ const googleOAuthRetryLabel = (() => {
 const failedAttempts = new Map();
 
 const getAttemptKey = (req) => `${ipKeyGenerator(req)}:${req.body?.email || req.user?.email || 'unknown'}`;
-const getFailedAttemptCount = (req) => failedAttempts.get(getAttemptKey(req)) || 0;
+
+const getFailedAttemptCount = (req) => {
+  const data = failedAttempts.get(getAttemptKey(req));
+  if (!data) return 0;
+  // Support both old number format and new object format
+  return typeof data === 'object' ? data.count : data;
+};
+
 const calculateWaitTime = (attempts) => Math.min(15 * Math.pow(2, Math.floor(attempts / 3)), 60);
 
 // Progressive rate limiting for authentication endpoints
@@ -113,17 +120,25 @@ export const resetFailedAttempts = (req) => {
 // Function to increment failed attempts
 export const incrementFailedAttempts = (req) => {
   const key = getAttemptKey(req);
-  const attempts = failedAttempts.get(key) || 0;
-  const updatedAttempts = attempts + 1;
-  failedAttempts.set(key, updatedAttempts);
+  const existing = failedAttempts.get(key);
+  const now = Date.now();
   
-  // Clean up old entries periodically
+  // Store as object with count and timestamp for proper cleanup
+  const updatedData = {
+    count: (existing?.count || 0) + 1,
+    timestamp: now,
+    firstAttempt: existing?.firstAttempt || now
+  };
+  failedAttempts.set(key, updatedData);
+  
+  // Clean up old entries periodically (LRU-style cleanup)
   if (failedAttempts.size > 10000) {
-    const entries = Array.from(failedAttempts.entries());
-    entries.slice(0, 5000).forEach(([key]) => failedAttempts.delete(key));
+    const entries = Array.from(failedAttempts.entries())
+      .sort((a, b) => a[1].timestamp - b[1].timestamp);
+    entries.slice(0, 5000).forEach(([k]) => failedAttempts.delete(k));
   }
 
-  return updatedAttempts;
+  return updatedData.count;
 };
 
 // Cleanup function to remove old failed attempts (run periodically)
@@ -131,6 +146,9 @@ export const cleanupFailedAttempts = () => {
   const cutoff = Date.now() - (24 * 60 * 60 * 1000); // 24 hours ago
   for (const [key, data] of failedAttempts.entries()) {
     if (typeof data === 'object' && data.timestamp < cutoff) {
+      failedAttempts.delete(key);
+    } else if (typeof data === 'number') {
+      // Legacy cleanup for old number-only entries
       failedAttempts.delete(key);
     }
   }
@@ -229,9 +247,9 @@ export const csrfProtection = (req, res, next) => {
   } else {
     // For JWT-based auth, validate CSRF token from header
     const userAgent = req.get('User-Agent') || '';
-    const expectedToken = generateCSRFToken(req.user?.id || req.ip, userAgent);
+    const userId = req.user?.id || req.ip;
     
-    if (!token || token !== expectedToken) {
+    if (!token || !validateCSRFToken(token, userId, userAgent)) {
       console.log(`🚫 CSRF validation failed for ${req.ip} - ${req.method} ${req.path}`);
       return res.status(403).json({
         success: false,
@@ -244,11 +262,22 @@ export const csrfProtection = (req, res, next) => {
   next();
 };
 
-// Generate CSRF token
-export const generateCSRFToken = (userId, userAgent) => {
+// CSRF time window in milliseconds (5 minutes)
+const CSRF_WINDOW_MS = 5 * 60 * 1000;
+
+// Generate CSRF token using time-window approach
+export const generateCSRFToken = (userId, userAgent, windowOffset = 0) => {
   const secret = process.env.CSRF_SECRET || process.env.JWT_SECRET;
-  const data = `${userId}:${userAgent}:${Date.now()}`;
+  const currentWindow = Math.floor(Date.now() / CSRF_WINDOW_MS) + windowOffset;
+  const data = `${userId}:${userAgent}:${currentWindow}`;
   return crypto.createHmac('sha256', secret).update(data).digest('hex');
+};
+
+// Validate CSRF token against current and previous window
+const validateCSRFToken = (token, userId, userAgent) => {
+  const currentToken = generateCSRFToken(userId, userAgent, 0);
+  const previousToken = generateCSRFToken(userId, userAgent, -1);
+  return token === currentToken || token === previousToken;
 };
 
 // Middleware to provide CSRF token to client

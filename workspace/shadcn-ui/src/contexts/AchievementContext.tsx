@@ -126,15 +126,22 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
   // Check for quiz-related achievements
   useEffect(() => {
     if (quizResults.length > 0) {
-      const score = getQuizScore();
-      const total = quizResults.length;
-      const percentage = total > 0 ? (score / total) * 100 : 0;
-      if (quizResults.length >= 1) unlockAchievement('first-quiz');
-      if (percentage >= 90) unlockAchievement('quiz-master');
-      if (percentage === 100) unlockAchievement('perfect-score');
+      // Check first quiz achievement
+      unlockAchievement('first-quiz');
+      
+      // Check individual quiz session achievements
+      quizResults.forEach((session) => {
+        if (session.correctAnswers && session.totalQuestions && session.totalQuestions > 0) {
+          const sessionPercentage = (session.correctAnswers / session.totalQuestions) * 100;
+          if (sessionPercentage >= 90) unlockAchievement('quiz-master');
+          if (sessionPercentage === 100) unlockAchievement('perfect-score');
+        }
+      });
+      
+      // Check consistency achievement
       if (quizResults.length >= 5) unlockAchievement('consistent-learner');
     }
-  }, [quizResults, getQuizScore, unlockAchievement]);
+  }, [quizResults, unlockAchievement]);
 
   const getUnlockedAchievements = () => {
     return achievements.filter(a => a.unlocked);

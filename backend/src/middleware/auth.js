@@ -1,5 +1,6 @@
 import { tokenManager } from "../utils/tokenManager.js";
 import { User } from "../models.js";
+import { logger } from "../utils/monitoring.js";
 
 export const authMiddleware = async (req, res, next) => {
   try {
@@ -50,7 +51,11 @@ export const authMiddleware = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error('❌ Auth middleware error:', error);
+    logger.error('Auth middleware error', {
+      message: error.message,
+      path: req.path,
+      method: req.method
+    });
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token.',
