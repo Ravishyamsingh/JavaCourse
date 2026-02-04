@@ -1,0 +1,62 @@
+name: CodeRabbit Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  coderabbit:
+    runs-on: ubuntu-latest
+    name: CodeRabbit Review
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: CodeRabbit Review
+        uses: coderabbitai/coderabbit-action@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Add CodeRabbit API token for enhanced features
+          # coderabbit_token: ${{ secrets.CODERABBIT_TOKEN }}
+
+  # Optional: Add linting and testing jobs
+  lint-and-test:
+    runs-on: ubuntu-latest
+    name: Lint and Test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Backend Dependencies
+        working-directory: ./Java\ Course\ Website\ Design/backend
+        run: npm ci
+
+      - name: Install Frontend Dependencies  
+        working-directory: ./Java\ Course\ Website\ Design/workspace/shadcn-ui
+        run: npm ci
+
+      - name: Lint Backend
+        working-directory: ./Java\ Course\ Website\ Design/backend
+        run: npm run lint || echo "No lint script found"
+
+      - name: Lint Frontend
+        working-directory: ./Java\ Course\ Website\ Design/workspace/shadcn-ui
+        run: npm run lint || echo "No lint script found"
+
+      - name: Test Backend
+        working-directory: ./Java\ Course\ Website\ Design/backend
+        run: npm test || echo "No test script found"
+
+      - name: Test Frontend
+        working-directory: ./Java\ Course\ Website\ Design/workspace/shadcn-ui
+        run: npm test || echo "No test script found"

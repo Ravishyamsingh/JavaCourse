@@ -1,0 +1,7 @@
+{
+  "name": "java-course",
+  "private": true,
+  "scripts": {
+    "build": "cd workspace/shadcn-ui && npm install && npm run build"
+  }
+}

@@ -1,0 +1,55 @@
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/guides/review-configuration
+
+# Reviews configuration
+reviews:
+  # Enable/disable reviews
+  enabled: true
+  
+  # Path-based configuration
+  path_filters:
+    - "!node_modules/**"
+    - "!dist/**"
+    - "!build/**"
+    - "!*.log"
+    - "!*.lock"
+    - "!package-lock.json"
+    - "!pnpm-lock.yaml"
+    - "!yarn.lock"
+  
+  # Language-specific settings
+  language_filters:
+    javascript: true
+    typescript: true
+    json: true
+    markdown: true
+    yaml: true
+  
+  # Review depth settings
+  max_files_per_review: 50
+  max_lines_per_file: 1000
+  
+  # Enable specific review types
+  review_types:
+    security: true
+    performance: true
+    bugs: true
+    style: true
+    documentation: true
+
+# Chat configuration
+chat:
+  enabled: true
+  auto_reply: false
+
+# Summary configuration
+summary:
+  enabled: true
+  include_walkthrough: true
+  include_poem: false
+
+# Auto-review configuration
+auto_review:
+  enabled: true
+  # Only for non-draft PRs
+  drafts: false
