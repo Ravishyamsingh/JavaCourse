@@ -196,13 +196,13 @@ export const login = async (req, res) => {
         });
       }
 
-      // Check if user signed up with Google and has no password
-      // Allow login if user has a password set (even if originally from Google)
-      if (user.provider === 'google' && !user.password) {
+      // Check if user has a password set
+      // If no password is set, they must have signed up with Google OAuth
+      if (!user.password) {
         await comparePassword(password, dummyHash); // Constant time operation
         return res.status(401).json({
           success: false,
-          message: "Please sign in with Google",
+          message: "This account was created with Google Sign-In. Please use 'Continue with Google' to login.",
           code: 'GOOGLE_AUTH_REQUIRED'
         });
       }
@@ -303,7 +303,10 @@ export const googleAuth = async (req, res) => {
       // User exists, update Google info if needed
       if (!user.googleId) {
         user.googleId = googleUserInfo.googleId;
-        user.provider = 'google';
+        // Only update provider if user doesn't have a password (pure Google user)
+        if (!user.password) {
+          user.provider = 'google';
+        }
         user.avatar = googleUserInfo.avatar;
         user.isEmailVerified = googleUserInfo.isEmailVerified;
       }

@@ -59,34 +59,25 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
 
     // If not available, wait a bit and try again
     safeLog.info('⏳ Waiting for Google Sign-In script to load...');
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       if (window.google?.accounts?.id) {
         safeLog.info('✅ Google Sign-In script loaded successfully');
         scriptLoaded.current = true;
         initializeGoogleSignIn();
       } else {
-        safeLog.error('❌ Google Sign-In script failed to load');
-        toast.error('Failed to load Google authentication. Please refresh the page and try again.');
+        safeLog.warn('⚠️ Google Sign-In script not available, will use backend redirect');
+        // Don't show error - backend redirect will work as fallback
       }
     }, 2000); // Wait 2 seconds for script to load
+
+    return () => clearTimeout(timeoutId);
   }, []);
   
   // Initialize Google Sign-In with browser compatibility
   const initializeGoogleSignIn = useCallback(() => {
     // Check if Google Identity Services is available
     if (!window.google?.accounts?.id) {
-      safeLog.error('❌ Google Identity Services not available');
-
-      // Try to reload script if not available
-      setTimeout(() => {
-        if (!window.google?.accounts?.id) {
-          safeLog.error('❌ Google Identity Services still not available after retry');
-          toast.error('Google authentication is not available. Please refresh the page and try again.');
-        } else {
-          safeLog.info('✅ Google Identity Services became available');
-          initializeGoogleSignIn();
-        }
-      }, 2000);
+      safeLog.warn('⚠️ Google Identity Services not available, will use backend redirect');
       return;
     }
 
@@ -101,11 +92,6 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
     safeLog.info('🔑 Initializing Google Sign-In');
 
     try {
-      // Browser-specific configuration
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: handleGoogleResponse,
@@ -117,7 +103,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
 
     } catch (error) {
       safeLog.error('❌ Failed to initialize Google Sign-In:', error);
-      toast.error('Failed to initialize Google authentication. Please try a different browser or refresh the page.');
+      // Don't show error toast - backend redirect will work as fallback
     }
   }, []);
   
