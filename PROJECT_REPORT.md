@@ -442,7 +442,7 @@ Requirements were gathered through:
 | | Redis | Caching & Sessions |
 | **External APIs** | Google Gemini | AI Quiz Generation |
 | | Paiza.io | Java Compilation |
-| | Google OAuth | Social Login |
+| | Google OAuth | Social-Login |
 | **Deployment** | Vercel | Frontend Hosting |
 | | Render | Backend Hosting |
 
@@ -475,7 +475,7 @@ Requirements were gathered through:
 
 **Components:**
 - **AuthController**: Handles signup, login, logout, token refresh
-- **Google OAuth**: Passport.js integration for social login
+- **Google OAuth**: Passport.js integration for social-login
 - **JWT Service**: Token generation, validation, and refresh
 - **Session Management**: Concurrent login detection, session revocation
 
@@ -1308,7 +1308,7 @@ describe('Token Service', () => {
 
 1. **CORS Configuration Complexity**
    - Issue: Google OAuth callbacks failing due to CORS
-   - Impact: Users unable to complete social login
+   - Impact: Users unable to complete social-login
    
 2. **Gemini API Rate Limiting**
    - Issue: Free tier limited to 15 requests per minute

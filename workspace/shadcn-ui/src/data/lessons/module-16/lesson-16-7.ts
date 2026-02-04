@@ -297,7 +297,7 @@ public List&lt;User&gt; getUsers() { }</pre>
             </div>
             
             <div class="bg-blue-50 p-4 rounded-lg">
-              <h4 class="font-bold text-blue-800 mb-2">Social Login Providers</h4>
+              <h4 class="font-bold text-blue-800 mb-2">Social-Login Providers</h4>
               <div class="grid md:grid-cols-3 gap-4">
                 <div class="bg-white p-3 rounded border text-center">
                   <h5 class="font-bold text-blue-800 mb-2">Google</h5>

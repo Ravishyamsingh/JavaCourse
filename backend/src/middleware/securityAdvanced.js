@@ -74,13 +74,35 @@ export const detectSQLInjection = (input) => {
   
   const sqlPatterns = [
     /(\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE|SCRIPT|JAVASCRIPT|EVAL)\b)/gi,
-    /(-{2}|\/\*|\*\/|;)/g, // Removed quotes from pattern
+    /(-{2}|\/\*|\*\/|;|['"])/g, // Restored quotes to pattern
     /(or\s+1\s*=\s*1)/gi,
     /(or\s+true)/gi,
     /(1\s*=\s*1)/gi
   ];
   
   return sqlPatterns.some(pattern => pattern.test(input));
+};
+
+/**
+ * Detect potential SQL injection attempts without quote patterns (for allowed fields)
+ */
+export const detectSQLInjectionWithoutQuotes = (input) => {
+  if (!input || typeof input !== 'string') return false;
+  
+  // Skip SQL injection detection for email addresses
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) {
+    return false;
+  }
+  
+  const sqlPatternsNoQuotes = [
+    /(\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE|SCRIPT|JAVASCRIPT|EVAL)\b)/gi,
+    /(-{2}|\/\*|\*\/|;)/g, // No quotes in this version
+    /(or\s+1\s*=\s*1)/gi,
+    /(or\s+true)/gi,
+    /(1\s*=\s*1)/gi
+  ];
+  
+  return sqlPatternsNoQuotes.some(pattern => pattern.test(input));
 };
 
 /**
@@ -125,19 +147,42 @@ export const sanitizeRequestMiddleware = (req, res, next) => {
       'code', 'input', 'source_code', 'stdin', 'output', 'sourceCode'
     ];
     
+    // Fields that legitimately need quotes (JSON strings, search queries, etc.)
+    const allowedFieldsWithQuotes = [
+      'searchQuery', 'query', 'description', 'bio', 'content', 'message', 
+      'name', 'title', 'comment', 'note', 'jsonData'
+    ];
+    
     // Sanitize query parameters
     if (req.query) {
       for (const key in req.query) {
         const value = req.query[key];
         
-        // Skip sanitization for sensitive/ID fields
+        // Skip sanitization and injection detection for sensitive/ID fields and code fields
         if (skipSanitizationFields.includes(key)) {
           continue;
         }
         
-        // Check for injection attempts (but not on tokens/IDs)
-        if (detectXSSAttempt(value) || detectSQLInjection(value) || detectNoSQLInjection(value)) {
+        // Check for injection attempts (but not on tokens/IDs/code fields)
+        if (detectXSSAttempt(value) || detectNoSQLInjection(value)) {
           console.warn(`🚨 Potential injection attempt detected in query parameter: ${key}`);
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid input detected',
+            code: 'INVALID_INPUT'
+          });
+        }
+        
+        // Use targeted SQL injection detection (skip quote matching for allowed fields)
+        if (!allowedFieldsWithQuotes.includes(key) && detectSQLInjection(value)) {
+          console.warn(`🚨 Potential SQL injection attempt detected in query parameter: ${key}`);
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid input detected',
+            code: 'INVALID_INPUT'
+          });
+        } else if (allowedFieldsWithQuotes.includes(key) && detectSQLInjectionWithoutQuotes(value)) {
+          console.warn(`🚨 Potential SQL injection attempt detected in query parameter: ${key}`);
           return res.status(400).json({
             success: false,
             message: 'Invalid input detected',
@@ -154,13 +199,30 @@ export const sanitizeRequestMiddleware = (req, res, next) => {
       for (const key in req.body) {
         const value = req.body[key];
         
-        // Skip sanitization for sensitive/ID fields
+        // Skip sanitization and injection detection for sensitive/ID fields and code fields
         if (skipSanitizationFields.includes(key)) {
           continue;
         }
         
-        // Check for injection attempts (but not on tokens/IDs)
-        if (detectXSSAttempt(JSON.stringify(value)) || detectSQLInjection(JSON.stringify(value)) || detectNoSQLInjection(value)) {
+        // Check for injection attempts (but not on tokens/IDs/code fields)
+        if (detectXSSAttempt(JSON.stringify(value)) || detectNoSQLInjection(value)) {
+          console.warn(`🚨 Potential injection attempt detected in body parameter: ${key}`);
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid input detected',
+            code: 'INVALID_INPUT'
+          });
+        }
+        
+        // Use targeted SQL injection detection (skip quote matching for allowed fields)
+        if (!allowedFieldsWithQuotes.includes(key) && detectSQLInjection(JSON.stringify(value))) {
+          console.warn(`🚨 Potential SQL injection attempt detected in body parameter: ${key}`);
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid input detected',
+            code: 'INVALID_INPUT'
+          });
+        } else if (allowedFieldsWithQuotes.includes(key) && detectSQLInjectionWithoutQuotes(JSON.stringify(value))) {
           console.warn(`🚨 Potential injection attempt detected in body parameter: ${key}`);
           return res.status(400).json({
             success: false,

@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
 import { useQuiz } from './QuizContext';
 import { fetchUserProgress, saveUserProgress } from '@/services/progressApi';
 import { useAuth } from './AuthContext';
@@ -107,7 +107,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     }
   }, [achievements, isAuthenticated, accessToken]);
 
-  const unlockAchievement = (id: string) => {
+  const unlockAchievement = useCallback((id: string) => {
     setAchievements(prev => {
       const achievementIndex = prev.findIndex(a => a.id === id);
       if (achievementIndex >= 0 && !prev[achievementIndex].unlocked) {
@@ -121,7 +121,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       }
       return prev;
     });
-  };
+  }, [setAchievements]);
 
   // Check for quiz-related achievements
   useEffect(() => {
@@ -134,7 +134,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       if (percentage === 100) unlockAchievement('perfect-score');
       if (quizResults.length >= 5) unlockAchievement('consistent-learner');
     }
-  }, [quizResults, getQuizScore]);
+  }, [quizResults, getQuizScore, unlockAchievement]);
 
   const getUnlockedAchievements = () => {
     return achievements.filter(a => a.unlocked);
