@@ -249,10 +249,76 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Store auth data in localStorage
-  const storeAuthData = (user: User, tokens: AuthTokens) => {
-    localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  const storeAuthData = (accessTokenOrUser: string | User, refreshTokenOrEmpty?: string | { accessToken?: string; refreshToken?: string }, userOrUndefined?: User) => {
+    // Type guard to check if value is a valid User object
+    const isValidUser = (value: unknown): value is User => {
+      if (!value || typeof value !== 'object') return false;
+      const obj = value as Record<string, unknown>;
+      return (
+        typeof obj.id === 'string' && obj.id.length > 0 &&
+        typeof obj.email === 'string' && obj.email.length > 0 &&
+        typeof obj.firstName === 'string' &&
+        typeof obj.lastName === 'string'
+      );
+    };
+
+    // Type guard for tokens object (old signature)
+    const isTokensObject = (value: unknown): value is { accessToken: string; refreshToken: string } => {
+      if (!value || typeof value !== 'object') return false;
+      const obj = value as Record<string, unknown>;
+      return (
+        typeof obj.accessToken === 'string' &&
+        typeof obj.refreshToken === 'string'
+      );
+    };
+
+    let accessToken: string | null = null;
+    let refreshToken: string | null = null;
+    let user: User | null = null;
+
+    if (typeof accessTokenOrUser === 'string') {
+      // New signature: storeAuthData(accessToken, refreshToken, user)
+      accessToken = accessTokenOrUser || null;
+      refreshToken = typeof refreshTokenOrEmpty === 'string' ? refreshTokenOrEmpty : null;
+      
+      if (!isValidUser(userOrUndefined)) {
+        console.error('storeAuthData: Invalid user object provided in new signature');
+        return; // Early return - don't corrupt localStorage
+      }
+      user = userOrUndefined;
+    } else if (isValidUser(accessTokenOrUser)) {
+      // Old signature: storeAuthData(user, tokens)
+      user = accessTokenOrUser;
+      
+      if (isTokensObject(refreshTokenOrEmpty)) {
+        accessToken = refreshTokenOrEmpty.accessToken || null;
+        refreshToken = refreshTokenOrEmpty.refreshToken || null;
+      } else {
+        console.warn('storeAuthData: Invalid tokens object in old signature, tokens will be cleared');
+      }
+    } else {
+      console.error('storeAuthData: Invalid arguments - first argument must be string or valid User');
+      return; // Early return - don't corrupt localStorage
+    }
+
+    // Only store validated values, clear keys if null/empty
+    if (accessToken && accessToken.length > 0) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    } else {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+    }
+
+    if (refreshToken && refreshToken.length > 0) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    } else {
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+    }
+
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(USER_KEY);
+    }
   };
 
   // Clear auth data from localStorage

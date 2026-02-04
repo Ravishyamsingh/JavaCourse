@@ -38,9 +38,10 @@ const Login: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
       const redirectPath = getRedirectPath();
+      console.log('✅ User authenticated, redirecting to:', redirectPath);
       navigate(redirectPath, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading]);
 
   // Handle URL parameters for OAuth callback (legacy support + cookie-based)
   useEffect(() => {

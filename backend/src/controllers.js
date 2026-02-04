@@ -184,12 +184,15 @@ export const login = async (req, res) => {
       }
 
       // Check if account is locked
-      if (user.isAccountLocked()) {
+      const isLocked = user.lockUntil && user.lockUntil > new Date();
+      if (isLocked) {
         await comparePassword(password, dummyHash); // Constant time operation
+        const minutesRemaining = Math.ceil((user.lockUntil - new Date()) / 1000 / 60);
         return res.status(423).json({
           success: false,
-          message: "Account is temporarily locked due to multiple failed login attempts",
-          code: 'ACCOUNT_LOCKED'
+          message: `Account is temporarily locked. Please try again in ${minutesRemaining} minutes.`,
+          code: 'ACCOUNT_LOCKED',
+          lockUntil: user.lockUntil
         });
       }
 

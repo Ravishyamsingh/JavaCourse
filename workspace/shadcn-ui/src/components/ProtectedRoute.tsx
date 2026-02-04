@@ -7,6 +7,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean;
   allowedRoles?: string[];
+  requiredRole?: string | string[]; // Backward compatibility
   requiredPermissions?: Array<{
     resource: string;
     action: string;
@@ -29,6 +30,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAuth = true,
   allowedRoles,
+  requiredRole,
   requiredPermissions,
   fallbackPath = '/login',
   showLoading = true,
@@ -42,6 +44,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   } = useAuth();
 
   const location = useLocation();
+
+  // Convert requiredRole to allowedRoles for backward compatibility
+  const rolesToCheck = allowedRoles || (requiredRole ? (Array.isArray(requiredRole) ? requiredRole : [requiredRole]) : undefined);
 
   // Show loading spinner while checking authentication
   if (isLoading && showLoading) {
@@ -67,8 +72,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check role-based access
-  if (allowedRoles && allowedRoles.length > 0) {
-    const hasAllowedRole = hasRole(allowedRoles);
+  if (rolesToCheck && rolesToCheck.length > 0) {
+    const hasAllowedRole = hasRole(rolesToCheck);
 
     if (!hasAllowedRole) {
       // User doesn't have required role
@@ -85,7 +90,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               You don't have the required permissions to access this page.
             </p>
             <p className="text-sm text-gray-500">
-              Required roles: {allowedRoles.join(', ')}
+              Required roles: {rolesToCheck.join(', ')}
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Your role: {user?.role || 'None'}
