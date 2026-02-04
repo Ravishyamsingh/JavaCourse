@@ -252,6 +252,87 @@ class TokenManager {
       return false;
     }
   }
+
+  // ============================================
+  // OAuth Authorization Code Flow (for cross-origin)
+  // ============================================
+
+  // In-memory store for auth codes (use Redis in production for multi-instance)
+  authCodes = new Map();
+
+  /**
+   * Create a short-lived authorization code for OAuth callback
+   * This code can be exchanged for tokens via API call
+   */
+  createAuthCode(userId, userData, provider = 'google') {
+    const code = crypto.randomBytes(32).toString('hex');
+    const expiresAt = Date.now() + 60 * 1000; // 1 minute expiry
+
+    this.authCodes.set(code, {
+      userId,
+      userData,
+      provider,
+      expiresAt,
+      used: false
+    });
+
+    // Auto-cleanup after expiry
+    setTimeout(() => {
+      this.authCodes.delete(code);
+    }, 65 * 1000);
+
+    return code;
+  }
+
+  /**
+   * Exchange authorization code for tokens
+   * Returns tokens and user data, or null if code is invalid
+   */
+  async exchangeAuthCode(code, req = {}) {
+    const authData = this.authCodes.get(code);
+
+    if (!authData) {
+      logger.warn('Auth code not found or expired');
+      return null;
+    }
+
+    if (authData.used) {
+      logger.warn('Auth code already used - possible replay attack');
+      this.authCodes.delete(code);
+      return null;
+    }
+
+    if (Date.now() > authData.expiresAt) {
+      logger.warn('Auth code expired');
+      this.authCodes.delete(code);
+      return null;
+    }
+
+    // Mark as used immediately
+    authData.used = true;
+
+    try {
+      // Create token pair
+      const tokens = await this.createTokenPair(
+        authData.userId,
+        authData.provider,
+        [],
+        req
+      );
+
+      // Delete the code
+      this.authCodes.delete(code);
+
+      return {
+        tokens,
+        user: authData.userData
+      };
+    } catch (error) {
+      logger.error('Failed to exchange auth code', { error: error.message });
+      this.authCodes.delete(code);
+      return null;
+    }
+  }
 }
 
 export const tokenManager = new TokenManager();

@@ -13,6 +13,7 @@ import {
   changePassword,
   googleAuth,
   googleAuthCallback,
+  exchangeAuthCode,
   getCurrentUser,
   updateProfile,
   getUserPermissions,
@@ -182,6 +183,9 @@ router.post("/auth/login",
 // Google OAuth Routes (Passport.js implementation)
 router.get("/auth/google", googleAuthRateLimit, googleAuth);
 router.get("/auth/google/callback", googleAuthCallback);
+
+// OAuth code exchange for cross-origin auth flow
+router.post("/auth/exchange-code", authRateLimit, exchangeAuthCode);
 
 // Legacy Google OAuth (for backward compatibility with frontend token-based auth)
 router.post("/auth/google", googleAuthRateLimit, legacyGoogleAuth);

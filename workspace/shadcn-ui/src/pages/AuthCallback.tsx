@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -20,9 +20,14 @@ const getCookie = (name: string): string | null => {
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isProcessing = useRef(false);
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Prevent double processing
+      if (isProcessing.current) return;
+      isProcessing.current = true;
+
       try {
         // Check for error parameters
         const error = searchParams.get('error');
@@ -47,10 +52,59 @@ const AuthCallback: React.FC = () => {
           return;
         }
 
-        const authSuccess = searchParams.get('auth');
         const provider = searchParams.get('provider');
+        const authCode = searchParams.get('code');
+        const authSuccess = searchParams.get('auth');
 
-        // Check if OAuth was successful - tokens are now in HTTP-only cookies
+        // ============================================
+        // NEW: Auth Code Flow (for cross-origin)
+        // ============================================
+        if (authCode && provider === 'google') {
+          try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${apiUrl}/auth/exchange-code`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ code: authCode }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+              // Store tokens and user data
+              storeAuthData(data.accessToken, data.refreshToken, data.user);
+
+              // Notify AuthContext listeners
+              window.dispatchEvent(new StorageEvent('storage', {
+                key: 'auth_access_token',
+                newValue: data.accessToken,
+                oldValue: null,
+                storageArea: localStorage
+              }));
+
+              toast.success(`Welcome back, ${data.user.firstName}!`);
+              const redirectPath = getDefaultRoute(data.user.role);
+              navigate(redirectPath, { replace: true });
+              return;
+            } else {
+              console.error('Code exchange failed:', data.message);
+              toast.error(data.message || 'Failed to complete authentication');
+              navigate('/login', { replace: true });
+              return;
+            }
+          } catch (fetchError) {
+            console.error('Failed to exchange auth code:', fetchError);
+            toast.error('Failed to complete authentication. Please try again.');
+            navigate('/login', { replace: true });
+            return;
+          }
+        }
+
+        // ============================================
+        // Cookie Flow (for same-origin - fallback)
+        // ============================================
         if (authSuccess === 'success' && provider === 'google') {
           // Read user data from the userData cookie (non-httpOnly)
           const userDataCookie = getCookie('userData');
@@ -61,10 +115,8 @@ const AuthCallback: React.FC = () => {
               
               // Note: accessToken and refreshToken are in HTTP-only cookies
               // They will be sent automatically with requests
-              // We store a flag in localStorage to indicate authenticated state
               storeAuthData('cookie-auth', '', user);
 
-              // Notify AuthContext listeners
               window.dispatchEvent(new StorageEvent('storage', {
                 key: 'auth_access_token',
                 newValue: 'cookie-auth',
@@ -73,7 +125,6 @@ const AuthCallback: React.FC = () => {
               }));
 
               toast.success(`Welcome back, ${user.firstName}!`);
-              // Redirect based on user role
               const redirectPath = getDefaultRoute(user.role);
               navigate(redirectPath, { replace: true });
               return;
@@ -82,11 +133,10 @@ const AuthCallback: React.FC = () => {
             }
           }
           
-          // Fallback: cookies may be set but userData not readable
-          // Try to fetch user profile from API using the cookie-based auth
+          // Fallback: Try to fetch user profile from API
           try {
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
-              credentials: 'include' // Include cookies
+              credentials: 'include'
             });
             
             if (response.ok) {
@@ -111,6 +161,7 @@ const AuthCallback: React.FC = () => {
         toast.error('No authentication data received');
         navigate('/login', { replace: true });
       } catch (callbackError) {
+        console.error('Auth callback error:', callbackError);
         toast.error('Failed to process authentication callback');
         navigate('/login', { replace: true });
       }

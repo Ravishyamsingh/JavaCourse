@@ -303,8 +303,8 @@ export const googleAuthCallback = (req, res, next) => {
 
       logger.info('Google OAuth successful', { email: user.email, role: user.role });
 
-      // Redirect to frontend with secure cookies
-  const frontendUrl = config.FRONTEND_URL || 'http://localhost:5173';
+      // Redirect to frontend with auth code (not cookies - they don't work cross-domain)
+      const frontendUrl = config.FRONTEND_URL || 'http://localhost:5173';
       const redirectUrl = new URL('/auth/callback', frontendUrl);
 
       const userPayload = {
@@ -317,15 +317,6 @@ export const googleAuthCallback = (req, res, next) => {
         provider: user.provider
       };
 
-      // Determine the cookie domain so tokens remain accessible in production
-      const cookieDomain = (() => {
-        if (config.COOKIE_DOMAIN) {
-          return config.COOKIE_DOMAIN.trim();
-        }
-        // Don't set domain for cross-origin (different domains like vercel + render)
-        return undefined;
-      })();
-
       // Check if frontend and backend are on different domains (cross-origin)
       const isCrossOrigin = (() => {
         try {
@@ -337,38 +328,48 @@ export const googleAuthCallback = (req, res, next) => {
         }
       })();
 
-      // Set secure HTTP-only cookies for tokens
-      // Use 'none' for cross-origin (Vercel frontend + Render backend)
-      // Use 'lax' for same-origin (allows OAuth redirects)
-      const cookieOptions = {
-        httpOnly: true,
-        secure: config.NODE_ENV === 'production' || isCrossOrigin,
-        sameSite: isCrossOrigin ? 'none' : 'lax',
-        maxAge: 15 * 60 * 1000, // 15 minutes for access token
-        domain: cookieDomain
-      };
+      if (isCrossOrigin) {
+        // Cross-origin: Use authorization code flow
+        // Frontend will exchange this code for tokens via API call
+        const authCode = tokenManager.createAuthCode(user._id, userPayload, 'google');
+        redirectUrl.searchParams.set('code', authCode);
+        redirectUrl.searchParams.set('provider', 'google');
+        
+        logger.info('Using auth code flow for cross-origin OAuth');
+      } else {
+        // Same-origin: Can use cookies
+        const cookieDomain = config.COOKIE_DOMAIN?.trim() || undefined;
+        
+        const cookieOptions = {
+          httpOnly: true,
+          secure: config.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 15 * 60 * 1000,
+          domain: cookieDomain
+        };
 
-      const refreshCookieOptions = {
-        ...cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days for refresh token
-      };
+        const refreshCookieOptions = {
+          ...cookieOptions,
+          maxAge: 7 * 24 * 60 * 60 * 1000
+        };
 
-      // Set cookies
-      res.cookie('accessToken', tokens.accessToken, cookieOptions);
-      res.cookie('refreshToken', tokens.refreshToken, refreshCookieOptions);
-      
-      // Set user data in a separate cookie (non-sensitive data only)
-      res.cookie('userData', JSON.stringify(userPayload), {
-        ...cookieOptions,
-        httpOnly: false, // Allow frontend to read user data
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-      });
+        // Generate tokens for same-origin
+        const tokens = await tokenManager.createTokenPair(user._id, 'google', [], {
+          ip: req.ip,
+          get: (header) => req.get(header)
+        });
 
-      // Add success parameter to URL instead of tokens
-      // Tokens are already set in HTTP-only cookies above - no need to expose in URL
-      redirectUrl.searchParams.set('auth', 'success');
-      redirectUrl.searchParams.set('provider', 'google');
-      // User data is available via the userData cookie set above
+        res.cookie('accessToken', tokens.accessToken, cookieOptions);
+        res.cookie('refreshToken', tokens.refreshToken, refreshCookieOptions);
+        res.cookie('userData', JSON.stringify(userPayload), {
+          ...cookieOptions,
+          httpOnly: false,
+          maxAge: 24 * 60 * 60 * 1000
+        });
+
+        redirectUrl.searchParams.set('auth', 'success');
+        redirectUrl.searchParams.set('provider', 'google');
+      }
 
       res.redirect(redirectUrl.toString());
     } catch (error) {
@@ -376,6 +377,57 @@ export const googleAuthCallback = (req, res, next) => {
       res.redirect(`${config.FRONTEND_URL}/login?error=server_error`);
     }
   })(req, res, next);
+};
+
+/**
+ * Exchange OAuth authorization code for tokens
+ * POST /api/auth/exchange-code
+ * Used for cross-origin OAuth flow where cookies don't work
+ */
+export const exchangeAuthCode = async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: 'Authorization code is required',
+        code: 'MISSING_CODE'
+      });
+    }
+
+    const result = await tokenManager.exchangeAuthCode(code, {
+      ip: req.ip,
+      get: (header) => req.get(header)
+    });
+
+    if (!result) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired authorization code',
+        code: 'INVALID_CODE'
+      });
+    }
+
+    logger.info('Auth code exchanged successfully', { userId: result.user.id });
+
+    return res.json({
+      success: true,
+      message: 'Authentication successful',
+      accessToken: result.tokens.accessToken,
+      refreshToken: result.tokens.refreshToken,
+      expiresIn: result.tokens.expiresIn,
+      tokenType: result.tokens.tokenType,
+      user: result.user
+    });
+  } catch (error) {
+    logger.error('Exchange auth code error', { message: error.message, stack: error.stack });
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to exchange authorization code',
+      code: 'EXCHANGE_ERROR'
+    });
+  }
 };
 
 /**
