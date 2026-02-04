@@ -6,28 +6,38 @@ reviews:
   # Enable/disable reviews
   enabled: true
   
-  # Path-based configuration
+  # Path-based configuration - be more selective to include more source files
   path_filters:
     - "!node_modules/**"
     - "!dist/**"
     - "!build/**"
+    - "!coverage/**"
+    - "!.next/**"
+    - "!.nuxt/**"
+    - "!.cache/**"
     - "!*.log"
-    - "!*.lock"
     - "!package-lock.json"
-    - "!pnpm-lock.yaml"
+    - "!pnpm-lock.yaml" 
     - "!yarn.lock"
-  
-  # Language-specific settings
+    
+  # Include more file types for comprehensive review
   language_filters:
     javascript: true
     typescript: true
     json: true
     markdown: true
     yaml: true
+    html: true
+    css: true
+    scss: true
+    jsx: true
+    tsx: true
+    mjs: true
+    cjs: true
   
-  # Review depth settings
-  max_files_per_review: 50
-  max_lines_per_file: 1000
+  # Increase limits for larger codebase
+  max_files_per_review: 100
+  max_lines_per_file: 2000
   
   # Enable specific review types
   review_types:

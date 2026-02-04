@@ -1,0 +1,66 @@
+# CodeRabbit Full Scan Configuration
+# Use this for comprehensive codebase review
+
+name: Full CodeRabbit Scan
+
+on:
+  workflow_dispatch: # Manual trigger
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  coderabbit-full-scan:
+    runs-on: ubuntu-latest
+    name: Complete Codebase Review
+    
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full git history
+          submodules: recursive
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          cd "Java Course Website Design/backend"
+          npm ci
+          cd "../workspace/shadcn-ui" 
+          npm ci
+          
+      - name: CodeRabbit Full Review
+        uses: coderabbitai/coderabbit-action@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Force review all files
+          review_mode: 'all'
+          # Include additional patterns
+          include_patterns: |
+            **/*.js
+            **/*.ts
+            **/*.tsx
+            **/*.jsx
+            **/*.mjs
+            **/*.cjs
+            **/*.json
+            **/*.md
+            **/*.yaml
+            **/*.yml
+            **/*.html
+            **/*.css
+            **/*.scss
+          # Exclude only essential build artifacts  
+          exclude_patterns: |
+            **/node_modules/**
+            **/dist/**
+            **/build/**
+            **/*.log
+            **/package-lock.json
+            **/pnpm-lock.yaml

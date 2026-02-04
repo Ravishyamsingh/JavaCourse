@@ -1,8 +1,23 @@
-name: CodeRabbit Code Review
+name: CodeRabbit Comprehensive Review
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    # Review all file types
+    paths:
+      - '**/*.js'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.jsx'
+      - '**/*.mjs'
+      - '**/*.cjs'
+      - '**/*.json'
+      - '**/*.md'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.scss'
   pull_request_review_comment:
     types: [created]
 
@@ -11,10 +26,11 @@ jobs:
     runs-on: ubuntu-latest
     name: CodeRabbit Review
     steps:
-      - name: Checkout
+      - name: Checkout with full context
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
 
       - name: CodeRabbit Review
         uses: coderabbitai/coderabbit-action@v2
@@ -22,6 +38,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # Optional: Add CodeRabbit API token for enhanced features
           # coderabbit_token: ${{ secrets.CODERABBIT_TOKEN }}
+        env:
+          CODERABBIT_CONFIG: '.coderabbit.yaml'
 
   # Optional: Add linting and testing jobs
   lint-and-test:
