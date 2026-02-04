@@ -322,24 +322,28 @@ export const googleAuthCallback = (req, res, next) => {
         if (config.COOKIE_DOMAIN) {
           return config.COOKIE_DOMAIN.trim();
         }
-
-        if (config.NODE_ENV === 'production') {
-          try {
-            const { hostname } = new URL(frontendUrl);
-            return hostname === 'localhost' ? undefined : hostname;
-          } catch (error) {
-            logger.warn('Unable to derive cookie domain', { message: error.message });
-          }
-        }
-
+        // Don't set domain for cross-origin (different domains like vercel + render)
         return undefined;
       })();
 
+      // Check if frontend and backend are on different domains (cross-origin)
+      const isCrossOrigin = (() => {
+        try {
+          const backendHost = new URL(config.BACKEND_URL || `http://localhost:${config.PORT}`).hostname;
+          const frontendHost = new URL(frontendUrl).hostname;
+          return backendHost !== frontendHost;
+        } catch {
+          return false;
+        }
+      })();
+
       // Set secure HTTP-only cookies for tokens
+      // Use 'none' for cross-origin (Vercel frontend + Render backend)
+      // Use 'lax' for same-origin (allows OAuth redirects)
       const cookieOptions = {
         httpOnly: true,
-  secure: config.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: config.NODE_ENV === 'production' || isCrossOrigin,
+        sameSite: isCrossOrigin ? 'none' : 'lax',
         maxAge: 15 * 60 * 1000, // 15 minutes for access token
         domain: cookieDomain
       };
