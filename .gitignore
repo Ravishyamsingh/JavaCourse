@@ -89,11 +89,9 @@ temp/
 # GitHub
 .github/copilot-instructions.md
 
-# Markdown documentation files (not for GitHub)
-# Keep only README.md, exclude others
+# Markdown documentation files (keep README variants)
 *.md
 !README.md
-!CONTRIBUTING.md
-!LICENSE
+!readme.md
 
 

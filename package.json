@@ -3,5 +3,8 @@
   "private": true,
   "scripts": {
     "build": "cd workspace/shadcn-ui && npm install && npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }
