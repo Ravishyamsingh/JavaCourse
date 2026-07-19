@@ -65,8 +65,7 @@ export default function Index() {
   ];
 
   return (
-    <div className="relative min-h-screen">
-      <div className="hero-bg absolute inset-0 -z-10"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">

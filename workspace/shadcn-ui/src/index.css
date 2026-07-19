@@ -237,29 +237,3 @@ html {
 html {
   -webkit-text-size-adjust: 100%;
 }
-
-/* Hero background image + subtle animation (4K image via Unsplash source) */
-.hero-bg {
-  background-image: url('https://source.unsplash.com/3840x2160/?java,code,programming');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  filter: brightness(0.72) saturate(1.02);
-  animation: hero-zoom 30s linear infinite;
-  will-change: transform;
-}
-
-/* Overlay to improve text contrast */
-.hero-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(7,10,23,0.16), rgba(7,10,23,0.32));
-  pointer-events: none;
-}
-
-@keyframes hero-zoom {
-  0% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.06) translateY(-12px); }
-  100% { transform: scale(1) translateY(0px); }
-}
