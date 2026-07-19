@@ -10,6 +10,11 @@ out/
 .env.development
 .env.test
 .env.*.local
+# Root-level environment files (non-dot names)
+env
+env.development
+env.*
+!env.smaple
 logs/
 *.log
 npm-debug.log*
